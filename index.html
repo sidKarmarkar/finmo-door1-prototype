@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<!-- Landing page for GitHub Pages. Links to the prototype and the docs. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Finmo · Door 1 prototype</title>
+<style>
+:root{--b600:#7A47E8;--b700:#6538CE;--ink:#101828;--ink3:#667085;--line:#E4E7EC;--bg:#F9FAFB;--b50:#F7F4FE;--b100:#EFE8FC;--b200:#DCCEF9}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:760px;margin:0 auto;padding:56px 24px 72px}
+.logo{display:inline-flex;align-items:center;gap:9px;font-weight:800;font-size:22px;letter-spacing:-.02em}
+.logo .lg{width:32px;height:32px;border-radius:9px;background:var(--b600);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:16px}
+h1{font-size:34px;letter-spacing:-.02em;margin:34px 0 10px}
+.lede{font-size:17px;color:var(--ink3);margin-bottom:28px}
+.btn{display:inline-flex;align-items:center;gap:8px;border-radius:11px;padding:13px 24px;font-weight:600;font-size:15px;text-decoration:none;transition:.15s}
+.btn-p{background:var(--b600);color:#fff}.btn-p:hover{background:var(--b700)}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px 24px;margin-top:16px}
+.card h3{font-size:16px;margin-bottom:4px}
+.card p{color:var(--ink3);font-size:14px}
+.card a{color:var(--b700);font-weight:600;text-decoration:none}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:26px}
+.feat{background:var(--b50);border:1px solid var(--b200);border-radius:12px;padding:14px 16px;font-size:13.5px}
+.feat b{display:block;margin-bottom:2px}
+.foot{margin-top:36px;color:#98A2B3;font-size:13px}
+@media(max-width:640px){.grid{grid-template-columns:1fr}h1{font-size:28px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <span class="logo"><span class="lg">f</span>finmo</span>
+  <h1>Door 1 prototype</h1>
+  <p class="lede">A clickable prototype of Finmo's business and personal onboarding, payments, cards, treasury and FX risk. Signup to a live account, with the AI proposing and the human approving at every step that touches money.</p>
+
+  <a class="btn btn-p" href="./finmo-door1-prototype.html">Launch the prototype &rarr;</a>
+
+  <div class="grid">
+    <div class="feat"><b>Best-in-class KYB / KYC</b>Live checks as you type, background screening, instant approval with limits when risk is low.</div>
+    <div class="feat"><b>Payments &amp; collections</b>Payouts as Bill Pay, collections as invoices, payment links, JPM local accounts and SWIFT.</div>
+    <div class="feat"><b>Cards &amp; treasury</b>Virtual and physical cards on the expense route, Synthesys tokenised funds with daily yield.</div>
+    <div class="feat"><b>FX risk &amp; VaR</b>Value at Risk from your own ledger, toggleable parameters, auto-executing rate triggers.</div>
+  </div>
+
+  <div class="card">
+    <h3>Design decisions</h3>
+    <p>Every design choice and its defense, edge cases, and where each fake seam swaps for production. <a href="./DESIGN_DECISIONS.md">Read &rarr;</a></p>
+  </div>
+  <div class="card">
+    <h3>Production implementation</h3>
+    <p>How the demo ships on Finmo's stack (AWS, polyglot databases, Bedrock), with the AI side in depth. <a href="./PROD_IMPLEMENTATION.md">Read &rarr;</a></p>
+  </div>
+
+  <p class="foot">Prototype only. All data is fake and stays in your browser. Built by Siddharth Karmarkar.</p>
+</div>
+</body>
+</html>

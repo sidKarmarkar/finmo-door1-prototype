@@ -1,0 +1,1579 @@
+<!DOCTYPE html>
+<!-- Finmo Door 1 prototype v2. Business + individual onboarding, risk scored instant approval with limits, JPM collection accounts, payment links, cards, Synthesys treasury, FX and payouts Brex style. Siddharth Karmarkar, July 2026. Single file, no network, all data fake. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Finmo · Business Account</title>
+<style>
+:root{
+ --b50:#F7F4FE;--b100:#EFE8FC;--b200:#DCCEF9;--b500:#8B5CF6;--b600:#7A47E8;--b700:#6538CE;--b800:#4C2A9E;
+ --ink:#101828;--ink2:#475467;--ink3:#667085;--line:#E4E7EC;--bg:#F9FAFB;
+ --green:#12B76A;--greenbg:#ECFDF3;--red:#F04438;--redbg:#FEF3F2;--amber:#B54708;--amberbg:#FFFAEB;--amberline:#FEDF89;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.5}
+button{font:inherit;cursor:pointer;border:none;background:none}
+input,select,textarea{font:inherit;color:var(--ink)}
+h1{font-size:26px;letter-spacing:-.02em}h2{font-size:19px;letter-spacing:-.01em}h3{font-size:15px}
+.muted{color:var(--ink3)}.small{font-size:12px}.b{font-weight:600}.mono{font-family:ui-monospace,Menlo,monospace;font-size:12.5px}
+.btn{display:inline-flex;align-items:center;gap:7px;border-radius:10px;padding:10px 18px;font-weight:600;transition:.15s}
+.btn-p{background:var(--b600);color:#fff}.btn-p:hover{background:var(--b700)}
+.btn-s{background:#fff;border:1.5px solid var(--line);color:var(--ink)}.btn-s:hover{border-color:var(--b500);color:var(--b700)}
+.btn-g{color:var(--b700);padding:6px 10px}.btn-g:hover{background:var(--b50)}
+.btn-sm{padding:6px 12px;font-size:13px;border-radius:8px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:24px}
+.field{margin-bottom:14px}
+.field>label{display:block;font-weight:600;font-size:13px;margin-bottom:6px}
+.field input,.field select,.field textarea{width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;background:#fff;outline:none}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--b500);box-shadow:0 0 0 3px var(--b100)}
+.field.bad input,.field.bad select{border-color:var(--red)}
+.err{color:var(--red);font-size:12px;margin-top:4px}
+.hint{color:var(--ink3);font-size:12px;margin-top:4px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.chip{display:inline-flex;align-items:center;gap:5px;background:var(--b100);color:var(--b700);font-size:11px;font-weight:700;padding:2px 9px;border-radius:999px;vertical-align:middle}
+.tag{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;padding:3px 10px;border-radius:999px}
+.tag-ok{background:var(--greenbg);color:#027A48}.tag-warn{background:var(--amberbg);color:var(--amber)}.tag-bad{background:var(--redbg);color:#B42318}.tag-mut{background:#F2F4F7;color:var(--ink2)}.tag-b{background:var(--b100);color:var(--b700)}
+.banner{display:flex;gap:12px;align-items:flex-start;border-radius:12px;padding:14px 16px;margin-bottom:16px}
+.banner-i{background:var(--b50);border:1px solid var(--b200)}
+.banner-w{background:var(--amberbg);border:1px solid var(--amberline)}
+.banner-e{background:var(--redbg);border:1px solid #FECDCA}
+.banner-g{background:var(--greenbg);border:1px solid #A6F4C5}
+.auth{display:grid;grid-template-columns:44% 56%;min-height:100vh}
+.auth-l{background:linear-gradient(160deg,#170E30 0%,#3B1E7E 70%,#5B2ECC 120%);color:#fff;padding:56px;display:flex;flex-direction:column;justify-content:space-between}
+.auth-l h1{font-size:32px;line-height:1.25;margin-top:48px}
+.auth-l .pt{display:flex;gap:10px;margin-top:18px;align-items:flex-start;color:#E4DBFB}
+.auth-r{display:flex;align-items:center;justify-content:center;padding:40px}
+.authbox{width:440px;max-width:100%}
+.logo{display:inline-flex;align-items:center;gap:9px;font-weight:800;font-size:21px;letter-spacing:-.02em}
+.logo .lg{width:30px;height:30px;border-radius:8px;background:var(--b600);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:15px}
+.wiz{display:grid;grid-template-columns:300px 1fr;min-height:100vh}
+.rail{background:#fff;border-right:1px solid var(--line);padding:28px 22px}
+.rail .st{display:flex;gap:12px;padding:10px 10px;border-radius:10px;align-items:center;margin-bottom:2px}
+.rail .st .n{width:26px;height:26px;border-radius:999px;border:1.5px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--ink3);flex:none}
+.rail .st.on{background:var(--b50)}.rail .st.on .n{border-color:var(--b600);color:var(--b700)}
+.rail .st.done .n{background:var(--b600);border-color:var(--b600);color:#fff}
+.rail .st .t{font-weight:600;font-size:13.5px}.rail .st.off .t{color:var(--ink3);font-weight:500}
+.wizmain{padding:44px 56px;max-width:860px}
+.savenote{font-size:12px;color:var(--ink3);display:inline-flex;gap:6px;align-items:center}
+.up{border:1.5px dashed var(--line);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:14px;margin-bottom:10px;background:#fff}
+.up.ok{border:1.5px solid #A6F4C5;background:var(--greenbg)}
+.up.fail{border:1.5px solid #FECDCA;background:var(--redbg)}
+.up.busy{border-style:solid}
+.up .ic{width:38px;height:38px;border-radius:10px;background:var(--b50);color:var(--b700);display:flex;align-items:center;justify-content:center;flex:none;font-size:16px}
+.up.ok .ic{background:#D1FADF;color:#027A48}.up.fail .ic{background:#FEE4E2;color:#B42318}
+.up .bd{flex:1;min-width:0}
+.pbar{height:6px;border-radius:99px;background:var(--b100);margin-top:7px;overflow:hidden}
+.pbar>div{height:100%;background:var(--b600);border-radius:99px;transition:width .2s}
+.tl{list-style:none}
+.tl li{display:flex;gap:14px;position:relative;padding-bottom:26px}
+.tl li:before{content:"";position:absolute;left:13px;top:30px;bottom:2px;width:2px;background:var(--line)}
+.tl li:last-child:before{display:none}
+.tl li.done:before{background:var(--b600)}
+.tl .dot{width:28px;height:28px;border-radius:99px;border:2px solid var(--line);background:#fff;flex:none;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--ink3);z-index:1}
+.tl li.done .dot{background:var(--b600);border-color:var(--b600);color:#fff}
+.tl li.on .dot{border-color:var(--b600);color:var(--b700)}
+.tl li.warn .dot{border-color:#F79009;background:var(--amberbg);color:var(--amber)}
+.shell{display:grid;grid-template-columns:236px 1fr;min-height:100vh}
+.side{background:#fff;border-right:1px solid var(--line);padding:20px 14px;display:flex;flex-direction:column}
+.nav{margin-top:22px;flex:1}
+.nav .it{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:10px;font-weight:600;font-size:13.5px;color:var(--ink2);margin-bottom:2px;width:100%;text-align:left}
+.nav .it:hover{background:#F6F5FA}
+.nav .it.on{background:var(--b100);color:var(--b800)}
+.nav .it.lk{color:#98A2B3}
+.nav .kid{display:flex;align-items:center;gap:9px;padding:7px 12px 7px 36px;border-radius:10px;font-weight:500;font-size:13px;color:var(--ink2);margin-bottom:1px;width:100%;text-align:left}
+.nav .kid:hover{background:#F6F5FA}
+.nav .kid.on{background:var(--b100);color:var(--b800);font-weight:600}
+.nav .kid.lk{color:#98A2B3}
+.nav .chev{margin-left:auto;font-size:10px;color:var(--ink3)}
+.main{display:flex;flex-direction:column;min-width:0}
+.top{height:60px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px;padding:0 26px}
+.content{padding:28px 32px;max-width:1140px;width:100%}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.tile{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px}
+.tile .v{font-size:21px;font-weight:700;letter-spacing:-.02em;margin:4px 0}
+table{width:100%;border-collapse:collapse}
+th{font-size:12px;color:var(--ink3);text-align:left;font-weight:600;padding:9px 12px;border-bottom:1px solid var(--line)}
+td{padding:11px 12px;border-bottom:1px solid #F2F4F7;font-size:13.5px;vertical-align:top}
+.amt-in{color:#027A48;font-weight:600}.amt-out{font-weight:600}
+.toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);background:#101828;color:#fff;padding:11px 18px;border-radius:10px;font-size:13.5px;opacity:0;pointer-events:none;transition:.25s;z-index:99;max-width:80vw}
+.toast.show{opacity:1}
+.demo{position:fixed;right:18px;bottom:18px;z-index:60;width:238px}
+.demo .hd{background:#101828;color:#fff;border-radius:12px 12px 0 0;padding:9px 14px;font-size:12px;font-weight:700;display:flex;justify-content:space-between;align-items:center;cursor:pointer}
+.demo .bd{background:#1D2939;border-radius:0 0 12px 12px;padding:10px}
+.demo .bd button{display:block;width:100%;text-align:left;color:#EAECF0;font-size:12.5px;padding:7px 9px;border-radius:7px}
+.demo .bd button:hover{background:#344054}
+.ov{position:fixed;inset:0;background:rgba(16,24,40,.5);display:flex;align-items:center;justify-content:center;z-index:70}
+.modal{background:#fff;border-radius:16px;padding:26px;width:520px;max-width:92vw;max-height:86vh;overflow:auto}
+.mo-drawer{position:fixed;top:0;right:0;bottom:0;width:400px;max-width:94vw;background:#fff;border-left:1px solid var(--line);z-index:65;display:flex;flex-direction:column;box-shadow:-12px 0 40px rgba(16,24,40,.08)}
+.mo-msgs{flex:1;overflow:auto;padding:18px}
+.msg{margin-bottom:12px;max-width:88%}
+.msg.me{margin-left:auto;background:var(--b600);color:#fff;border-radius:14px 14px 4px 14px;padding:9px 13px}
+.msg.mo{background:#F6F5FA;border-radius:14px 14px 14px 4px;padding:9px 13px}
+.pchip{border:1.5px solid var(--b200);color:var(--b700);border-radius:999px;padding:5px 11px;font-size:12px;font-weight:600;margin:0 6px 6px 0}
+.pchip:hover{background:var(--b50)}
+.sel{border:1.5px solid var(--line);border-radius:12px;padding:14px;display:flex;gap:12px;align-items:flex-start;cursor:pointer;margin-bottom:10px;background:#fff}
+.sel.on{border-color:var(--b600);background:var(--b50)}
+.persona{border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:10px;background:#fff}
+.kv{display:grid;grid-template-columns:190px 1fr;gap:4px 14px;font-size:13.5px}
+.kv .k{color:var(--ink3)}
+.lockhint{font-size:11px;color:#98A2B3;margin-left:auto}
+.live{border:1px solid var(--b200);background:var(--b50);border-radius:12px;padding:12px 14px;margin:6px 0 16px}
+.live .li{display:flex;gap:8px;font-size:12.5px;margin-top:4px;align-items:flex-start}
+@media(max-width:900px){.auth{grid-template-columns:1fr}.auth-l{display:none}.wiz{grid-template-columns:1fr}.rail{display:none}.shell{grid-template-columns:1fr}.side{display:none}.grid3,.grid2{grid-template-columns:1fr}.row2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="toast" class="toast"></div>
+<input type="file" id="fi" accept=".pdf,.jpg,.jpeg,.png" style="display:none">
+<script>
+/* ============ config ============ */
+const CC={
+ US:{name:'United States',ccy:'USD',reg:'EIN',regHint:'XX-XXXXXXX',regRx:/^\d{2}-?\d{7}$/,certLabel:'Certificate of incorporation',hasState:true},
+ CA:{name:'Canada',ccy:'CAD',reg:'Business number',regHint:'9 digits',regRx:/^\d{9}$/,certLabel:'Certificate of incorporation',hasState:true},
+ GB:{name:'United Kingdom',ccy:'GBP',reg:'Company number',regHint:'8 characters',regRx:/^[A-Z0-9]{8}$/i,certLabel:'Companies House certificate of incorporation',hasState:false},
+ EU:{name:'Europe (SEPA)',ccy:'EUR',reg:'VAT / registry number',regHint:'e.g. DE812345678',regRx:/^[A-Z]{2}[0-9A-Z]{8,12}$/i,certLabel:'Commercial register extract',hasState:false},
+ HK:{name:'Hong Kong',ccy:'HKD',reg:'BR number',regHint:'8 digits',regRx:/^\d{8}$/,certLabel:'Business registration certificate',hasState:false},
+ SG:{name:'Singapore',ccy:'SGD',reg:'UEN',regHint:'e.g. 202412345K',regRx:/^\d{9}[A-Z]$/i,certLabel:'ACRA Bizfile profile or certificate of incorporation',hasState:false},
+ AU:{name:'Australia',ccy:'AUD',reg:'ABN',regHint:'11 digits',regRx:/^\d{11}$/,certLabel:'ASIC company extract',hasState:true},
+ NZ:{name:'New Zealand',ccy:'NZD',reg:'NZBN',regHint:'13 digits',regRx:/^\d{13}$/,certLabel:'NZ Companies Office extract',hasState:false},
+ AE:{name:'Other markets',ccy:'USD',reg:'Registration number',regHint:'As registered locally',regRx:/^.{5,}$/,certLabel:'Certificate of incorporation or trade licence',hasState:false}
+};
+const VA_CCYS=['USD','CAD','GBP','EUR','HKD','AUD','SGD','NZD'];
+const COLLECT_ONLY=['PHP','IDR','THB'];
+const VAD={USD:'ACH routing 021000021 · Fedwire · account ending 8837',CAD:'Institution 001 · transit 00022 · EFT',GBP:'Sort code 04-00-75 · Faster Payments',EUR:'IBAN DE89 3704 0044 xxxx · SEPA',HKD:'Clearing 007 · FPS',AUD:'BSB 013-943 · NPP',SGD:'Bank code 7171 · FAST',NZD:'Bank 01-0001 · local NZD'};
+const RAILS_LOCAL={USD:['ACH · free · 1 to 2 days','Fedwire · 15.00 · same day'],CAD:['EFT · free · 1 to 2 days'],GBP:['Faster Payments · free · minutes'],EUR:['SEPA · free · same day','SEPA Instant · 1.00 · seconds'],HKD:['FPS · free · minutes'],AUD:['NPP · free · minutes'],SGD:['FAST · free · minutes'],NZD:['Local NZD · free · same day']};
+const RUSD={SGD:1.35,USD:1,EUR:0.92,GBP:0.79,AUD:1.52,NZD:1.65,CAD:1.36,HKD:7.8,PHP:58.4,IDR:16200,THB:36.4};
+const conv=(amt,f,t)=>amt/RUSD[f]*RUSD[t];
+const FXM=0.005;
+/* ============ FX risk engine (pure, liftable into cash tools) ============ */
+const VOLA={USD:4.5,EUR:6,GBP:7,AUD:8,NZD:9,CAD:6,HKD:4.6,SGD:4.5,PHP:7,IDR:8,THB:6};
+const RHO=0.45;
+const ZS={90:1.282,95:1.645,99:2.326};
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function fxExposures(basis){
+ const h=home(),ex={};
+ Object.entries(S.plat.bals).forEach(([c,n])=>{const v=conv(n,c,h);if(c!==h&&Math.abs(v)>=1)ex[c]=(ex[c]||0)+v});
+ if(basis==='flows')S.plat.inv.forEach(i=>{if(i.ccy&&i.ccy!==h&&i.st!=='paid')ex[i.ccy]=(ex[i.ccy]||0)+conv(i.amt,i.ccy,h)});
+ return ex;
+}
+function varCalc(ex,p){
+ const ks=Object.keys(ex);
+ if(!ks.length)return{v:0,comp:{},sigma:0};
+ const sd=c=>((VOLA[c]||8)/100)/Math.sqrt(252);
+ let s2=0;const mcv={};
+ ks.forEach(i=>{mcv[i]=0;ks.forEach(j=>{const r=i===j?1:RHO;const t=ex[j]*sd(i)*sd(j)*r;mcv[i]+=t;s2+=ex[i]*t})});
+ const sp=Math.sqrt(Math.max(s2,0));
+ if(sp<=0)return{v:0,comp:{},sigma:0};
+ let V;
+ if(p.meth==='mc'){
+  const rng=mulberry32(42),N=4000,losses=[];
+  const gauss=()=>{let u=0,w=0;while(!u)u=rng();while(!w)w=rng();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*w)};
+  for(let k=0;k<N;k++){const Z=gauss();let pl=0;
+   ks.forEach(c=>{const e=gauss();pl+=ex[c]*sd(c)*Math.sqrt(p.hor)*(Math.sqrt(RHO)*Z+Math.sqrt(1-RHO)*e)});
+   losses.push(-pl)}
+  losses.sort((a,b)=>a-b);V=Math.max(0,losses[Math.floor(N*p.conf/100)]);
+ }else V=ZS[p.conf]*sp*Math.sqrt(p.hor);
+ const comp={};ks.forEach(i=>comp[i]=(ex[i]*mcv[i])/s2*V);
+ return{v:V,comp,sigma:sp};
+}
+function vrParams(){if(!S.vr)S.vr={conf:95,hor:5,meth:'para',basis:'flows'};if(!S.plat.fxTriggers)S.plat.fxTriggers=[];return S.vr}
+function loadSampleExposure(){
+ credit('USD',12000);credit('EUR',4000);
+ if(!S.plat.inv.some(i=>i.no==='INV-1050'))S.plat.inv.unshift({id:uid(),no:'INV-1050',client:'US Wholesale Partner',amt:8000,ccy:'USD',due:new Date(Date.now()+12*86400000).toISOString().slice(0,10),st:'sent'});
+ S.plat.txns.unshift({id:uid(),t:Date.now(),who:'Sample FX exposure',dir:'in',amt:12000,ccy:'USD',note:'Demo data: USD and EUR balances plus a USD receivable, so the risk module has something to chew on'});
+ rr();toast('Sample exposure loaded: USD 12,000 + EUR 4,000 held, USD 8,000 receivable');
+}
+function addTrigger(from,amt,rate){
+ vrParams();
+ S.plat.fxTriggers.push({id:uid(),from,to:home(),amt,rate,st:'armed'});
+ rr();toast('Trigger armed. It converts automatically when the rate reaches '+rate.toFixed(4)+', and you get notified either way.');
+}
+function fireTrigger(id){
+ const tg=S.plat.fxTriggers.find(x=>x.id===id);if(!tg||tg.st!=='armed')return;
+ if(balOf(tg.from)<tg.amt){tg.st='failed';rr();toast('Trigger hit but your '+tg.from+' balance is short. In production MO warns you before this happens.');return}
+ const recv=tg.amt*tg.rate;
+ debit(tg.from,tg.amt);credit(tg.to,recv);
+ tg.st='executed';
+ S.plat.txns.unshift({id:uid(),t:Date.now(),who:'FX target rate trigger',dir:'in',amt:recv,ccy:tg.to,note:'Fired at '+tg.rate.toFixed(4)+', better than the rate when you armed it. Converted '+fmt(tg.amt,tg.from)});
+ rr();toast('Target hit. Converted '+fmt(tg.amt,tg.from)+' automatically.');
+}
+function cancelTrigger(id){S.plat.fxTriggers=S.plat.fxTriggers.filter(x=>x.id!==id);rr()}
+const ENTITIES=['Private limited company','Public company','Limited liability company','Partnership','Sole proprietorship','Holding company'];
+const INDUSTRIES=['Food and beverage','E-commerce and retail','Software and IT services','Professional services','Manufacturing','Logistics and trade','Media and marketing','Other'];
+const ROLES=[
+ ['owner','Owner','Full access, including closing the account. One per business.'],
+ ['admin','Admin','Everything except closing the account or removing the owner.'],
+ ['payer','Payer','Create and send payments within their limits.'],
+ ['preparer','Preparer','Prepare payments and batches for someone else to approve and fund.'],
+ ['viewer','Viewer','See balances, activity and statements. No actions.']];
+const FUNDS=[
+ {id:'filq',mgr:'Fidelity International',name:'ILF USD Money Market Fund (tokenised)',ccy:'USD',apy:3.6,min:10000,stable:true,settle:'T+0',risk:'low'},
+ {id:'fobxx',mgr:'Franklin Templeton',name:'OnChain USD Short-Term Money Market Fund',ccy:'USD',apy:3.6,min:20,stable:false,settle:'T+1',risk:'low'},
+ {id:'wtgxx',mgr:'WisdomTree',name:'Treasury Money Market Digital Fund (WTGXX)',ccy:'USD',apy:3.7,min:1000,stable:true,settle:'T+0',risk:'low'},
+ {id:'mbk',mgr:'Maybank',name:'SGD Money Market Fund Class T (tokenised)',ccy:'SGD',apy:1.6,min:1000,stable:false,settle:'T+1',risk:'low'},
+ {id:'amun',mgr:'Amundi',name:'Euro Money Market Fund',ccy:'EUR',apy:2.3,min:150000,stable:false,settle:'T+1',risk:'low'},
+ {id:'fhsl',mgr:'Federated Hermes',name:'Sterling Liquidity Fund',ccy:'GBP',apy:3.75,min:150000,stable:false,settle:'T+0 / T+1',risk:'low'},
+ {id:'cond',mgr:'Conduit AM',name:'AUD Money Market Fund',ccy:'AUD',apy:4.1,min:50000,stable:false,settle:'T+1',risk:'low'},
+ {id:'camc',mgr:'ChinaAMC',name:'HKD Digital Money Market Fund',ccy:'HKD',apy:2.09,min:10,stable:false,settle:'T+0',risk:'low'},
+ {id:'acred',mgr:'Apollo',name:'ACRED USD Credit Fund',ccy:'USD',apy:8.5,min:50000,stable:false,settle:'T+0 / Monthly',risk:'high',note:'Target 7 to 10% p.a. Semi liquid private credit, monthly redemptions.'},
+ {id:'epoch',mgr:'Epoch Digital',name:'Treasury Plus',ccy:'USD',apy:8,min:100000,stable:false,settle:'T+1',risk:'high',note:'Enhanced yield liquid credit. NAV can fall.'},
+ {id:'goldx',mgr:'OCBC',name:'Tokenised Gold (GOLDX)',ccy:'USD',apy:0,min:5000,stable:false,settle:'T+0',risk:'high',note:'Gold backed. No yield, full price risk.'}];
+const LIMITS={biz:{tx:5000,mo:10000},ind:{tx:2000,mo:5000}};
+const RISK_T=30;
+const REVIEW_STAGES=[
+ {id:'sub',t:'Application submitted',d:'We have everything you sent.'},
+ {id:'biz',t:'Verifying your details',d:'Registry match, registration data and documents.'},
+ {id:'ppl',t:'Screening people',d:'Identity, sanctions and PEP checks.'},
+ {id:'fin',t:'Final checks',d:'A compliance analyst signs off on the file.'},
+ {id:'ok',t:'Account approved',d:'Your account details go live.'}];
+const PURPOSES_B=['Paying suppliers','Collecting from customers','Payroll','Intercompany transfers','FX conversion','Holding operating funds'];
+const PURPOSES_I=['Family support','Paying for services abroad','Education fees','Property or rent','Personal savings'];
+const VOLS=['Under 10,000','10,000 to 50,000','50,000 to 250,000','250,000 to 1M','Over 1M'];
+const CCY_OPTS=['SGD','USD','EUR','GBP','AUD','NZD','CAD','HKD','PHP','IDR','THB'];
+/* ============ state ============ */
+const LS='finmo_door1_v2';
+const slot=()=>({st:'empty',name:'',pct:0,why:''});
+const riskDef=()=>({score:0,signals:[],pobox:0,sanctionsHit:false});
+function DEF(){return{
+ view:'signup',tab:'home',acct:'biz',
+ user:{name:'',email:'',country:'SG',pw:''},
+ verify:{code:String(Math.floor(100000+Math.random()*900000)),ok:false},
+ kyb:{step:0,status:'draft',stage:0,pausedOnce:false,pre:{},prefilled:false,certSlot:slot(),
+  biz:{legal:'',trading:'',entity:'',reg:'',incdate:'',web:'',desc:'',industry:''},
+  addr:{l1:'',l2:'',city:'',state:'',postal:'',sameOps:true,ol1:'',ocity:'',opostal:''},
+  people:[],noBigOwner:false,docs:{addr:slot(),chart:slot()},
+  act:{vol:'',ccys:[],purpose:'',note:''},requests:[],risk:riskDef()},
+ kyc:{step:0,status:'draft',stage:0,pausedOnce:false,
+  me:{dob:'',nat:'',occupation:''},addr:{l1:'',l2:'',city:'',postal:''},
+  docs:{id:slot(),selfie:slot()},act:{purpose:'',vol:'',dests:[]},requests:[],risk:riskDef(),scr:''},
+ plat:{bals:{},asOf:null,txns:[],inv:[],bills:[],links:[],cards:[],cardTx:[],team:[],
+  treas:{holdings:{},acceptedHigh:false},payin:null,seeded:false},
+ pay:{step:0,from:'',name:'',country:'SG',acct:'',amt:'',note:'',rail:'',dupAck:false,billId:null},
+ fx:{from:'',to:'USD',amt:''},
+ mo:{open:false,msgs:[]},modal:null,
+ demo:{failNext:false,sanctionsHit:false,min:false}
+};}
+function load(){try{const r=localStorage.getItem(LS);if(r){const s=JSON.parse(r);if(s&&s.view&&s.kyc)return s}}catch(e){}return DEF()}
+let S=load();
+try{Object.defineProperty(window,'S',{get:()=>S,set:v=>{S=v}})}catch(e){}
+function save(){try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}}
+function rr(){save();render()}
+function go(v){S.view=v;rr();window.scrollTo(0,0)}
+function resetAll(){clearTimeout(reviewT);clearTimeout(clearT);try{localStorage.removeItem(LS)}catch(e){};S=DEF();render();toast('Prototype reset')}
+/* ============ helpers ============ */
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const cc=()=>CC[S.user.country]||CC.SG;
+const home=()=>cc().ccy;
+const app_=()=>S.acct==='biz'?S.kyb:S.kyc;
+const live=()=>['approved','approved_limited'].includes(app_().status);
+const fullOk=()=>app_().status==='approved';
+const limited=()=>app_().status==='approved_limited';
+const lim=()=>LIMITS[S.acct];
+const fmt=(n,c)=>(c||home())+' '+Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const emailOk=e=>/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e);
+const uid=()=>Math.random().toString(36).slice(2,9);
+const initials=n=>(n||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+const balOf=c=>S.plat.bals[c]||0;
+const credit=(c,n)=>{S.plat.bals[c]=(S.plat.bals[c]||0)+n;S.plat.asOf=Date.now()};
+const debit=(c,n)=>{S.plat.bals[c]=(S.plat.bals[c]||0)-n;S.plat.asOf=Date.now()};
+const totalHome=()=>Object.entries(S.plat.bals).reduce((t,[c,n])=>t+conv(n,c,home()),0);
+const POBOX=/\b(p\.?\s*o\.?\s*box|post\s*office\s*box|postal\s*box|locked\s*bag)\b/i;
+let toastT=null;
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),3400)}
+function set(path,val){const ks=path.split('.');let o=S;for(let i=0;i<ks.length-1;i++)o=o[ks[i]];o[ks[ks.length-1]]=val;save()}
+function ref(path){return path.split('.').reduce((o,k)=>o[k],S)}
+function copyTxt(t){if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(()=>toast('Copied: '+t)).catch(()=>toast(t))}else toast(t)}
+/* ============ upload engine ============ */
+let pendingSlot=null;
+function pick(path){pendingSlot=path;$('fi').click()}
+function retry(path){const s=ref(path);s.st='empty';s.why='';s.pct=0;rr();pick(path)}
+function onFilePicked(f){
+ const s=ref(pendingSlot),path=pendingSlot;
+ const ext=(f.name.split('.').pop()||'').toLowerCase();
+ if(!['pdf','jpg','jpeg','png'].includes(ext)){s.st='failed';s.name=f.name;s.why='Unsupported format. Upload a PDF, JPG or PNG.';rr();return}
+ if(f.size>10*1024*1024){s.st='failed';s.name=f.name;s.why='File is larger than 10 MB. Compress it and try again.';rr();return}
+ if(f.size===0){s.st='failed';s.name=f.name;s.why='This file is empty. Export it again and re-upload.';rr();return}
+ s.st='uploading';s.name=f.name;s.pct=0;s.why='';rr();
+ const t=setInterval(()=>{
+  s.pct=Math.min(100,s.pct+34);
+  if(s.pct>=100){clearInterval(t);s.st='processing';rr();
+   setTimeout(()=>{
+    if(S.demo.failNext||/fail/i.test(f.name)){S.demo.failNext=false;s.st='failed';s.why='We could not read this file. Upload a clearer copy or a different format.'}
+    else{s.st='verified';onVerified(path)}
+    rr();
+   },1100);
+  } else rr();
+ },260);
+}
+function onVerified(path){
+ if(path==='kyb.certSlot'&&!S.kyb.prefilled)moPrefill();
+ if(path==='plat.billSlot'){S.billDraft={who:'Northwind Logistics',amt:'1240',due:new Date(Date.now()+10*86400000).toISOString().slice(0,10)};return}
+ const a=app_();
+ const m=path.match(/^ky[bc]\.requests\.(\d+)\.doc$/);
+ if(m){const r=a.requests[Number(m[1])];if(r)r.done=true;
+  if(a.requests.length&&a.requests.every(x=>x.done)&&a.status==='action_needed')resumeReview()}
+}
+/* ============ MO prefill ============ */
+function moPrefill(){
+ const d=demoCompany(),b=S.kyb.biz;
+ const fill=(k,v)=>{if(!b[k]){b[k]=v;S.kyb.pre[k]=true}};
+ fill('legal',d.legal);fill('entity',d.entity);fill('reg',d.reg);fill('incdate',d.incdate);
+ S.kyb.prefilled=true;
+ toast('MO read your certificate and pre-filled 4 fields. Review them before continuing.');
+}
+function clearPre(k){if(S.kyb.pre[k]){delete S.kyb.pre[k];save()}}
+function demoCompany(){
+ const m={SG:['Kopi Roasters Pte. Ltd.','202318456K'],US:['Kopi Roasters Inc.','84-2914756'],CA:['Kopi Roasters Ltd.','812345678'],GB:['Kopi Roasters Ltd','14082196'],EU:['Kopi Roasters GmbH','DE812345678'],HK:['Kopi Roasters Limited','71845290'],AU:['Kopi Roasters Pty Ltd','53004085616'],NZ:['Kopi Roasters Ltd','9429041234567'],AE:['Kopi Roasters FZ-LLC','CN-2841937']}[S.user.country]||['Kopi Roasters Pte. Ltd.','202318456K'];
+ return {legal:m[0],entity:'Private limited company',reg:m[1],incdate:'2023-04-12'};
+}
+/* ============ live checks (as you type) ============ */
+let liveT=null;
+function liveKick(id,fn){clearTimeout(liveT);liveT=setTimeout(()=>{const el=$(id);if(el)el.innerHTML=fn()},450)}
+function webMatch(){
+ const b=S.kyb.biz;
+ if(!b.web||b.desc.trim().length<12)return null;
+ const dom=(b.web.replace(/https?:\/\/(www\.)?/i,'').split(/[\/?#]/)[0]||'').toLowerCase().replace(/[^a-z]/g,'');
+ const words=((b.legal||'')+' '+(b.trading||'')+' '+b.desc).toLowerCase().match(/[a-z]{4,}/g)||[];
+ return words.some(w=>dom.includes(w));
+}
+function liveHtml1(){
+ const b=S.kyb.biz,c=cc();let rows='';
+ if(b.reg)rows+=`<div class="li">${c.regRx.test(b.reg.trim())?'✓':'✗'} ${c.reg} format ${c.regRx.test(b.reg.trim())?'looks right':'does not match '+c.name+' ('+c.regHint+')'}</div>`;
+ const wm=webMatch();
+ if(wm!==null)rows+=`<div class="li">${wm?'✓ Website matches your business description':'! We could not match your website to the description. You can continue, this goes to the review team and affects your risk score.'}</div>`;
+ if(b.incdate&&new Date(b.incdate)>new Date())rows+=`<div class="li">✗ Incorporation date is in the future</div>`;
+ if(!rows)return '';
+ return `<div class="live"><div class="small b" style="color:var(--b700)">✦ MO checks, live as you type</div>${rows}</div>`;
+}
+function liveAddr(id,path){
+ const v=ref(path);if(!v)return $(id)?($(id).innerHTML=''):'';
+ const bad=POBOX.test(v);
+ if(bad){const r=app_().risk;if(!r._pob){r.pobox++;r._pob=true;save()}}else{app_().risk._pob=false}
+ const el=$(id);if(el)el.innerHTML=bad?'<div class="err">A PO Box cannot be a registered address. Regulators require a physical address.</div>':'';
+}
+/* ============ demo bar ============ */
+function demoBar(){
+ const v=S.view,a=app_();
+ let btns='';
+ if(v==='signup'||v==='verify')btns+=`<button onclick="demoFillAuth()">Fill demo details</button>`;
+ if(v==='wizard')btns+=`<button onclick="demoFillStep()">Fill this step with demo data</button>`;
+ if(v==='wizard'||v==='tracker')btns+=`<button onclick="S.demo.failNext=!S.demo.failNext;rr();toast(S.demo.failNext?'Next upload will fail':'Upload failure off')">${S.demo.failNext?'✓ ':''}Make next upload fail</button>`;
+ if(v==='wizard'&&S.acct==='biz')btns+=`<button onclick="S.demo.sanctionsHit=!S.demo.sanctionsHit;rr();toast(S.demo.sanctionsHit?'Next screening returns a possible match, forcing manual review':'Sanctions hit off')">${S.demo.sanctionsHit?'✓ ':''}Force a sanctions hit</button>`;
+ if(v==='tracker'&&a.status==='in_review'){btns+=`<button onclick="ffReview()">Fast-forward review</button>`;
+  if(!a.pausedOnce)btns+=`<button onclick="triggerRequest()">Trigger a document request</button>`;
+  btns+=`<button onclick="approveNow()">Approve now (full)</button>`}
+ if(limited())btns+=`<button onclick="clearLimits()">Team clears limits now</button>`;
+ if(v==='app'&&S.acct==='biz'&&live())btns+=`<button onclick="loadSampleExposure()">Load sample FX exposure</button>`;
+ btns+=`<button onclick="resetAll()">Reset prototype</button>`;
+ return `<div class="demo"><div class="hd" onclick="S.demo.min=!S.demo.min;rr()"><span>DEMO CONTROLS</span><span>${S.demo.min?'+':'–'}</span></div>${S.demo.min?'':`<div class="bd">${btns}</div>`}</div>`;
+}
+function demoFillAuth(){S.user.name='Maya Chen';S.user.email='maya@kopiroasters.com';S.user.pw='prototype1';rr()}
+/* ============ boot ============ */
+document.addEventListener('DOMContentLoaded',()=>{
+ $('fi').addEventListener('change',ev=>{const f=ev.target.files[0];ev.target.value='';if(f&&pendingSlot)onFilePicked(f)});
+ render();
+ if(app_().status==='in_review')scheduleReview();
+ if(limited())scheduleClear();
+});
+/* ============ auth ============ */
+const LOGO=`<span class="logo"><span class="lg">f</span>finmo</span>`;
+const LOGO_R=`<span class="logo"><span class="lg">f</span>finmo <span class="tag tag-b" style="font-size:10px">remit</span></span>`;
+function vSignup(){
+ const u=S.user,biz=S.acct==='biz';
+ return `<div class="auth">
+  <div class="auth-l">
+   <div><span class="logo" style="color:#fff"><span class="lg" style="background:#fff;color:var(--b700)">f</span>finmo</span></div>
+   <div>
+    <h1>${biz?'Your business account,<br>open in minutes.':'Send money abroad<br>at honest rates.'}</h1>
+    <div class="pt">✓&nbsp; ${biz?'Local collection accounts in 8 currencies, SWIFT in 35':'Transparent mid market rate plus a small itemised fee'}</div>
+    <div class="pt">✓&nbsp; Verification that approves you on the spot when risk is low</div>
+    <div class="pt">✓&nbsp; MO checks your details live, before you ever submit</div>
+   </div>
+   <div class="small" style="color:#B9A6EF">Prototype · no real data leaves this page</div>
+  </div>
+  <div class="auth-r"><div class="authbox">
+   <h2>Create your account</h2>
+   <p class="muted" style="margin:6px 0 16px">Pick what you need. You can add the other later.</p>
+   <div class="sel ${biz?'on':''}" onclick="S.acct='biz';rr()"><input type="radio" ${biz?'checked':''} style="width:auto;margin-top:3px"><span><span class="b">Business account</span><br><span class="small muted">Collections, payouts, cards, treasury. KYB on the business and its owners.</span></span></div>
+   <div class="sel ${!biz?'on':''}" onclick="S.acct='ind';rr()"><input type="radio" ${!biz?'checked':''} style="width:auto;margin-top:3px"><span><span class="b">Personal · Finmo Remit</span> <span class="small muted">remit.finmo.net</span><br><span class="small muted">Send money abroad as an individual. Lighter KYC, just you.</span></span></div>
+   <div class="field" id="f-name" style="margin-top:16px"><label>Your full name</label><input value="${esc(u.name)}" oninput="set('user.name',this.value)" placeholder="Maya Chen"></div>
+   <div class="field" id="f-email"><label>${biz?'Work email':'Email'}</label><input value="${esc(u.email)}" oninput="set('user.email',this.value)" placeholder="maya@company.com"></div>
+   <div class="field" id="f-pw"><label>Password</label><input type="password" value="${esc(u.pw)}" oninput="set('user.pw',this.value)" placeholder="8 characters minimum"></div>
+   <div class="field"><label>${biz?'Country of incorporation':'Where do you live?'}</label>
+    <select onchange="set('user.country',this.value);rr()">${Object.keys(CC).map(k=>`<option value="${k}" ${u.country===k?'selected':''}>${CC[k].name}</option>`).join('')}</select>
+    <div class="hint">Available in the US, Canada, UK, Europe, Hong Kong, Singapore, Australia and New Zealand, with more markets under Other. This sets your home currency (${cc().ccy}) and what we ask for.</div>
+   </div>
+   <button class="btn btn-p" style="width:100%;justify-content:center;margin-top:8px" onclick="doSignup()">Continue</button>
+   <p class="small muted" style="margin-top:14px">Already have an account? <a href="#" onclick="toast('Sign in is out of scope for this prototype');return false">Sign in</a></p>
+  </div></div>
+ </div>`;
+}
+function doSignup(){
+ let ok=true;
+ const mark=(id,bad,msg)=>{const el=$(id);if(!el)return;el.classList.toggle('bad',bad);let e=el.querySelector('.err');if(e)e.remove();if(bad){el.insertAdjacentHTML('beforeend',`<div class="err">${msg}</div>`);ok=false}};
+ mark('f-name',S.user.name.trim().length<2,'Enter your name');
+ mark('f-email',!emailOk(S.user.email),'Enter a valid email');
+ mark('f-pw',S.user.pw.length<8,'Use at least 8 characters');
+ if(ok)go('verify');
+}
+function vVerify(){
+ return `<div class="auth-r" style="min-height:100vh"><div class="authbox">
+  ${S.acct==='biz'?LOGO:LOGO_R}
+  <h2 style="margin-top:26px">Check your email</h2>
+  <p class="muted" style="margin:6px 0 18px">We sent a 6 digit code to <span class="b">${esc(S.user.email)}</span>.</p>
+  <div class="banner banner-i"><div>ⓘ</div><div class="small">Demo shortcut: your code is <span class="b">${S.verify.code}</span>. In production this arrives by email with a 10 minute expiry and rate limited resends.</div></div>
+  <div class="field" id="f-code"><label>Verification code</label><input inputmode="numeric" maxlength="6" id="codein" placeholder="••••••" style="letter-spacing:8px;font-size:18px"></div>
+  <button class="btn btn-p" style="width:100%;justify-content:center" onclick="doVerify()">Verify</button>
+  <p class="small muted" style="margin-top:14px"><a href="#" onclick="S.verify.code=String(Math.floor(100000+Math.random()*900000));rr();toast('New code generated');return false">Resend code</a> · <a href="#" onclick="go('signup');return false">Wrong email?</a></p>
+ </div></div>`;
+}
+function doVerify(){
+ const v=$('codein').value.trim();
+ const el=$('f-code');el.classList.remove('bad');const old=el.querySelector('.err');if(old)old.remove();
+ if(v!==S.verify.code){el.classList.add('bad');el.insertAdjacentHTML('beforeend','<div class="err">That code does not match. Check the email or resend.</div>');return}
+ S.verify.ok=true;go('kybintro');
+}
+function vIntro(){
+ const c=cc(),biz=S.acct==='biz';
+ const items=biz
+  ?`<div class="pt" style="display:flex;gap:10px;margin-bottom:8px">📄 <span><span class="b">${esc(c.certLabel)}</span><br><span class="small muted">MO reads it and fills most of the form for you</span></span></div>
+    <div class="pt" style="display:flex;gap:10px;margin-bottom:8px">🏠 <span><span class="b">Proof of registered address</span><br><span class="small muted">Utility bill or bank statement from the last 3 months. No PO boxes.</span></span></div>
+    <div class="pt" style="display:flex;gap:10px">🪪 <span><span class="b">ID for directors and owners of 25% or more</span><br><span class="small muted">Passport or national ID, photo page</span></span></div>`
+  :`<div class="pt" style="display:flex;gap:10px;margin-bottom:8px">🪪 <span><span class="b">Government ID</span><br><span class="small muted">Passport or national ID, photo page</span></span></div>
+    <div class="pt" style="display:flex;gap:10px">🤳 <span><span class="b">A selfie</span><br><span class="small muted">We match it to your ID automatically</span></span></div>`;
+ return `<div class="auth-r" style="min-height:100vh"><div class="authbox" style="width:580px">
+  ${biz?LOGO:LOGO_R}
+  <h1 style="margin:26px 0 8px">Let's get ${esc(S.user.name.split(' ')[0]||'you')} verified</h1>
+  <p class="muted" style="margin-bottom:20px">While you type, MO checks your details in real time and screens in the background. If your risk comes back low, you are approved instantly with starter limits and can transact straight away, while our team finishes the full review within 1 to 2 days.</p>
+  <div class="card" style="margin-bottom:16px"><h3 style="margin-bottom:10px">Have these ready</h3>${items}</div>
+  <div class="banner banner-i"><div>✦</div><div class="small">If anything is missing we will not block you. The application pauses, tells you exactly what we need, and picks up where you left off once you upload it.</div></div>
+  <button class="btn btn-p" onclick="go('wizard')">Start verification</button>
+  <button class="btn btn-g" onclick="toast('Progress saves automatically. Close the tab and come back any time.')">Save and finish later</button>
+ </div></div>`;
+}
+/* ============ wizard shell ============ */
+const BSTEPS=['Business details','Registered address','Directors and owners','Documents','Expected activity','Review and submit'];
+const ISTEPS=['About you','Home address','Identity','Usage','Review and submit'];
+function vWizard(){
+ const a=app_(),names=S.acct==='biz'?BSTEPS:ISTEPS,st=a.step;
+ const rail=names.map((t,i)=>{
+  const cls=i<st?'done':i===st?'on':'off';
+  return `<div class="st ${cls}" ${i<st?`style="cursor:pointer" onclick="app_().step=${i};rr()"`:''}><div class="n">${i<st?'✓':i+1}</div><div class="t">${t}</div></div>`;
+ }).join('');
+ const body=S.acct==='biz'?[step1,step2,step3,step4,step5,step6][st]():[istep1,istep2,istep3,istep4,istep5][st]();
+ return `<div class="wiz">
+  <div class="rail">${S.acct==='biz'?LOGO:LOGO_R}<div style="margin-top:26px">${rail}</div>
+   <div style="margin-top:26px" class="savenote">✓ Progress saved automatically</div>
+   <div style="margin-top:10px" class="small muted">✦ MO screens in the background while you type. Nothing waits for a human unless it has to.</div></div>
+  <div class="wizmain">${body}</div>
+ </div>`;
+}
+function wizNav(){
+ const a=app_(),last=S.acct==='biz'?5:4;
+ return `<div style="display:flex;gap:10px;margin-top:26px">
+  ${a.step>0?`<button class="btn btn-s" onclick="app_().step--;rr();window.scrollTo(0,0)">Back</button>`:''}
+  <button class="btn btn-p" onclick="stepNext()">${a.step===last?'Submit application':'Continue'}</button>
+  <button class="btn btn-g" onclick="toast('Saved. Close the tab and come back any time.')">Save and finish later</button>
+ </div>`;
+}
+function stepNext(){
+ const a=app_(),vals=S.acct==='biz'?[val1,val2,val3,val4,val5,val6]:[ival1,ival2,ival3,ival4,ival5];
+ const v=vals[a.step]();
+ if(v!==true){toast(v);rr();return}
+ if(a.step===vals.length-1){submitApp();return}
+ a.step++;rr();window.scrollTo(0,0);
+}
+/* ============ business steps ============ */
+function preChip(k){return S.kyb.pre[k]?`<span class="chip">✦ MO suggested</span>`:''}
+function step1(){
+ const b=S.kyb.biz,c=cc();
+ return `<h1>Business details</h1>
+ <p class="muted" style="margin:6px 0 20px">Tell us about the entity opening this account. MO checks as you type.</p>
+ <div class="card" style="margin-bottom:18px;border-color:var(--b200);background:var(--b50)">
+  <div style="display:flex;gap:12px;align-items:flex-start"><div style="font-size:20px">✦</div>
+   <div style="flex:1"><div class="b">Skip the typing. Upload your ${esc(c.certLabel.toLowerCase())} and MO fills this section.</div>
+   <div class="small muted" style="margin:4px 0 10px">Every value MO suggests is marked and editable. Nothing submits until you review it.</div>
+   ${upRow('kyb.certSlot','Certificate document','PDF, JPG or PNG · up to 10 MB')}</div></div>
+ </div>
+ <div class="field" id="w-legal"><label>Legal business name ${preChip('legal')}</label><input value="${esc(b.legal)}" oninput="set('kyb.biz.legal',this.value);clearPre('legal');liveKick('molive',liveHtml1)" placeholder="As registered"></div>
+ <div class="field"><label>Trading name <span class="muted small">(optional)</span></label><input value="${esc(b.trading)}" oninput="set('kyb.biz.trading',this.value)" placeholder="If different from legal name"></div>
+ <div class="row2">
+  <div class="field" id="w-entity"><label>Entity type ${preChip('entity')}</label><select onchange="set('kyb.biz.entity',this.value);clearPre('entity');rr()"><option value="">Select…</option>${ENTITIES.map(e=>`<option ${b.entity===e?'selected':''}>${e}</option>`).join('')}</select></div>
+  <div class="field" id="w-reg"><label>${c.reg} ${preChip('reg')}</label><input value="${esc(b.reg)}" oninput="set('kyb.biz.reg',this.value);clearPre('reg');liveKick('molive',liveHtml1)" placeholder="${c.regHint}"></div>
+ </div>
+ <div class="row2">
+  <div class="field" id="w-incdate"><label>Date of incorporation ${preChip('incdate')}</label><input type="date" value="${esc(b.incdate)}" max="${new Date().toISOString().slice(0,10)}" onchange="set('kyb.biz.incdate',this.value);clearPre('incdate');liveKick('molive',liveHtml1)"></div>
+  <div class="field" id="w-industry"><label>Industry</label><select onchange="set('kyb.biz.industry',this.value)"><option value="">Select…</option>${INDUSTRIES.map(e=>`<option ${b.industry===e?'selected':''}>${e}</option>`).join('')}</select></div>
+ </div>
+ <div class="field"><label>What does your business do?</label><textarea rows="2" oninput="set('kyb.biz.desc',this.value);liveKick('molive',liveHtml1)" placeholder="One or two sentences. MO checks this against your website.">${esc(b.desc)}</textarea></div>
+ <div class="field"><label>Website <span class="muted small">(optional, helps MO verify you faster)</span></label><input value="${esc(b.web)}" oninput="set('kyb.biz.web',this.value);liveKick('molive',liveHtml1)" placeholder="https://"></div>
+ <div id="molive">${liveHtml1()}</div>
+ ${b.entity==='Holding company'?`<div class="banner banner-i"><div>ⓘ</div><div class="small">Holding companies need an ownership chart in the Documents step so we can trace ultimate owners. It is on your list.</div></div>`:''}
+ ${wizNav()}`;
+}
+function val1(){
+ const b=S.kyb.biz;
+ if(b.legal.trim().length<2)return 'Enter the legal business name';
+ if(!b.entity)return 'Select an entity type';
+ if(b.reg.trim().length<4)return 'Enter your '+cc().reg;
+ if(!b.incdate)return 'Enter the incorporation date';
+ if(new Date(b.incdate)>new Date())return 'Incorporation date cannot be in the future';
+ if(!b.industry)return 'Select an industry';
+ if(b.desc.trim().length<12)return 'Describe what the business does, one sentence is enough';
+ return true;
+}
+function step2(){
+ const a=S.kyb.addr,c=cc();
+ return `<h1>Registered address</h1>
+ <p class="muted" style="margin:6px 0 20px">The address on your registration documents in ${c.name}. We check it against the registry, and it cannot be a PO Box.</p>
+ <div class="field"><label>Address line 1</label><input value="${esc(a.l1)}" oninput="set('kyb.addr.l1',this.value);liveAddr('addrlive','kyb.addr.l1')"><div id="addrlive"></div></div>
+ <div class="field"><label>Address line 2 <span class="muted small">(optional)</span></label><input value="${esc(a.l2)}" oninput="set('kyb.addr.l2',this.value)"></div>
+ <div class="row2">
+  <div class="field"><label>City</label><input value="${esc(a.city)}" oninput="set('kyb.addr.city',this.value)"></div>
+  ${c.hasState?`<div class="field"><label>State or territory</label><input value="${esc(a.state)}" oninput="set('kyb.addr.state',this.value)"></div>`:''}
+ </div>
+ <div class="row2"><div class="field"><label>Postal code</label><input value="${esc(a.postal)}" oninput="set('kyb.addr.postal',this.value)"></div>
+ <div class="field"><label>Country</label><input value="${c.name}" disabled><div class="hint">Set at signup. Contact us to onboard an entity elsewhere.</div></div></div>
+ <label style="display:flex;gap:9px;align-items:center;margin:6px 0 4px"><input type="checkbox" ${a.sameOps?'checked':''} onchange="set('kyb.addr.sameOps',this.checked);rr()" style="width:auto"> <span>We operate from this address too</span></label>
+ ${a.sameOps?'':`<div class="card" style="margin-top:12px"><h3 style="margin-bottom:10px">Operating address</h3>
+  <div class="field"><label>Address line 1</label><input value="${esc(a.ol1)}" oninput="set('kyb.addr.ol1',this.value)"></div>
+  <div class="row2"><div class="field"><label>City</label><input value="${esc(a.ocity)}" oninput="set('kyb.addr.ocity',this.value)"></div>
+  <div class="field"><label>Postal code</label><input value="${esc(a.opostal)}" oninput="set('kyb.addr.opostal',this.value)"></div></div></div>`}
+ ${wizNav()}`;
+}
+function val2(){
+ const a=S.kyb.addr;
+ if(a.l1.trim().length<3)return 'Enter address line 1';
+ if(POBOX.test(a.l1)||POBOX.test(a.l2))return 'A PO Box cannot be a registered address';
+ if(a.city.trim().length<2)return 'Enter the city';
+ if(a.postal.trim().length<3)return 'Enter the postal code';
+ if(cc().hasState&&a.state.trim().length<2)return 'Enter the state or territory';
+ if(!a.sameOps&&(a.ol1.trim().length<3||a.ocity.trim().length<2))return 'Complete the operating address or tick the checkbox';
+ return true;
+}
+/* people + background screening */
+function addPerson(){S.kyb.people.push({id:uid(),name:'',role:'director',own:'',dob:'',nat:'',email:'',idDoc:slot(),open:true,scr:''});rr()}
+function delPerson(id){S.kyb.people=S.kyb.people.filter(p=>p.id!==id);rr()}
+function screenPerson(i){
+ const p=S.kyb.people[i];
+ if(!p||p.scr==='clear'||p.scr==='hit')return;
+ p.scr='pending';rr();
+ setTimeout(()=>{
+  const pp=S.kyb.people[i];if(!pp)return;
+  if(S.demo.sanctionsHit){pp.scr='hit';S.kyb.risk.sanctionsHit=true;S.demo.sanctionsHit=false;toast('Screening found a possible match. The application will route to manual review.')}
+  else pp.scr='clear';
+  rr();
+ },1500);
+}
+function scrTag(p){
+ if(p.scr==='pending')return '<span class="tag tag-mut">Screening…</span>';
+ if(p.scr==='clear')return '<span class="tag tag-ok">Screened, clear</span>';
+ if(p.scr==='hit')return '<span class="tag tag-bad">Possible match, review team notified</span>';
+ return '';
+}
+function personCard(p,i){
+ const base=`kyb.people.${i}`;
+ const head=`<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+  <div class="b">${esc(p.name||'New person')}</div>
+  <span class="tag tag-mut">${p.role==='both'?'Director · Owner':p.role==='owner'?'Owner':'Director'}</span>
+  ${p.idDoc.st==='verified'?'<span class="tag tag-ok">ID verified</span>':''} ${scrTag(p)}
+  <span style="margin-left:auto"></span>
+  <button class="btn btn-g btn-sm" onclick="S.kyb.people[${i}].open=!S.kyb.people[${i}].open;if(!S.kyb.people[${i}].open)screenPerson(${i});rr()">${p.open?'Save':'Edit'}</button>
+  <button class="btn btn-g btn-sm" style="color:#B42318" onclick="delPerson('${p.id}')">Remove</button></div>`;
+ if(!p.open)return `<div class="persona">${head}</div>`;
+ return `<div class="persona">${head}
+  <div class="row2" style="margin-top:14px">
+   <div class="field"><label>Full legal name</label><input value="${esc(p.name)}" oninput="set('${base}.name',this.value)"></div>
+   <div class="field"><label>Role</label><select onchange="set('${base}.role',this.value);rr()">
+    <option value="director" ${p.role==='director'?'selected':''}>Director</option>
+    <option value="owner" ${p.role==='owner'?'selected':''}>Owner (25% or more)</option>
+    <option value="both" ${p.role==='both'?'selected':''}>Director and owner</option></select></div>
+  </div>
+  <div class="row2">
+   <div class="field"><label>Date of birth</label><input type="date" value="${esc(p.dob)}" max="${new Date().toISOString().slice(0,10)}" onchange="set('${base}.dob',this.value)"><div class="hint">Must be 18 or older</div></div>
+   <div class="field"><label>Nationality</label><input value="${esc(p.nat)}" oninput="set('${base}.nat',this.value)" placeholder="e.g. Singaporean"></div>
+  </div>
+  <div class="row2">
+   <div class="field"><label>Email</label><input value="${esc(p.email)}" oninput="set('${base}.email',this.value)"></div>
+   ${p.role!=='director'?`<div class="field"><label>Ownership %</label><input type="number" min="0" max="100" value="${esc(p.own)}" oninput="set('${base}.own',this.value)"></div>`:''}
+  </div>
+  ${upRow(base+'.idDoc','Identity document','Passport or national ID, photo page · PDF, JPG or PNG')}
+ </div>`;
+}
+function step3(){
+ const ps=S.kyb.people;
+ const totalOwn=ps.reduce((t,p)=>t+(p.role!=='director'?Number(p.own)||0:0),0);
+ return `<h1>Directors and owners</h1>
+ <p class="muted" style="margin:6px 0 20px">Add every director, and every individual who owns 25% or more. Sanctions and PEP screening runs quietly in the background as you save each person, so by the time you submit, most of the review is already done.</p>
+ ${ps.map((p,i)=>personCard(p,i)).join('')}
+ <button class="btn btn-s" onclick="addPerson()">+ Add a person</button>
+ ${totalOwn>100?`<div class="banner banner-e" style="margin-top:14px"><div>!</div><div class="small">Ownership adds up to ${totalOwn}%. It cannot exceed 100%.</div></div>`:''}
+ <label style="display:flex;gap:9px;align-items:center;margin-top:18px"><input type="checkbox" ${S.kyb.noBigOwner?'checked':''} onchange="set('kyb.noBigOwner',this.checked)" style="width:auto"> <span class="small">No individual owns 25% or more. Regulations then require the most senior director above to act as the control person.</span></label>
+ ${wizNav()}`;
+}
+function val3(){
+ const ps=S.kyb.people;
+ if(!ps.length)return 'Add at least one director';
+ if(!ps.some(p=>p.role!=='owner'))return 'At least one person must be a director';
+ for(const p of ps){
+  if(p.name.trim().length<2)return 'Every person needs a full name';
+  if(!p.dob)return `Add ${p.name.split(' ')[0]}'s date of birth`;
+  if(new Date(p.dob)>new Date(Date.now()-18*365.25*24*3600*1000))return `${p.name.split(' ')[0]} must be 18 or older`;
+  if(p.nat.trim().length<2)return `Add ${p.name.split(' ')[0]}'s nationality`;
+  if(!emailOk(p.email))return `Add a valid email for ${p.name.split(' ')[0]}`;
+  if(p.role!=='director'&&!(Number(p.own)>0))return `Add an ownership % for ${p.name.split(' ')[0]}`;
+  if(p.idDoc.st!=='verified')return `Upload an ID document for ${p.name.split(' ')[0]}`;
+ }
+ const totalOwn=ps.reduce((t,p)=>t+(p.role!=='director'?Number(p.own)||0:0),0);
+ if(totalOwn>100)return 'Ownership cannot exceed 100%';
+ if(!ps.some(p=>p.role!=='director'&&Number(p.own)>=25)&&!S.kyb.noBigOwner)return 'Add an owner of 25% or more, or tick the checkbox confirming there is none';
+ return true;
+}
+/* ============ upload row component ============ */
+function upRow(path,label,desc){
+ const s=ref(path);
+ const icon={empty:'&#8682;',uploading:'&#8682;',processing:'&#9203;',verified:'&#10003;',failed:'&#33;'}[s.st];
+ let body='',act='';
+ if(s.st==='empty'){body=`<div class="b">${esc(label)}</div><div class="small muted">${esc(desc)}</div>`;act=`<button class="btn btn-s btn-sm" onclick="pick('${path}')">Upload</button>`}
+ if(s.st==='uploading'){body=`<div class="b">${esc(s.name)}</div><div class="pbar"><div style="width:${s.pct}%"></div></div>`}
+ if(s.st==='processing'){body=`<div class="b">${esc(s.name)}</div><div class="small muted">Checking the document…</div>`}
+ if(s.st==='verified'){body=`<div class="b">${esc(label)}</div><div class="small" style="color:#027A48">${esc(s.name)} · verified</div>`;act=`<button class="btn btn-g btn-sm" onclick="pick('${path}')">Replace</button>`}
+ if(s.st==='failed'){body=`<div class="b">${esc(label)}</div><div class="small" style="color:#B42318">${esc(s.why)}</div>`;act=`<button class="btn btn-p btn-sm" onclick="retry('${path}')">Retry</button>`}
+ const cls=s.st==='verified'?'ok':s.st==='failed'?'fail':(s.st==='uploading'||s.st==='processing')?'busy':'';
+ return `<div class="up ${cls}"><div class="ic">${icon}</div><div class="bd">${body}</div>${act}</div>`;
+}
+/* ============ business steps 4-6 ============ */
+function needChart(){return S.kyb.biz.entity==='Holding company'}
+function step4(){
+ const c=cc();
+ return `<h1>Documents</h1>
+ <p class="muted" style="margin:6px 0 20px">Only what your application actually needs. Nothing else.</p>
+ ${S.kyb.certSlot.st==='verified'
+   ?`<div class="up ok"><div class="ic">✓</div><div class="bd"><div class="b">${esc(c.certLabel)}</div><div class="small" style="color:#027A48">${esc(S.kyb.certSlot.name)} · uploaded in step 1</div></div><button class="btn btn-g btn-sm" onclick="pick('kyb.certSlot')">Replace</button></div>`
+   :upRow('kyb.certSlot',c.certLabel,'PDF, JPG or PNG · up to 10 MB')}
+ ${upRow('kyb.docs.addr','Proof of registered address','Utility bill or bank statement from the last 3 months')}
+ ${needChart()?upRow('kyb.docs.chart','Ownership chart','Holding structures need a chart tracing ultimate individual owners'):''}
+ <div class="banner banner-i" style="margin-top:14px"><div>ⓘ</div><div class="small">Every upload shows its own status: uploading, checking, verified or failed with a reason and a retry. A document can fail here without you losing your place.</div></div>
+ ${wizNav()}`;
+}
+function val4(){
+ if(S.kyb.certSlot.st!=='verified')return 'Upload your '+cc().certLabel.toLowerCase();
+ if(S.kyb.docs.addr.st!=='verified')return 'Upload a proof of registered address';
+ if(needChart()&&S.kyb.docs.chart.st!=='verified')return 'Upload the ownership chart';
+ return true;
+}
+function tgl(arr,v){const i=arr.indexOf(v);i>-1?arr.splice(i,1):arr.push(v);rr()}
+function step5(){
+ const a=S.kyb.act,c=cc();
+ return `<h1>Expected activity</h1>
+ <p class="muted" style="margin:6px 0 20px">This calibrates monitoring and sizes your starter limits, so normal activity never gets flagged.</p>
+ <div class="field"><label>Expected monthly volume (${c.ccy})</label><select onchange="set('kyb.act.vol',this.value)"><option value="">Select…</option>${VOLS.map(v=>`<option ${a.vol===v?'selected':''}>${v}</option>`).join('')}</select></div>
+ <div class="field"><label>What will you mainly use Finmo for?</label><select onchange="set('kyb.act.purpose',this.value)"><option value="">Select…</option>${PURPOSES_B.map(v=>`<option ${a.purpose===v?'selected':''}>${v}</option>`).join('')}</select></div>
+ <div class="field"><label>Currencies you expect to use</label><div>${CCY_OPTS.map(x=>`<button class="pchip" style="${a.ccys.includes(x)?'background:var(--b600);color:#fff;border-color:var(--b600)':''}" onclick="tgl(S.kyb.act.ccys,'${x}')">${x}</button>`).join('')}</div>
+ <div class="hint">PHP, IDR and THB are collection only: your payers pay local, you receive USD.</div></div>
+ <div class="field"><label>Anything else we should know? <span class="muted small">(optional)</span></label><textarea rows="3" oninput="set('kyb.act.note',this.value)" placeholder="Seasonality, large one-off payments, marketplace payouts…">${esc(a.note)}</textarea></div>
+ ${wizNav()}`;
+}
+function val5(){
+ const a=S.kyb.act;
+ if(!a.vol)return 'Select an expected monthly volume';
+ if(!a.purpose)return 'Select a main purpose';
+ if(!a.ccys.length)return 'Pick at least one currency';
+ return true;
+}
+function step6(){
+ const b=S.kyb.biz,a=S.kyb.addr,act=S.kyb.act,c=cc();
+ const sec=(title,step,rows)=>`<div class="card" style="margin-bottom:14px"><div style="display:flex;align-items:center;margin-bottom:10px"><h3>${title}</h3><button class="btn btn-g btn-sm" style="margin-left:auto" onclick="S.kyb.step=${step};rr()">Edit</button></div><div class="kv">${rows.map(r=>`<div class="k">${r[0]}</div><div>${esc(r[1])||'—'}</div>`).join('')}</div></div>`;
+ return `<h1>Review and submit</h1>
+ <p class="muted" style="margin:6px 0 20px">On submit, MO assembles your KYB report, scores it, and sends it to our compliance team. Low risk means instant approval with starter limits.</p>
+ ${sec('Business',0,[['Legal name',b.legal],['Entity type',b.entity],[c.reg,b.reg],['Incorporated',b.incdate],['Industry',b.industry],['Website',b.web]])}
+ ${sec('Registered address',1,[['Address',[a.l1,a.l2,a.city,a.state,a.postal].filter(Boolean).join(', ')],['Country',c.name]])}
+ ${sec('People',2,S.kyb.people.map(p=>[p.role==='director'?'Director':p.role==='owner'?`Owner ${p.own}%`:`Director · owner ${p.own}%`,p.name+' · ID '+(p.idDoc.st==='verified'?'verified':'missing')+' · screening '+(p.scr||'queued')]))}
+ ${sec('Documents',3,[[c.certLabel,S.kyb.certSlot.st==='verified'?S.kyb.certSlot.name:'Missing'],['Address proof',S.kyb.docs.addr.st==='verified'?S.kyb.docs.addr.name:'Missing'],...(needChart()?[['Ownership chart',S.kyb.docs.chart.st==='verified'?S.kyb.docs.chart.name:'Missing']]:[])])}
+ ${sec('Expected activity',4,[['Monthly volume',act.vol+' '+c.ccy],['Main purpose',act.purpose],['Currencies',act.ccys.join(', ')]])}
+ <label style="display:flex;gap:9px;align-items:flex-start;margin:8px 0 4px"><input type="checkbox" id="attest" style="width:auto;margin-top:3px"> <span class="small">I confirm the information above is accurate and complete, and that I am authorised to open this account on behalf of ${esc(b.legal||'the business')}.</span></label>
+ ${wizNav()}`;
+}
+function val6(){
+ for(const f of [val1,val2,val3,val4,val5]){const r=f();if(r!==true)return r}
+ if(!$('attest').checked)return 'Tick the confirmation checkbox to submit';
+ return true;
+}
+/* ============ individual (remit) steps ============ */
+function istep1(){
+ const m=S.kyc.me;
+ return `<h1>About you</h1>
+ <p class="muted" style="margin:6px 0 20px">Just you, no business paperwork. This is the Finmo Remit KYC.</p>
+ <div class="row2">
+  <div class="field"><label>Full legal name</label><input value="${esc(S.user.name)}" oninput="set('user.name',this.value)"></div>
+  <div class="field"><label>Date of birth</label><input type="date" value="${esc(m.dob)}" max="${new Date().toISOString().slice(0,10)}" onchange="set('kyc.me.dob',this.value)"><div class="hint">Must be 18 or older</div></div>
+ </div>
+ <div class="row2">
+  <div class="field"><label>Nationality</label><input value="${esc(m.nat)}" oninput="set('kyc.me.nat',this.value)"></div>
+  <div class="field"><label>Occupation</label><input value="${esc(m.occupation)}" oninput="set('kyc.me.occupation',this.value)" placeholder="e.g. Software engineer"></div>
+ </div>
+ ${wizNav()}`;
+}
+function ival1(){
+ const m=S.kyc.me;
+ if(S.user.name.trim().length<2)return 'Enter your full name';
+ if(!m.dob)return 'Enter your date of birth';
+ if(new Date(m.dob)>new Date(Date.now()-18*365.25*24*3600*1000))return 'You must be 18 or older';
+ if(m.nat.trim().length<2)return 'Enter your nationality';
+ if(m.occupation.trim().length<2)return 'Enter your occupation';
+ return true;
+}
+function istep2(){
+ const a=S.kyc.addr;
+ return `<h1>Home address</h1>
+ <p class="muted" style="margin:6px 0 20px">Where you live in ${cc().name}. No PO boxes, regulators require a residential address.</p>
+ <div class="field"><label>Address line 1</label><input value="${esc(a.l1)}" oninput="set('kyc.addr.l1',this.value);liveAddr('iaddrlive','kyc.addr.l1')"><div id="iaddrlive"></div></div>
+ <div class="field"><label>Address line 2 <span class="muted small">(optional)</span></label><input value="${esc(a.l2)}" oninput="set('kyc.addr.l2',this.value)"></div>
+ <div class="row2"><div class="field"><label>City</label><input value="${esc(a.city)}" oninput="set('kyc.addr.city',this.value)"></div>
+ <div class="field"><label>Postal code</label><input value="${esc(a.postal)}" oninput="set('kyc.addr.postal',this.value)"></div></div>
+ ${wizNav()}`;
+}
+function ival2(){
+ const a=S.kyc.addr;
+ if(a.l1.trim().length<3)return 'Enter address line 1';
+ if(POBOX.test(a.l1)||POBOX.test(a.l2))return 'A PO Box cannot be your residential address';
+ if(a.city.trim().length<2)return 'Enter the city';
+ if(a.postal.trim().length<3)return 'Enter the postal code';
+ return true;
+}
+function istep3(){
+ return `<h1>Identity</h1>
+ <p class="muted" style="margin:6px 0 20px">Your ID and a selfie. We match them automatically, and sanctions screening runs in the background the moment they verify.</p>
+ ${upRow('kyc.docs.id','Government ID','Passport or national ID, photo page · PDF, JPG or PNG')}
+ ${upRow('kyc.docs.selfie','Selfie','A clear photo of your face · JPG or PNG')}
+ ${wizNav()}`;
+}
+function ival3(){
+ if(S.kyc.docs.id.st!=='verified')return 'Upload your government ID';
+ if(S.kyc.docs.selfie.st!=='verified')return 'Upload a selfie';
+ return true;
+}
+function istep4(){
+ const a=S.kyc.act;
+ return `<h1>Usage</h1>
+ <p class="muted" style="margin:6px 0 20px">This sizes your limits so normal sending never gets flagged.</p>
+ <div class="field"><label>Main reason for sending money</label><select onchange="set('kyc.act.purpose',this.value)"><option value="">Select…</option>${PURPOSES_I.map(v=>`<option ${a.purpose===v?'selected':''}>${v}</option>`).join('')}</select></div>
+ <div class="field"><label>Expected monthly sending (${cc().ccy})</label><select onchange="set('kyc.act.vol',this.value)"><option value="">Select…</option>${VOLS.slice(0,3).map(v=>`<option ${a.vol===v?'selected':''}>${v}</option>`).join('')}</select></div>
+ <div class="field"><label>Where do you usually send?</label><div>${['SG','US','GB','EU','AU','HK','NZ','CA'].map(k=>`<button class="pchip" style="${a.dests.includes(k)?'background:var(--b600);color:#fff;border-color:var(--b600)':''}" onclick="tgl(S.kyc.act.dests,'${k}')">${CC[k].name}</button>`).join('')}</div></div>
+ ${wizNav()}`;
+}
+function ival4(){
+ const a=S.kyc.act;
+ if(!a.purpose)return 'Select a main reason';
+ if(!a.vol)return 'Select an expected monthly amount';
+ if(!a.dests.length)return 'Pick at least one destination';
+ return true;
+}
+function istep5(){
+ const m=S.kyc.me,a=S.kyc.addr,act=S.kyc.act;
+ return `<h1>Review and submit</h1>
+ <p class="muted" style="margin:6px 0 20px">On submit, MO assembles your KYC report, scores it, and sends it to our team. Low risk means you can start sending immediately with starter limits.</p>
+ <div class="card" style="margin-bottom:14px"><div class="kv">
+  <div class="k">Name</div><div>${esc(S.user.name)}</div>
+  <div class="k">Date of birth</div><div>${esc(m.dob)}</div>
+  <div class="k">Nationality</div><div>${esc(m.nat)}</div>
+  <div class="k">Occupation</div><div>${esc(m.occupation)}</div>
+  <div class="k">Address</div><div>${esc([a.l1,a.l2,a.city,a.postal].filter(Boolean).join(', '))}</div>
+  <div class="k">ID</div><div>${S.kyc.docs.id.st==='verified'?'Verified':'Missing'} · selfie ${S.kyc.docs.selfie.st==='verified'?'verified':'missing'}</div>
+  <div class="k">Purpose</div><div>${esc(act.purpose)} · ${esc(act.vol)} ${cc().ccy}/month</div>
+ </div></div>
+ <label style="display:flex;gap:9px;align-items:flex-start;margin:8px 0 4px"><input type="checkbox" id="attest" style="width:auto;margin-top:3px"> <span class="small">I confirm the information above is accurate and that I am opening this account for my own use.</span></label>
+ ${wizNav()}`;
+}
+function ival5(){
+ for(const f of [ival1,ival2,ival3,ival4]){const r=f();if(r!==true)return r}
+ if(!$('attest').checked)return 'Tick the confirmation checkbox to submit';
+ return true;
+}
+/* ============ risk engine + screening ============ */
+function computeRisk(){
+ const a=app_(),r=a.risk,sig=[];
+ let score=8;
+ const add=(t,ok,w,note)=>{sig.push({t,ok,note:note||''});score+=ok?0:w};
+ if(S.acct==='biz'){
+  const b=S.kyb.biz;
+  add('Registry match on '+cc().reg,cc().regRx.test(b.reg.trim()),12,'Format checked against '+cc().name+' registry rules');
+  const wm=webMatch();
+  add('Website matches business description',wm!==false,12,wm===null?'No website given, neutral':'');
+  add('Registered address is physical',r.pobox===0,r.pobox*6,r.pobox?'PO Box attempted '+r.pobox+' time(s) during entry':'');
+  add('Sanctions and PEP screening',!r.sanctionsHit,50,r.sanctionsHit?'Possible match on one person, needs an analyst':'All people clear');
+  add('Documents verified',true,0,'All required documents readable and consistent');
+  if(S.kyb.biz.entity==='Holding company'){score+=10;sig.push({t:'Holding structure',ok:false,note:'Layered ownership adds review weight'})}
+  if(S.kyb.act.vol==='Over 1M'){score+=8;sig.push({t:'High expected volume',ok:false,note:'Over 1M per month'})}
+  if(S.user.country==='AE'){score+=15;sig.push({t:'Market risk tier',ok:false,note:'Outside core markets'})}
+ }else{
+  add('Identity document and selfie match',true,0,'Face match passed');
+  add('Residential address is physical',r.pobox===0,r.pobox*6,'');
+  add('Sanctions and PEP screening',!r.sanctionsHit,50,r.sanctionsHit?'Possible match, needs an analyst':'Clear');
+  if(S.user.country==='AE'){score+=15;sig.push({t:'Market risk tier',ok:false,note:'Outside core markets'})}
+ }
+ r.score=score;r.signals=sig;save();
+ return score;
+}
+let submitting=false;
+function submitApp(){
+ if(submitting)return;submitting=true;
+ const a=app_();
+ a.people&&a.people.forEach((p,i)=>{if(!p.scr||p.scr==='pending'){p.scr='clear'}});
+ go('screening');
+ let i=0;const lines=['Registry and registration data','Website against business description','Sanctions and PEP lists','Document integrity','Scoring the file'];
+ const tick=()=>{
+  i++;const el=$('scrlines');
+  if(el)el.innerHTML=lines.slice(0,i).map((l,j)=>`<div class="li">${j<i-1||i===lines.length?'✓':'⏳'} ${l}</div>`).join('');
+  if(i<lines.length){setTimeout(tick,650)}
+  else setTimeout(()=>{
+   const score=computeRisk();
+   if(score<RISK_T){a.status='approved_limited';a.stage=4;seedPlatform();scheduleClear();go('tracker');toast('Approved with starter limits. You can transact right now.')}
+   else{a.status='in_review';a.stage=1;go('tracker');toast('Your file needs a human look. Most reviews finish within one business day.');scheduleReview()}
+   submitting=false;
+  },700);
+ };
+ setTimeout(tick,600);
+}
+function vScreening(){
+ return `<div class="auth-r" style="min-height:100vh"><div class="authbox" style="width:560px">
+  ${S.acct==='biz'?LOGO:LOGO_R}
+  <h1 style="margin:26px 0 8px">MO is preparing your file</h1>
+  <p class="muted" style="margin-bottom:18px">Assembling your ${S.acct==='biz'?'KYB':'KYC'} report, scoring it, and sending it to the compliance team. This takes seconds, not days, because the checks ran while you typed.</p>
+  <div class="live" id="scrlines"><div class="li">⏳ Registry and registration data</div></div>
+ </div></div>`;
+}
+function viewReport(){S.modal='report';rr()}
+function mReport(){
+ const a=app_(),r=a.risk;
+ return `<div class="ov" onclick="if(event.target===this){S.modal=null;rr()}"><div class="modal">
+  <h2 style="margin-bottom:4px">${S.acct==='biz'?'KYB':'KYC'} report</h2>
+  <p class="small muted" style="margin-bottom:14px">Generated by MO on submit and sent to the compliance queue. This is what the team sees.</p>
+  <table><tr><th>Signal</th><th>Result</th></tr>
+  ${r.signals.map(s=>`<tr><td>${esc(s.t)}<div class="small muted">${esc(s.note)}</div></td><td>${s.ok?'<span class="tag tag-ok">Pass</span>':'<span class="tag tag-warn">Flag</span>'}</td></tr>`).join('')}
+  </table>
+  <div class="kv" style="margin-top:14px">
+   <div class="k">Risk score</div><div class="b">${r.score} <span class="small muted">(threshold ${RISK_T}, lower is better)</span></div>
+   <div class="k">Outcome</div><div class="b">${r.score<RISK_T?'Instant approval with starter limits, team confirms within 1 to 2 days':'Manual review before approval'}</div>
+  </div>
+  <button class="btn btn-s" style="margin-top:16px" onclick="S.modal=null;rr()">Close</button>
+ </div></div>`;
+}
+/* ============ review machine (manual path) ============ */
+let reviewT=null,clearT=null;
+function scheduleReview(){
+ clearTimeout(reviewT);const a=app_();
+ if(a.status!=='in_review')return;
+ reviewT=setTimeout(()=>{
+  const a2=app_();if(a2.status!=='in_review')return;
+  if(a2.stage===2&&!a2.pausedOnce){triggerRequest();return}
+  if(a2.stage<4){a2.stage++;rr();scheduleReview()}
+  if(a2.stage>=4)approveNow();
+ },7000);
+}
+function ffReview(){clearTimeout(reviewT);const a=app_();if(a.stage===2&&!a.pausedOnce){triggerRequest();return}a.stage=Math.min(4,a.stage+1);a.stage>=4?approveNow():rr();scheduleReview()}
+function triggerRequest(){
+ clearTimeout(reviewT);const a=app_();
+ a.status='action_needed';a.pausedOnce=true;
+ a.requests.push({id:uid(),label:'Recent proof of address',why:'The document you sent is older than 3 months. Compliance needs one dated within the last 3 months.',doc:slot(),done:false});
+ rr();toast('The review paused. One document is needed.');
+}
+function resumeReview(){
+ const a=app_();
+ if(a.requests.every(r=>r.done)){a.status='in_review';toast('Thanks. Your review picked up where it left off.');rr();scheduleReview()}
+}
+function approveNow(){
+ clearTimeout(reviewT);const a=app_();
+ a.status='approved';a.stage=4;seedPlatform();rr();
+}
+function scheduleClear(){
+ clearTimeout(clearT);
+ clearT=setTimeout(()=>{if(limited())clearLimits(true)},45000);
+}
+function clearLimits(auto){
+ const a=app_();if(a.status!=='approved_limited')return;
+ clearTimeout(clearT);a.status='approved';rr();
+ toast((auto?'Review complete. ':'')+'Full limits unlocked. All collection accounts and cards are now available.');
+}
+/* ============ seed ============ */
+function seedPlatform(){
+ if(S.plat.seeded)return;
+ const h=home(),now=Date.now(),day=86400000;
+ S.plat.seeded=true;S.plat.bals={};S.plat.bals[h]=25000;S.plat.asOf=now;
+ S.plat.txns=[{id:uid(),t:now-2*3600000,who:'Demo seed payin',dir:'in',amt:25000,ccy:h,note:'Sample funds so you can explore. Marked as demo data.'}];
+ S.plat.team=[{id:uid(),name:S.user.name,email:S.user.email,role:'owner',st:'active'}];
+ if(S.acct==='biz'){
+  S.plat.inv=[
+   {id:uid(),no:'INV-1042',client:'Acme Trading Pte Ltd',amt:4800,due:new Date(now+4*day).toISOString().slice(0,10),st:'sent'},
+   {id:uid(),no:'INV-1041',client:'Northwind Logistics',amt:2150,due:new Date(now-3*day).toISOString().slice(0,10),st:'overdue'},
+   {id:uid(),no:'INV-1040',client:'Blue Harbor Media',amt:1600,due:new Date(now-9*day).toISOString().slice(0,10),st:'paid'}];
+  S.plat.payin={amt:4800,from:'ACME TRADING PTE LTD',matched:false,dismissed:false};
+  S.plat.bills=[
+   {id:uid(),who:'Office rent · CapitaLand',amt:3200,due:new Date(now+4*day).toISOString().slice(0,10),src:'seed'},
+   {id:uid(),who:'AWS · cloud hosting',amt:890,due:new Date(now+6*day).toISOString().slice(0,10),src:'seed'},
+   {id:uid(),who:'Payroll · 4 staff',amt:8400,due:new Date(now+12*day).toISOString().slice(0,10),src:'seed'}];
+ }
+}
+/* ============ tracker ============ */
+function vTracker(){
+ const a=app_(),biz=S.acct==='biz';
+ const limitedNow=a.status==='approved_limited',full=a.status==='approved';
+ const items=REVIEW_STAGES.map((s,i)=>{
+  let cls='',dot=i+1,note='';
+  if(full||limitedNow||i<a.stage){cls='done';dot='✓'}
+  else if(i===a.stage&&a.status==='in_review'){cls='on';note='<span class="tag tag-b">In progress</span>'}
+  else if(i===a.stage&&a.status==='action_needed'){cls='warn';dot='!';note='<span class="tag tag-warn">Paused, waiting on you</span>'}
+  return `<li class="${cls}"><div class="dot">${dot}</div><div><div class="b">${s.t} ${note}</div><div class="small muted">${s.d}</div></div></li>`;
+ }).join('');
+ const reqs=a.requests.filter(r=>!r.done).map(r=>{
+  const i=a.requests.indexOf(r),pre=biz?'kyb':'kyc';
+  return `<div class="banner banner-w"><div>!</div><div style="flex:1"><div class="b">${esc(r.label)}</div><div class="small muted" style="margin:2px 0 10px">${esc(r.why)}</div>${upRow(pre+'.requests.'+i+'.doc','Upload the document','PDF, JPG or PNG · up to 10 MB')}</div></div>`;
+ }).join('');
+ let head,sub;
+ if(limitedNow){head='You are live, with starter limits';sub=`Low risk, so you are approved on the spot. You can collect and send up to ${fmt(lim().tx)} per transfer and ${fmt(lim().mo)} per month while our team finishes the full review, usually within 1 to 2 days. Cards unlock at full approval.`}
+ else if(full){head='You are live, '+esc(S.user.name.split(' ')[0])+' 🎉';sub=biz?`Your ${home()} account is open with full limits. Local collection accounts and SWIFT details are ready.`:'You can send at full limits now.'}
+ else{head='Verification in progress';sub='Your file needs a human look. If we need anything, the review pauses and asks you right here.'}
+ return `<div class="auth-r" style="min-height:100vh;align-items:flex-start;padding-top:56px"><div class="authbox" style="width:660px">
+  <div style="display:flex;align-items:center">${biz?LOGO:LOGO_R}<span class="lockhint">Signed in as ${esc(S.user.email)}</span></div>
+  <h1 style="margin:26px 0 6px">${head}</h1>
+  <p class="muted" style="margin-bottom:20px">${sub}</p>
+  ${reqs}
+  ${(limitedNow||full)?`<div class="banner ${limitedNow?'banner-i':'banner-g'}"><div>✦</div><div class="small">MO generated your ${biz?'KYB':'KYC'} report and sent it to the team. <a href="#" onclick="viewReport();return false">View the report</a></div></div>`:''}
+  <div class="card" style="margin-bottom:16px"><ul class="tl">${items}</ul></div>
+  ${(limitedNow||full)
+   ?`<button class="btn btn-p" onclick="S.tab='home';go('app')">${biz?'Go to your account':'Start sending'}</button>`
+   :`<div style="display:flex;gap:10px"><button class="btn btn-s" onclick="S.tab='home';go('app')">Explore the dashboard while you wait</button></div>
+     <p class="small muted" style="margin-top:10px">You can look around now. Moving money unlocks the moment you are approved.</p>`}
+ </div></div>`;
+}
+/* ============ demo fill ============ */
+function demoFillStep(){
+ const d=demoCompany();
+ if(S.view!=='wizard')return;
+ if(S.acct==='biz'){
+  const k=S.kyb;
+  if(k.step===0){k.biz={legal:d.legal,trading:'Kopi Roasters',entity:d.entity,reg:d.reg,incdate:d.incdate,web:'https://kopiroasters.com',desc:'Specialty coffee roastery selling wholesale beans and brewing equipment to cafes across Southeast Asia.',industry:'Food and beverage'}}
+  if(k.step===1){Object.assign(k.addr,{l1:'71 Ayer Rajah Crescent',l2:'#02-18',city:S.user.country==='SG'?'Singapore':'Capital City',state:'CA',postal:'139951'})}
+  if(k.step===2&&!k.people.length){
+   k.people.push({id:uid(),name:'Maya Chen',role:'both',own:'62',dob:'1991-03-14',nat:'Singaporean',email:'maya@kopiroasters.com',idDoc:{st:'verified',name:'passport_maya.pdf',pct:100,why:''},open:false,scr:''});
+   k.people.push({id:uid(),name:'Daniel Ong',role:'owner',own:'38',dob:'1988-11-02',nat:'Singaporean',email:'daniel@kopiroasters.com',idDoc:{st:'verified',name:'passport_daniel.pdf',pct:100,why:''},open:false,scr:''});
+   screenPerson(0);screenPerson(1)}
+  if(k.step===3){if(k.certSlot.st!=='verified'){k.certSlot={st:'verified',name:'acra_bizfile.pdf',pct:100,why:''};if(!k.prefilled)moPrefill()}k.docs.addr={st:'verified',name:'utility_bill_jun.pdf',pct:100,why:''};if(needChart())k.docs.chart={st:'verified',name:'ownership_chart.pdf',pct:100,why:''}}
+  if(k.step===4){k.act={vol:'50,000 to 250,000',ccys:[home(),'USD'].filter((v,i,a)=>a.indexOf(v)===i),purpose:'Paying suppliers',note:''}}
+ }else{
+  const k=S.kyc;
+  if(k.step===0){S.user.name=S.user.name||'Maya Chen';k.me={dob:'1991-03-14',nat:'Singaporean',occupation:'Product designer'}}
+  if(k.step===1){k.addr={l1:'12 Tiong Bahru Road',l2:'#05-01',city:'Singapore',postal:'168732'}}
+  if(k.step===2){k.docs.id={st:'verified',name:'passport.pdf',pct:100,why:''};k.docs.selfie={st:'verified',name:'selfie.jpg',pct:100,why:''}}
+  if(k.step===3){k.act={purpose:'Family support',vol:'Under 10,000',dests:['US','GB']}}
+ }
+ rr();toast('Step filled with demo data');
+}
+/* ============ platform shell ============ */
+function railsFor(ccy){
+ const loc={USD:[['ACH',0,'1 to 2 days'],['Fedwire',15,'Same day']],CAD:[['EFT',0,'1 to 2 days']],GBP:[['Faster Payments',0,'Minutes']],EUR:[['SEPA',0,'Same day'],['SEPA Instant',1,'Seconds']],HKD:[['FPS',0,'Minutes']],AUD:[['NPP',0,'Minutes']],SGD:[['FAST',0,'Minutes']],NZD:[['Local NZD',0,'Same day']]}[ccy]||[];
+ return [...loc.map(x=>({id:x[0],label:x[0]+' · local '+ccy,fee:x[1],eta:x[2]})),{id:'SWIFT',label:'SWIFT · international',fee:15,eta:'1 to 2 business days'}];
+}
+function lockToast(){toast(live()?'Cards unlock at full approval, usually 1 to 2 days after the starter approval.':'Moving money unlocks once you are verified. The review is on your home page.')}
+function navGo(t){
+ const needFull=['cards','spend'],needLive=['payouts','bills','links','collections','fx','treasury','team'];
+ if(needLive.includes(t)&&!live()){lockToast();return}
+ if(needFull.includes(t)&&!fullOk()){lockToast();return}
+ S.tab=t;S.pay={step:0,from:home(),name:'',country:S.user.country,acct:'',amt:'',note:'',rail:'',dupAck:false,billId:null};
+ if(!S.fx.from)S.fx.from=home();
+ rr();
+}
+function vApp(){
+ const biz=S.acct==='biz';
+ if(!S.navOpen)S.navOpen={};
+ const isLk=id=>(['payouts','bills','links','collections','fx','treasury','team'].includes(id)&&!live())||(['cards','spend'].includes(id)&&!fullOk());
+ const NAVB=[
+  {id:'home',t:'Home'},
+  {t:'Accounts',kids:[['accounts','Balances and details'],['topup','Top up']]},
+  {t:'Payments',kids:[['payouts','Send a payout'],['bills','Bills'],['fx','FX and risk']]},
+  {t:'Collections',kids:[['collections','Invoices'],['links','Payment links']]},
+  {t:'Cards',kids:[['cards','Your cards'],['spend','Spend']]},
+  {id:'treasury',t:'Treasury'},
+  {id:'team',t:'Team'}];
+ const NAVI=[{id:'home',t:'Home'},{id:'payouts',t:'Send money'},{id:'fx',t:'Convert'}];
+ const kidGo=id=>id==='topup'?(live()?"S.modal='topup';rr()":"lockToast()"):`navGo('${id}')`;
+ const nav=(biz?NAVB:NAVI).map(g=>{
+  if(!g.kids){const lk=isLk(g.id);return `<button class="it ${S.tab===g.id?'on':''} ${lk?'lk':''}" onclick="navGo('${g.id}')">${g.t}${lk?' <span class="lockhint">🔒</span>':''}</button>`}
+  const activeKid=g.kids.some(k=>S.tab===k[0]);
+  const open=S.navOpen[g.t]!==undefined?S.navOpen[g.t]:activeKid;
+  const kids=open?g.kids.map(k=>{const lk=k[0]==='topup'?!live():isLk(k[0]);
+   return `<button class="kid ${S.tab===k[0]?'on':''} ${lk?'lk':''}" onclick="${kidGo(k[0])}">${k[1]}${lk?' <span class="lockhint">🔒</span>':''}</button>`}).join(''):'';
+  return `<button class="it" onclick="S.navOpen['${g.t}']=${open?'false':'true'};rr()">${g.t}<span class="chev">${open?'▾':'▸'}</span></button>${kids}`;
+ }).join('');
+ const body={home:tHome,accounts:tAccounts,payouts:tPayouts,bills:tBills,links:tLinks,spend:tSpend,collections:tCollections,cards:tCards,treasury:tTreasury,fx:tFx,team:tTeam}[S.tab]();
+ return `<div class="shell">
+  <div class="side">
+   ${biz?LOGO:LOGO_R}
+   <div class="nav">${nav}<button class="it" onclick="S.mo.open=true;rr()">✦ AskMO</button></div>
+   <div class="small muted" style="padding:0 12px">${biz?'Door 1 · business account':'Finmo Remit · personal'}<br>Prototype, all data is fake</div>
+  </div>
+  <div class="main">
+   <div class="top">
+    <span class="b">${esc(biz?(S.kyb.biz.legal||'Your business'):S.user.name)}</span>
+    <span class="tag tag-mut">Sandbox</span><span class="tag tag-b">Prototype</span>
+    ${limited()?'<span class="tag tag-warn">Starter limits</span>':''}
+    <span style="margin-left:auto"></span>
+    <span class="small muted">${esc(S.user.email)}</span>
+    <div style="width:34px;height:34px;border-radius:99px;background:var(--b100);color:var(--b700);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px">${initials(S.user.name)}</div>
+   </div>
+   <div class="content">${body}</div>
+  </div>
+ </div>${S.mo.open?vMo():''}${S.modal==='report'?mReport():''}${S.modal==='topup'?mTopup():''}${S.modal==='addbill'?mAddBill():''}${S.modal==='newcard'?mNewCard():''}${S.modal&&S.modal.startsWith&&S.modal.startsWith('fund:')?mFund():''}`;
+}
+function limitsBanner(){
+ if(!limited())return '';
+ return `<div class="banner banner-w"><div>⏳</div><div class="small" style="flex:1"><span class="b">Starter limits are on.</span> Up to ${fmt(lim().tx)} per transfer and ${fmt(lim().mo)} per month for collections and payouts${S.acct==='biz'?', and cards unlock at full approval':''}. Our team usually clears these within 1 to 2 days, and you will get an email the moment they do. <a href="#" onclick="viewReport();return false">View your ${S.acct==='biz'?'KYB':'KYC'} report</a></div></div>`;
+}
+/* ---- home ---- */
+function tHome(){
+ const a=app_(),biz=S.acct==='biz';
+ let verifyCard='';
+ if(!live()){
+  const pct=Math.round((a.stage/4)*100);
+  verifyCard=`<div class="card" style="margin-bottom:18px;border-color:var(--b200)">
+   <div style="display:flex;align-items:center;gap:12px">
+    <div style="flex:1"><h3>Account verification</h3>
+    <div class="small muted">${a.status==='action_needed'?'Paused. We need one document from you.':a.status==='in_review'?REVIEW_STAGES[a.stage].t+'…':'Not submitted yet.'}</div>
+    <div class="pbar" style="max-width:320px;margin-top:9px"><div style="width:${pct}%"></div></div></div>
+    ${a.status==='action_needed'?`<button class="btn btn-p" onclick="go('tracker')">Upload it now</button>`:`<button class="btn btn-s" onclick="go('${a.status==='draft'?'wizard':'tracker'}')">${a.status==='draft'?'Finish verification':'View status'}</button>`}
+   </div></div>`;
+ }
+ const bals=Object.entries(S.plat.bals).filter(([c,n])=>n>0.005);
+ const bills7=S.plat.bills.filter(b=>new Date(b.due)-Date.now()<7*86400000);
+ const burn=S.plat.bills.reduce((t,b)=>t+b.amt,0);
+ const idle=balOf('USD')||conv(balOf(home()),home(),'USD');
+ return `<h1 style="margin-bottom:4px">Welcome back, ${esc(S.user.name.split(' ')[0]||'there')}</h1>
+ <p class="muted" style="margin-bottom:20px">${biz?'Everything about your money, in money words.':'Send money abroad at the mid market rate plus a small itemised fee.'}</p>
+ ${verifyCard}${limitsBanner()}
+ <div class="card" style="margin-bottom:18px">
+  <div style="display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap">
+   <div style="flex:1;min-width:220px">
+    <div class="small muted">Total balance</div>
+    <div style="font-size:30px;font-weight:700;letter-spacing:-.02em">${live()?fmt(totalHome()):'—'}</div>
+    <div class="small muted">${live()?'Balance as of live · synced just now':'Available after verification'}</div>
+    ${bals.length>1?`<div style="margin-top:8px">${bals.map(([c,n])=>`<span class="tag tag-mut" style="margin-right:6px">${c} ${Number(n).toLocaleString('en-US',{maximumFractionDigits:0})}</span>`).join('')}</div>`:''}
+   </div>
+   <button class="btn btn-p" ${live()?'':'disabled title="Unlocks after verification"'} onclick="navGo('payouts')">${biz?'Send a payout':'Send money'}</button>
+   ${biz?`<button class="btn btn-s" ${live()?'':'disabled'} onclick="navGo('links')">Create a payment link</button>`:''}
+   <button class="btn btn-s" ${live()?'':'disabled'} onclick="S.modal='topup';rr()">Top up</button>
+  </div>
+ </div>
+ ${biz?`<div class="grid3" style="margin-bottom:18px">
+  <div class="tile"><div class="small muted">Committed outflows, 14 days</div><div class="v">${live()?fmt(burn):'—'}</div><div class="small muted">Rent, cloud and payroll</div></div>
+  <div class="tile"><div class="small muted">Bills due this week</div><div class="v">${live()?bills7.length+' · '+fmt(bills7.reduce((t,b)=>t+b.amt,0)):'—'}</div>${live()&&bills7.length?`<button class="btn btn-g btn-sm" onclick="payBill('${bills7[0].id}')">Pay ${esc(bills7[0].who.split(' ·')[0])} →</button>`:'<div class="small muted">Nothing due</div>'}</div>
+  <div class="tile"><div class="small muted">Idle cash</div><div class="v">${live()?fmt(idle,'USD'):'—'}</div>${live()?`<button class="btn btn-g btn-sm" onclick="navGo('treasury')">Earn ~3.6% in treasury →</button>`:'<div class="small muted">Appears once you transact</div>'}</div>
+ </div>
+ <div class="grid3" style="margin-bottom:18px">
+  <div class="tile" style="grid-column:span 3">${(()=>{if(!live())return '<div class="small muted">FX risk appears here once you are verified</div>';const p=vrParams(),ex=fxExposures(p.basis),r=varCalc(ex,p);return Object.keys(ex).length?`<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap"><div><div class="small muted">FX risk · ${p.conf}% VaR, ${{1:'1 day',5:'1 week',21:'1 month'}[p.hor]}</div><div class="v">${r.v<1?'Negligible':fmt(r.v)}</div></div><div class="small muted" style="flex:1">What a bad FX day could cost you, from your own balances and receivables.</div><button class="btn btn-g btn-sm" onclick="navGo('fx')">Review and act →</button></div>`:`<div class="small muted">No FX risk right now, you hold only ${home()}. The moment a foreign balance or invoice appears, the VaR number shows up here.</div>`})()}</div>
+ </div>`:''}
+ <div class="card"><h3 style="margin-bottom:8px">Recent activity</h3>
+  ${S.plat.txns.length?`<table><tr><th>When</th><th>Counterparty</th><th style="text-align:right">Amount</th></tr>
+  ${S.plat.txns.map(t=>`<tr><td class="muted">${new Date(t.t).toLocaleDateString('en-SG',{month:'short',day:'numeric'})}</td><td>${esc(t.who)}<div class="small muted">${esc(t.note||'')}</div></td><td style="text-align:right" class="${t.dir==='in'?'amt-in':'amt-out'}">${t.dir==='in'?'+':'−'}${fmt(t.amt,t.ccy)}</td></tr>`).join('')}</table>`
+  :'<div class="muted small">No activity yet.</div>'}
+ </div>`;
+}
+function payBill(id){
+ const b=S.plat.bills.find(x=>x.id===id);if(!b)return;
+ navGo('payouts');if(S.tab!=='payouts')return;
+ S.pay.name=b.who.split(' ·')[0];S.pay.amt=String(b.amt);S.pay.note='Bill due '+b.due;S.pay.billId=id;S.pay.step=0;rr();
+}
+/* ---- accounts ---- */
+function tAccounts(){
+ const h=home();
+ const vaCard=c=>{
+  const active=fullOk()||(live()&&c===h);
+  return `<div class="tile">
+   <div style="display:flex;align-items:center;gap:8px"><span class="b" style="font-size:16px">${c}</span>
+   <span class="tag ${active?'tag-ok':'tag-mut'}">${active?'Active':live()?'After full approval':'After verification'}</span></div>
+   <div class="small muted" style="margin:6px 0 2px">${VAD[c]}</div>
+   <div class="small" style="color:var(--b700)">Issued via J.P. Morgan</div>
+   ${balOf(c)>0?`<div class="v" style="margin-top:6px">${fmt(balOf(c),c)}</div>`:''}
+   ${active?`<button class="btn btn-g btn-sm" style="margin-top:6px" onclick="copyTxt('${c} · ${VAD[c]}')">Copy details</button>`:''}
+  </div>`;
+ };
+ return `<h1 style="margin-bottom:6px">Accounts</h1>
+ <p class="muted" style="margin-bottom:20px">Local collection accounts in 8 currencies, issued through J.P. Morgan. Share the details and get paid like a local.</p>
+ ${limitsBanner()}
+ <div class="grid3" style="margin-bottom:18px">${VA_CCYS.map(vaCard).join('')}</div>
+ <div class="grid2">
+  <div class="card"><h3>SWIFT collections</h3>
+   <p class="small muted" style="margin:6px 0 8px">One multi currency SWIFT account through J.P. Morgan, receiving 35 currencies. ${fullOk()?'':'Available at full approval.'}</p>
+   <span class="tag ${fullOk()?'tag-ok':'tag-mut'}">${fullOk()?'Active · CHASSGSG':'Locked'}</span></div>
+  <div class="card"><h3>Collect in PHP, IDR and THB</h3>
+   <p class="small muted" style="margin:6px 0 8px">Your payers pay in their local currency through a checkout page or the API. Balances cannot be held in these currencies, so funds settle to your USD account automatically.</p>
+   <button class="btn btn-g btn-sm" onclick="navGo('links')">Create a payment link →</button></div>
+ </div>`;
+}
+/* ---- payouts (Bill Pay + send flow) ---- */
+function tPayouts(){
+ const biz=S.acct==='biz';
+ if(S.pay.step>0)return payFlow();
+ return `<h1 style="margin-bottom:6px">${biz?'Send a payout':'Send money'}</h1>
+ <p class="muted" style="margin-bottom:20px">${biz?'One-off payouts. Recurring vendor bills live under Payments, Bills.':'Mid market rate, itemised fee, delivery estimate before you commit.'}</p>
+ ${limitsBanner()}
+ <div class="card" style="max-width:560px">
+  <h3 style="margin-bottom:14px">Who are you paying?</h3>
+  <div class="field"><label>Recipient name</label><input value="${esc(S.pay.name)}" oninput="S.pay.name=this.value;save()" placeholder="Business or person"></div>
+  <div class="row2">
+   <div class="field"><label>Their country</label><select onchange="S.pay.country=this.value;S.pay.rail='';save()">${Object.keys(CC).filter(k=>k!=='AE').map(k=>`<option value="${k}" ${S.pay.country===k?'selected':''}>${CC[k].name}</option>`).join('')}</select></div>
+   <div class="field"><label>Account number or IBAN</label><input value="${esc(S.pay.acct)}" oninput="S.pay.acct=this.value;save()"></div>
+  </div>
+  <button class="btn btn-p" onclick="if(S.pay.name.trim().length<2){toast('Enter the recipient name');return}if(S.pay.acct.trim().length<6){toast('Enter a valid account number');return}S.pay.step=1;rr()">Continue</button>
+ </div>`;
+}
+function tBills(){
+ return `<h1 style="margin-bottom:6px">Bills</h1>
+ <p class="muted" style="margin-bottom:20px">The Bill Pay pattern: bills land here, MO reads them, you approve them.</p>
+ ${limitsBanner()}
+ <div class="card">
+  <div style="display:flex;align-items:center;margin-bottom:10px"><h3>Bills inbox</h3><button class="btn btn-s btn-sm" style="margin-left:auto" onclick="S.modal='addbill';if(!S.plat.billSlot)S.plat.billSlot=slot();S.billDraft=null;rr()">+ Add a bill</button></div>
+  ${S.plat.bills.length?`<table><tr><th>Vendor</th><th>Due</th><th style="text-align:right">Amount</th><th></th></tr>
+   ${S.plat.bills.map(b=>`<tr><td>${esc(b.who)}${b.src==='mo'?' <span class="chip">✦ read by MO</span>':''}</td><td class="muted">${b.due}</td><td style="text-align:right">${fmt(b.amt)}</td><td style="text-align:right"><button class="btn btn-g btn-sm" onclick="payBill('${b.id}')">Pay</button></td></tr>`).join('')}</table>`
+  :'<div class="muted small">No bills. Add one and MO reads the vendor, amount and due date for you.</div>'}
+ </div>`;
+}
+function payFlow(){
+ const p=S.pay,recC=CC[p.country].ccy,held=Object.keys(S.plat.bals).filter(c=>balOf(c)>0);
+ if(p.step===1){
+  const rails=railsFor(recC);
+  const cross=p.from!==recC;
+  const amt=Number(p.amt)||0;
+  return `<h1 style="margin-bottom:20px">How much?</h1><div class="card" style="max-width:560px">
+  <div class="row2">
+   <div class="field"><label>Pay from</label><select onchange="S.pay.from=this.value;rr()">${held.map(c=>`<option ${p.from===c?'selected':''}>${c}</option>`).join('')}</select><div class="hint">Available: ${fmt(balOf(p.from),p.from)}</div></div>
+   <div class="field"><label>Amount (${p.from})</label><input type="number" min="0" value="${esc(p.amt)}" oninput="S.pay.amt=this.value;save()" placeholder="0.00"></div>
+  </div>
+  ${cross&&amt>0?`<div class="banner banner-i"><div>⇄</div><div class="small">${esc(p.name||'They')} receives about <span class="b">${fmt(conv(amt,p.from,recC)*(1-FXM),recC)}</span>. Mid market ${(conv(1,p.from,recC)).toFixed(4)}, margin 0.5% itemised, never hidden in the rate.</div></div>`:''}
+  <div class="field"><label>How should it travel?</label>
+   ${rails.map(r=>`<label class="sel ${p.rail===r.id?'on':''}" onclick="S.pay.rail='${r.id}';rr()"><input type="radio" ${p.rail===r.id?'checked':''} style="width:auto;margin-top:3px"><span style="flex:1"><span class="b">${r.label}</span><br><span class="small muted">${r.eta}</span></span><span class="b">${r.fee===0?'Free':fmt(r.fee,p.from)}</span></label>`).join('')}
+   <div class="hint">MO picks the cheapest rail that meets the deadline by default. You can always override it.</div></div>
+  <div class="field"><label>Note <span class="muted small">(optional)</span></label><input value="${esc(p.note)}" oninput="S.pay.note=this.value;save()"></div>
+  <div style="display:flex;gap:10px"><button class="btn btn-s" onclick="S.pay.step=0;rr()">Back</button>
+  <button class="btn btn-p" onclick="payToReview()">Review</button></div></div>`;
+ }
+ if(p.step===2){
+  const chk=moChecks(),amt=Number(p.amt),rail=railsFor(recC).find(r=>r.id===p.rail),cross=p.from!==recC;
+  return `<h1 style="margin-bottom:20px">Review payout</h1><div class="card" style="max-width:560px">
+  ${chk.html}
+  <div class="kv" style="margin-bottom:16px">
+   <div class="k">To</div><div class="b">${esc(p.name)} · ${CC[p.country].name}</div>
+   <div class="k">You send</div><div class="b">${fmt(amt,p.from)}</div>
+   ${cross?`<div class="k">They receive</div><div class="b">${fmt(conv(amt,p.from,recC)*(1-FXM),recC)}</div><div class="k">FX margin</div><div>0.5%, itemised</div>`:''}
+   <div class="k">Rail</div><div>${rail.label} · ${rail.eta}</div>
+   <div class="k">Fee</div><div>${rail.fee===0?'Free':fmt(rail.fee,p.from)}</div>
+   <div class="k">Total debit</div><div class="b">${fmt(amt+rail.fee,p.from)}</div>
+  </div>
+  <div style="display:flex;gap:10px"><button class="btn btn-s" onclick="S.pay.step=1;rr()">Back</button>
+  <button class="btn btn-p" onclick="sendPayment()">Confirm and send</button></div></div>`;
+ }
+ return `<div class="card" style="max-width:560px;text-align:center;padding:44px">
+  <div style="font-size:40px">✓</div><h2 style="margin:10px 0 6px">Payout sent</h2>
+  <p class="muted">${fmt(Number(p.amt),p.from)} to ${esc(p.name)} is on its way. It lands in your activity, your balance and your outflow numbers at once, because it is all one ledger.</p>
+  <button class="btn btn-p" style="margin-top:18px" onclick="navGo('home')">Back to home</button></div>`;
+}
+function moChecks(){
+ const p=S.pay,amt=Number(p.amt)||0;
+ const dup=S.plat.txns.find(t=>t.dir==='out'&&t.who.toLowerCase()===p.name.trim().toLowerCase()&&Math.abs(t.amt-amt)<0.01);
+ const big=amt>0.6*balOf(p.from);
+ let out='';
+ if(dup)out+=`<div class="banner banner-w"><div>✦</div><div class="small" style="flex:1"><span class="b">MO check: possible duplicate.</span> You paid ${esc(p.name)} ${fmt(dup.amt,dup.ccy)} on ${new Date(dup.t).toLocaleDateString('en-SG',{month:'short',day:'numeric'})}. <label style="display:flex;gap:7px;margin-top:6px"><input type="checkbox" ${p.dupAck?'checked':''} onchange="S.pay.dupAck=this.checked;save()" style="width:auto">This is intentional, send it anyway</label></div></div>`;
+ if(big)out+=`<div class="banner banner-i"><div>✦</div><div class="small"><span class="b">MO check: large payment.</span> This is ${Math.round(amt/balOf(p.from)*100)}% of your ${p.from} balance. In production a payment this size routes to a second approver.</div></div>`;
+ if(!dup&&!big&&amt>0)out+=`<div class="banner banner-g"><div>✓</div><div class="small"><span class="b">MO checked this payout.</span> Amount in your normal range, no duplicates found.</div></div>`;
+ return {html:out,dup:!!dup};
+}
+function payToReview(){
+ const p=S.pay,amt=Number(p.amt);
+ if(!(amt>0)){toast('Enter an amount');return}
+ if(!p.rail){toast('Pick a rail');return}
+ const fee=railsFor(CC[p.country].ccy).find(r=>r.id===p.rail).fee;
+ if(amt+fee>balOf(p.from)){toast('That is more than your available '+p.from+' balance');return}
+ if(limited()&&conv(amt,p.from,home())>lim().tx){toast('Starter limit: up to '+fmt(lim().tx)+' per transfer until the team clears your account, usually 1 to 2 days');return}
+ p.dupAck=false;p.step=2;rr();
+}
+function sendPayment(){
+ const chk=moChecks();
+ if(chk.dup&&!S.pay.dupAck){toast('Confirm the duplicate check first');return}
+ const p=S.pay,amt=Number(p.amt),rail=railsFor(CC[p.country].ccy).find(r=>r.id===p.rail);
+ debit(p.from,amt+rail.fee);
+ S.plat.txns.unshift({id:uid(),t:Date.now(),who:p.name.trim(),dir:'out',amt:amt,ccy:p.from,note:(p.note||rail.label)});
+ if(p.billId)S.plat.bills=S.plat.bills.filter(b=>b.id!==p.billId);
+ p.step=3;rr();
+}
+/* ---- add bill modal ---- */
+function mAddBill(){
+ const d=S.billDraft;
+ return `<div class="ov" onclick="if(event.target===this){S.modal=null;rr()}"><div class="modal">
+  <h2 style="margin-bottom:4px">Add a bill</h2>
+  <p class="small muted" style="margin-bottom:14px">Upload the invoice. MO reads the vendor, amount and due date, you approve.</p>
+  ${upRow('plat.billSlot','Invoice or bill','PDF, JPG or PNG · up to 10 MB')}
+  ${d?`<div class="banner banner-i"><div>✦</div><div class="small">MO extracted these. Edit anything before approving.</div></div>
+  <div class="field"><label>Vendor</label><input value="${esc(d.who)}" oninput="S.billDraft.who=this.value;save()"></div>
+  <div class="row2"><div class="field"><label>Amount (${home()})</label><input type="number" value="${esc(d.amt)}" oninput="S.billDraft.amt=this.value;save()"></div>
+  <div class="field"><label>Due date</label><input type="date" value="${esc(d.due)}" onchange="S.billDraft.due=this.value;save()"></div></div>
+  <button class="btn btn-p" onclick="approveBill()">Approve bill</button>`:''}
+  <button class="btn btn-s" style="margin-top:10px" onclick="S.modal=null;rr()">Close</button>
+ </div></div>`;
+}
+function approveBill(){
+ const d=S.billDraft;
+ if(!d||!d.who||!(Number(d.amt)>0)||!d.due){toast('Complete the vendor, amount and due date');return}
+ S.plat.bills.push({id:uid(),who:d.who,amt:Number(d.amt),due:d.due,src:'mo'});
+ S.billDraft=null;S.plat.billSlot=slot();S.modal=null;rr();toast('Bill added, ready to pay');
+}
+/* ---- collections (invoices + payment links) ---- */
+function matchPayin(yes){
+ const p=S.plat.payin;
+ if(yes){const inv=S.plat.inv.find(i=>i.no==='INV-1042');if(inv)inv.st='paid';p.matched=true;credit(home(),p.amt);
+  S.plat.txns.unshift({id:uid(),t:Date.now(),who:p.from,dir:'in',amt:p.amt,ccy:home(),note:'Matched to INV-1042 by MO, confirmed by you'});
+  toast('Matched. Invoice INV-1042 marked paid.')}
+ else{p.dismissed=true;toast('Noted. MO will not suggest this match again.')}
+ rr();
+}
+function addInvoice(){
+ const cl=$('inv-cl').value.trim(),am=Number($('inv-am').value),du=$('inv-du').value;
+ if(cl.length<2){toast('Enter a client name');return}
+ if(!(am>0)){toast('Enter an amount');return}
+ if(!du){toast('Pick a due date');return}
+ const no='INV-'+(1043+S.plat.inv.length);
+ S.plat.inv.unshift({id:uid(),no,client:cl,amt:am,due:du,st:'sent'});rr();toast(no+' created');
+}
+function createLink(){
+ const de=$('lnk-de').value.trim(),am=Number($('lnk-am').value)||0,cy=$('lnk-cy').value;
+ if(de.length<2){toast('Describe what the link is for');return}
+ S.plat.links.unshift({id:uid(),url:'pay.finmo.net/l/'+uid(),desc:de,amt:am,ccy:cy,paid:0});
+ rr();toast('Payment link created');
+}
+function simPay(id){
+ const l=S.plat.links.find(x=>x.id===id);if(!l)return;
+ const amt=l.amt||150;
+ if(COLLECT_ONLY.includes(l.ccy)){
+  const usd=conv(amt,l.ccy,'USD')*(1-FXM);credit('USD',usd);
+  S.plat.txns.unshift({id:uid(),t:Date.now(),who:'Payment link · '+l.desc,dir:'in',amt:usd,ccy:'USD',note:'Paid '+fmt(amt,l.ccy)+' via checkout. '+l.ccy+' cannot be held, settled to USD automatically.'});
+ }else{credit(l.ccy,amt);
+  S.plat.txns.unshift({id:uid(),t:Date.now(),who:'Payment link · '+l.desc,dir:'in',amt:amt,ccy:l.ccy,note:'Paid via hosted checkout'});}
+ l.paid++;rr();toast('Payment received');
+}
+function tCollections(){
+ const p=S.plat.payin;
+ const moCard=(p&&!p.matched&&!p.dismissed)?`<div class="banner banner-i"><div>✦</div><div class="small" style="flex:1"><span class="b">MO matched a payin.</span> ${fmt(p.amt)} arrived from ${esc(p.from)}. It matches <span class="b">INV-1042</span> for Acme Trading (same amount, similar name).<div style="margin-top:8px;display:flex;gap:8px"><button class="btn btn-p btn-sm" onclick="matchPayin(true)">Match and mark paid</button><button class="btn btn-s btn-sm" onclick="matchPayin(false)">Not this one</button></div></div></div>`:'';
+ return `<h1 style="margin-bottom:6px">Invoices</h1>
+ <p class="muted" style="margin-bottom:20px">The invoice module: send, track, nudge, and let MO match incoming money to open invoices.</p>
+ ${limitsBanner()}${moCard}
+ <div class="card"><h3 style="margin-bottom:10px">Invoices</h3>
+  <table><tr><th>Invoice</th><th>Client</th><th>Due</th><th style="text-align:right">Amount</th><th>Status</th></tr>
+  ${S.plat.inv.map(i=>`<tr><td class="b">${i.no}</td><td>${esc(i.client)}</td><td class="muted">${i.due}</td><td style="text-align:right">${fmt(i.amt,i.ccy)}</td><td><span class="tag ${i.st==='paid'?'tag-ok':i.st==='overdue'?'tag-bad':'tag-mut'}">${i.st}</span>${i.st==='overdue'?` <button class="btn btn-g btn-sm" onclick="toast('MO drafted a polite reminder. In production you approve it and it goes out.')">Nudge</button>`:''}</td></tr>`).join('')}</table>
+  <div class="row2" style="margin-top:14px"><div class="field"><label>Client</label><input id="inv-cl" placeholder="Client name"></div>
+  <div class="field"><label>Amount (${home()})</label><input id="inv-am" type="number" min="0"></div></div>
+  <div class="row2"><div class="field"><label>Due date</label><input id="inv-du" type="date" min="${new Date().toISOString().slice(0,10)}"></div>
+  <div class="field"><label>&nbsp;</label><button class="btn btn-p" onclick="addInvoice()">Create invoice</button></div></div>
+ </div>`;
+}
+function tLinks(){
+ return `<h1 style="margin-bottom:6px">Payment links</h1>
+ <p class="muted" style="margin-bottom:20px">A hosted checkout your customers pay on. Works for held currencies, and for PHP, IDR and THB where the payer pays local and you receive USD.</p>
+ ${limitsBanner()}
+ <div class="card">
+  ${S.plat.links.map(l=>`<div style="display:flex;gap:10px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px;flex-wrap:wrap">
+   <span class="mono" style="color:var(--b700)">${l.url}</span><span class="small muted">${esc(l.desc)} · ${l.amt?fmt(l.amt,l.ccy):'any amount, '+l.ccy}</span>
+   ${COLLECT_ONLY.includes(l.ccy)?'<span class="tag tag-b">settles to USD</span>':''}
+   <span style="margin-left:auto"></span><span class="small muted">${l.paid} paid</span>
+   <button class="btn btn-g btn-sm" onclick="copyTxt('https://${l.url}')">Copy</button>
+   <button class="btn btn-s btn-sm" onclick="simPay('${l.id}')">Simulate a payment</button></div>`).join('')||'<div class="muted small" style="margin-bottom:10px">No links yet.</div>'}
+  <div class="row2"><div class="field"><label>What is it for?</label><input id="lnk-de" placeholder="e.g. Wholesale order #88"></div>
+  <div class="field"><label>Amount <span class="muted small">(blank = payer chooses)</span></label><input id="lnk-am" type="number" min="0"></div></div>
+  <div class="row2"><div class="field"><label>Currency</label><select id="lnk-cy">${[...VA_CCYS,...COLLECT_ONLY].map(c=>`<option ${c===home()?'selected':''}>${c}</option>`).join('')}</select></div>
+  <div class="field"><label>&nbsp;</label><button class="btn btn-p" onclick="createLink()">Create link</button></div></div>
+ </div>`;
+}
+/* ---- cards (expense management) ---- */
+function tCards(){
+ const cards=S.plat.cards;
+ return `<h1 style="margin-bottom:6px">Your cards</h1>
+ <p class="muted" style="margin-bottom:20px">Virtual cards in seconds, plastic on request. Spend lands under Cards, Spend, categorised as it happens.</p>
+ <div style="display:flex;gap:10px;margin-bottom:16px">
+  <button class="btn btn-p" onclick="S.modal='newcard';rr()">+ New virtual card</button>
+  <button class="btn btn-s" onclick="requestPlastic()">Request physical card</button>
+ </div>
+ ${cards.length?`<div class="grid3" style="margin-bottom:18px">${cards.map(c=>`<div class="tile" style="${c.frozen?'opacity:.55':''}">
+  <div style="display:flex;align-items:center;gap:8px"><span class="b">${esc(c.nick)}</span><span class="tag ${c.type==='physical'?(c.st==='requested'?'tag-warn':'tag-ok'):'tag-b'}">${c.type==='physical'?(c.st==='requested'?'On its way':'Physical'):'Virtual'}</span></div>
+  <div class="mono" style="margin:8px 0 4px">5237 •••• •••• ${c.last4}</div>
+  <div class="small muted">Limit ${fmt(c.limit)}/month${c.cat?' · locked to '+c.cat:''}</div>
+  ${c.type==='virtual'?`<button class="btn btn-g btn-sm" style="margin-top:6px" onclick="c=S.plat.cards.find(x=>x.id==='${c.id}');c.frozen=!c.frozen;rr();toast(c.frozen?'Card frozen':'Card unfrozen')">${c.frozen?'Unfreeze':'Freeze'}</button>`:''}
+ </div>`).join('')}</div>`
+ :'<div class="card"><div class="muted small">No cards yet. Issue a virtual card and it works immediately, online and in wallets.</div></div>'}`;
+}
+function tSpend(){
+ return `<h1 style="margin-bottom:6px">Spend</h1>
+ <p class="muted" style="margin-bottom:20px">Every swipe categorised as it happens, receipts chased by MO, not by your finance person. This is the expense management wedge.</p>
+ ${S.plat.cardTx.length?`<div class="card">
+  <table><tr><th>Merchant</th><th>Category</th><th>Receipt</th><th style="text-align:right">Amount</th></tr>
+  ${S.plat.cardTx.map(t=>`<tr><td>${esc(t.who)}</td><td><span class="chip">✦ ${t.cat}</span></td><td>${t.rcpt?'<span class="tag tag-ok">Attached</span>':'<span class="tag tag-warn">MO chasing by email</span>'}</td><td style="text-align:right" class="amt-out">−${fmt(t.amt)}</td></tr>`).join('')}</table>
+  <div class="hint" style="margin-top:8px">Categorisation is automatic and learns from corrections.</div></div>`
+ :'<div class="card"><div class="muted small">No card spend yet. Issue a card and use it, transactions appear here already categorised.</div></div>'}`;
+}
+function mNewCard(){
+ return `<div class="ov" onclick="if(event.target===this){S.modal=null;rr()}"><div class="modal">
+  <h2 style="margin-bottom:14px">New virtual card</h2>
+  <div class="field"><label>Name on card / nickname</label><input id="cd-nick" placeholder="e.g. Marketing · Maya"></div>
+  <div class="row2"><div class="field"><label>Monthly limit (${home()})</label><input id="cd-lim" type="number" min="0" value="1000"></div>
+  <div class="field"><label>Lock to category <span class="muted small">(optional)</span></label><select id="cd-cat"><option value="">Any spend</option><option>Software</option><option>Travel</option><option>Advertising</option><option>Meals</option></select></div></div>
+  <button class="btn btn-p" onclick="issueCard()">Issue card</button>
+  <button class="btn btn-s" style="margin-left:8px" onclick="S.modal=null;rr()">Cancel</button>
+ </div></div>`;
+}
+function issueCard(){
+ const nick=$('cd-nick').value.trim(),limv=Number($('cd-lim').value);
+ if(nick.length<2){toast('Give the card a name');return}
+ if(!(limv>0)){toast('Set a monthly limit');return}
+ S.plat.cards.push({id:uid(),nick,limit:limv,cat:$('cd-cat').value,last4:String(1000+Math.floor(Math.random()*9000)),frozen:false,type:'virtual'});
+ if(!S.plat.cardTx.length)S.plat.cardTx=[{id:uid(),who:'Google Workspace',amt:27.4,cat:'Software',rcpt:true},{id:uid(),who:'Grab',amt:18.2,cat:'Travel',rcpt:false}];
+ S.modal=null;rr();toast('Virtual card issued. It works immediately.');
+}
+function requestPlastic(){
+ S.plat.cards.push({id:uid(),nick:S.user.name.split(' ')[0]+"'s plastic",limit:2000,cat:'',last4:String(1000+Math.floor(Math.random()*9000)),frozen:false,type:'physical',st:'requested'});
+ rr();toast('Physical card requested. It ships in 5 to 7 business days.');
+}
+/* ---- treasury (Synthesys) ---- */
+function accruedToday(){
+ return Object.entries(S.plat.treas.holdings).reduce((t,[fid,amt])=>{const f=FUNDS.find(x=>x.id===fid);return t+(f?conv(amt*f.apy/100/365,f.ccy,home()):0)},0);
+}
+function treasTotal(){
+ return Object.entries(S.plat.treas.holdings).reduce((t,[fid,amt])=>{const f=FUNDS.find(x=>x.id===fid);return t+(f?conv(amt,f.ccy,home()):0)},0);
+}
+function tTreasury(){
+ const tr=S.plat.treas;
+ const row=f=>{
+  const held=tr.holdings[f.id]||0;
+  const gated=f.risk==='high'&&!tr.acceptedHigh;
+  return `<tr><td><span class="b">${f.name}</span><div class="small muted">${f.mgr} · ${f.settle}${f.stable?' · <span class="tag tag-b" style="font-size:10px">stablecoin 24/7</span>':''}</div>${f.note?`<div class="small muted">${f.note}</div>`:''}</td>
+  <td>${f.ccy}</td>
+  <td>${f.apy?f.apy+'%':'n/a'}${f.risk==='high'?' <span class="tag tag-warn" style="font-size:10px">higher risk</span>':''}</td>
+  <td class="muted small">${fmt(f.min,f.ccy).replace('.00','')}</td>
+  <td>${held?`<span class="b">${fmt(held,f.ccy)}</span><br><button class="btn btn-g btn-sm" onclick="withdrawFund('${f.id}')">Withdraw</button>`:''}
+   ${gated?`<button class="btn btn-s btn-sm" onclick="S.modal='fund:${f.id}';rr()">Review risks to unlock</button>`
+   :`<button class="btn btn-g btn-sm" onclick="S.modal='fund:${f.id}';rr()">${held?'Add':'Move money in'}</button>`}</td></tr>`;
+ };
+ return `<h1 style="margin-bottom:6px">Treasury</h1>
+ <p class="muted" style="margin-bottom:16px">Opened with your account, the Wise way, nothing to apply for. Tokenised money market funds on the Synthesys Network, settling in fiat or stablecoin. Finmo is the sub distributor and keeps your ledger, the funds sit with the managers below.</p>
+ ${limitsBanner()}
+ <div class="grid3" style="margin-bottom:18px">
+  <div class="tile"><div class="small muted">In treasury</div><div class="v">${fmt(treasTotal())}</div><div class="small muted">Across ${Object.keys(tr.holdings).length} fund${Object.keys(tr.holdings).length===1?'':'s'}</div></div>
+  <div class="tile"><div class="small muted">Interest accrued today</div><div class="v" style="color:#027A48">+${fmt(accruedToday())}</div><div class="small muted">Yield posts daily, visible per fund</div></div>
+  <div class="tile"><div class="small muted">Order cut-off</div><div class="v">14:00 SGT</div><div class="small muted">Before cut-off settles same day</div></div>
+ </div>
+ <div class="banner banner-i"><div>ⓘ</div><div class="small">Money moves between your Finmo business account and treasury only. No external transfers in or out of treasury, that is the safeguard.</div></div>
+ <div class="card"><table><tr><th>Fund</th><th>Ccy</th><th>Indicative yield</th><th>Minimum</th><th></th></tr>${FUNDS.map(row).join('')}</table>
+ <div class="hint" style="margin-top:8px">Catalogue from the Synthesys Network fund list. Yields are indicative, from each manager's factsheet.</div></div>`;
+}
+function mFund(){
+ const f=FUNDS.find(x=>x.id===S.modal.split(':')[1]);if(!f)return '';
+ const tr=S.plat.treas,gated=f.risk==='high'&&!tr.acceptedHigh;
+ if(gated)return `<div class="ov" onclick="if(event.target===this){S.modal=null;rr()}"><div class="modal">
+  <h2 style="margin-bottom:4px">Before you invest in higher risk products</h2>
+  <p class="small muted" style="margin-bottom:12px">${f.name} is not a money market fund. Read and accept each statement. This unlocks all higher risk funds on your account.</p>
+  <label style="display:flex;gap:9px;margin-bottom:9px;align-items:flex-start"><input type="checkbox" id="rk1" style="width:auto;margin-top:3px"><span class="small">I understand the value can go down as well as up, and returns are targets, not promises.</span></label>
+  <label style="display:flex;gap:9px;margin-bottom:9px;align-items:flex-start"><input type="checkbox" id="rk2" style="width:auto;margin-top:3px"><span class="small">I understand this is not a bank deposit and is not covered by deposit insurance.</span></label>
+  <label style="display:flex;gap:9px;margin-bottom:12px;align-items:flex-start"><input type="checkbox" id="rk3" style="width:auto;margin-top:3px"><span class="small">I have read the risk disclosure and the fund's offering documents, and I accept the risks.</span></label>
+  <button class="btn btn-p" onclick="if(!($('rk1').checked&&$('rk2').checked&&$('rk3').checked)){toast('Tick all three to continue');return}S.plat.treas.acceptedHigh=true;rr();toast('Higher risk products unlocked')">Accept and continue</button>
+  <button class="btn btn-s" style="margin-left:8px" onclick="S.modal=null;rr()">Not now</button>
+ </div></div>`;
+ return `<div class="ov" onclick="if(event.target===this){S.modal=null;rr()}"><div class="modal">
+  <h2 style="margin-bottom:4px">Move money into ${esc(f.name)}</h2>
+  <p class="small muted" style="margin-bottom:12px">${f.mgr} · ${f.ccy} · ${f.apy?f.apy+'% indicative':'no yield, price exposure'} · settles ${f.settle}. Funded from your Finmo business account only.</p>
+  <div class="field"><label>Amount (${f.ccy})</label><input id="fd-amt" type="number" min="0" placeholder="Minimum ${f.min.toLocaleString()}"></div>
+  <div class="hint" style="margin-bottom:10px">Your ${f.ccy} balance: ${fmt(balOf(f.ccy),f.ccy)}${f.ccy!==home()?' · you can convert on the FX screen first':''}</div>
+  <button class="btn btn-p" onclick="investFund('${f.id}')">Move money</button>
+  <button class="btn btn-s" style="margin-left:8px" onclick="S.modal=null;rr()">Cancel</button>
+ </div></div>`;
+}
+function investFund(fid){
+ const f=FUNDS.find(x=>x.id===fid),amt=Number($('fd-amt').value);
+ if(!(amt>0)){toast('Enter an amount');return}
+ if(amt<f.min){toast('This fund has a '+fmt(f.min,f.ccy)+' minimum, from the manager, not us');return}
+ if(amt>balOf(f.ccy)){toast('Not enough '+f.ccy+' in your business account. Convert on the FX screen first.');return}
+ debit(f.ccy,amt);S.plat.treas.holdings[fid]=(S.plat.treas.holdings[fid]||0)+amt;
+ S.plat.txns.unshift({id:uid(),t:Date.now(),who:'Treasury · '+f.name,dir:'out',amt:amt,ccy:f.ccy,note:'Moved to treasury. Withdrawable back to your business account, settlement '+f.settle});
+ S.modal=null;rr();toast('Done. Yield starts accruing today.');
+}
+function withdrawFund(fid){
+ const f=FUNDS.find(x=>x.id===fid),amt=S.plat.treas.holdings[fid]||0;
+ if(!amt)return;
+ delete S.plat.treas.holdings[fid];credit(f.ccy,amt);
+ S.plat.txns.unshift({id:uid(),t:Date.now(),who:'Treasury · '+f.name,dir:'in',amt:amt,ccy:f.ccy,note:'Withdrawn to your business account, settlement '+f.settle});
+ rr();toast('Withdrawn to your business account');
+}
+/* ---- FX ---- */
+function pill(on,label,fn){return `<button class="pchip" style="${on?'background:var(--b600);color:#fff;border-color:var(--b600)':''}" onclick="${fn}">${label}</button>`}
+function fxRisk(){
+ if(S.acct!=='biz'||!live())return '';
+ const p=vrParams(),ex=fxExposures(p.basis),r=varCalc(ex,p),h=home();
+ const horLabel={1:'today',5:'this week',21:'this month'}[p.hor];
+ const odds={90:'1 in 10',95:'1 in 20',99:'1 in 100'}[p.conf];
+ const params=`<div style="margin-bottom:12px">
+  <span class="small muted" style="margin-right:6px">Confidence</span>${[90,95,99].map(c=>pill(p.conf===c,c+'%',`S.vr.conf=${c};rr()`)).join('')}
+  <span class="small muted" style="margin:0 6px 0 12px">Horizon</span>${[[1,'1 day'],[5,'1 week'],[21,'1 month']].map(x=>pill(p.hor===x[0],x[1],`S.vr.hor=${x[0]};rr()`)).join('')}
+  <br><span class="small muted" style="margin-right:6px">Method</span>${[['para','Parametric'],['mc','Monte Carlo']].map(x=>pill(p.meth===x[0],x[1],`S.vr.meth='${x[0]}';rr()`)).join('')}
+  <span class="small muted" style="margin:0 6px 0 12px">Exposure</span>${[['bal','Balances only'],['flows','Balances + expected flows']].map(x=>pill(p.basis===x[0],x[1],`S.vr.basis='${x[0]}';rr()`)).join('')}
+ </div>`;
+ if(!Object.keys(ex).length)return `<div class="card" style="margin-bottom:16px"><h3 style="margin-bottom:6px">FX risk on this account</h3>
+  <p class="small muted" style="margin-bottom:10px">You hold only ${h} and expect no foreign currency inflows, so there is nothing at risk from FX right now. This panel wakes up the moment a foreign balance or receivable appears.</p>
+  <button class="btn btn-s btn-sm" onclick="loadSampleExposure()">Load a sample exposure to see it work</button></div>`;
+ const ks=Object.keys(r.comp),maxC=Math.max(...ks.map(k=>r.comp[k]),1);
+ const top=ks.sort((a,b)=>r.comp[b]-r.comp[a])[0];
+ const bars=ks.map(k=>`<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+  <span class="b" style="width:38px">${k}</span>
+  <div style="flex:1;background:var(--b100);border-radius:99px;height:10px"><div style="width:${Math.max(3,Math.round(r.comp[k]/maxC*100))}%;background:var(--b600);height:100%;border-radius:99px"></div></div>
+  <span class="small" style="width:110px;text-align:right">${fmt(r.comp[k])}</span>
+  <span class="small muted" style="width:120px;text-align:right">exposure ${fmt(ex[k])}</span></div>`).join('');
+ const scen=(label,fn)=>`<button class="pchip" onclick="${fn}">${label}</button>`;
+ const scenRes=S.vrScen?`<span class="small b" style="color:${S.vrScen.v<0?'#B42318':'#027A48'}">${esc(S.vrScen.t)}: ${S.vrScen.v<0?'−':'+'}${fmt(Math.abs(S.vrScen.v))}</span>`:'<span class="small muted">Pick a scenario to see the instant P&L impact</span>';
+ const topHalfHome=r.comp[top]!==undefined?ex[top]/2:0;
+ const topAmt=Math.min(balOf(top)||0,conv(topHalfHome,h,top));
+ const mid=conv(1,top,h);
+ const trigRows=S.plat.fxTriggers.map(t=>`<div style="display:flex;gap:10px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin-top:8px">
+  <span class="small">Convert <span class="b">${fmt(t.amt,t.from)}</span> when 1 ${t.from} ≥ ${t.rate.toFixed(4)} ${t.to}</span>
+  <span class="tag ${t.st==='armed'?'tag-b':t.st==='executed'?'tag-ok':'tag-bad'}" style="margin-left:auto">${t.st}</span>
+  ${t.st==='armed'?`<button class="btn btn-g btn-sm" onclick="fireTrigger('${t.id}')">Simulate rate hit</button><button class="btn btn-g btn-sm" style="color:#B42318" onclick="cancelTrigger('${t.id}')">Cancel</button>`:''}</div>`).join('');
+ return `<div class="card" style="margin-bottom:16px">
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><h3>FX risk on this account</h3><span class="tag tag-b">Value at Risk</span></div>
+  <p class="small muted" style="margin-bottom:12px">Computed from your own ledger: foreign balances${p.basis==='flows'?' plus unpaid foreign invoices':''}. Same engine the treasury cash tools will get, in plain money words here.</p>
+  ${params}
+  <div style="font-size:22px;font-weight:700;letter-spacing:-.02em;margin-bottom:2px">${r.v<1?'Negligible (under '+fmt(1)+')':fmt(r.v)}</div>
+  <div class="small muted" style="margin-bottom:14px">On a bad day for the currencies you hold (${odds} odds), FX could cost you up to this ${horLabel}. A model estimate, not a promise.</div>
+  ${bars}
+  <div style="margin:12px 0 4px">${scen('USD −2%',`S.vrScen={t:'USD −2%',v:-(${(ex.USD||0)})*0.02};rr()`)}${scen('EUR −2%',`S.vrScen={t:'EUR −2%',v:-(${(ex.EUR||0)})*0.02};rr()`)}${scen('All foreign −5%',`S.vrScen={t:'All foreign −5%',v:-(${Object.values(ex).reduce((a,b)=>a+b,0)})*0.05};rr()`)}${scen('All foreign +5%',`S.vrScen={t:'All foreign +5%',v:(${Object.values(ex).reduce((a,b)=>a+b,0)})*0.05};rr()`)} ${scenRes}</div>
+  ${top?`<div class="banner banner-i" style="margin-top:12px;margin-bottom:0"><div>✦</div><div class="small" style="flex:1"><span class="b">MO suggestion.</span> ${top} drives ${Math.round(r.comp[top]/r.v*100)}% of your risk. Converting about half of it (${fmt(topAmt,top)}) cuts your VaR to roughly ${fmt(varCalc(Object.assign({},ex,{[top]:ex[top]/2}),p).v)}. Or arm a target so it converts automatically at a better rate, the Xflow way.
+   <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+    <button class="btn btn-p btn-sm" onclick="S.fx={from:'${top}',to:'${h}',amt:'${Math.round(topAmt)}'};rr();toast('Loaded into the converter below. One click to execute.')">Convert now</button>
+    <button class="btn btn-s btn-sm" onclick="addTrigger('${top}',${Math.round(topAmt)},${(mid*1.005).toFixed(6)})">Set target at ${(mid*1.005).toFixed(4)} (+0.5%)</button>
+   </div></div></div>`:''}
+  ${trigRows?`<div style="margin-top:12px"><span class="small b">Rate triggers</span>${trigRows}</div>`:''}
+  <div class="hint" style="margin-top:12px">Model: ${p.meth==='mc'?'Monte Carlo, 4,000 seeded paths, one factor correlation':'parametric variance covariance'}, representative volatilities per currency, correlation ${RHO}. In production the covariance feeds daily from market data and the model is backtested against your own history, with the hit rate shown right here.</div>
+ </div>`;
+}
+function tFx(){
+ const f=S.fx,held=Object.keys(S.plat.bals).filter(c=>balOf(c)>0);
+ if(!held.includes(f.from))f.from=held[0]||home();
+ const amt=Number(f.amt)||0,mid=conv(1,f.from,f.to),recv=amt*mid*(1-FXM);
+ return `<h1 style="margin-bottom:6px">${S.acct==='biz'?'FX':'Convert'}</h1>
+ <p class="muted" style="margin-bottom:16px">Mid market rate with an itemised 0.5% margin on majors. The margin is a line item, never hidden in the rate.</p>
+ ${S.acct==='biz'&&live()?`<div class="banner banner-i"><div>✦</div><div class="small" style="flex:1"><span class="b">MO exposure alert.</span> 38% of your expected inflows this month are USD but your bills are in ${home()}. If USD weakens 2%, that is about ${fmt(conv(12000,'USD',home())*0.02)} gone. Suggested action: convert USD 12,000 now.<div style="margin-top:8px;display:flex;gap:8px"><button class="btn btn-p btn-sm" onclick="S.fx={from:'USD',to:'${home()}',amt:'12000'};rr()">Load the suggestion</button><button class="btn btn-s btn-sm" onclick="toast('Snoozed for a week. MO re-alerts if exposure grows.')">Not now</button></div></div></div>`:''}
+ ${fxRisk()}
+ <div class="card" style="max-width:600px">
+  <h3 style="margin-bottom:12px">Convert</h3>
+  <div class="row2">
+   <div class="field"><label>From</label><select onchange="S.fx.from=this.value;rr()">${held.map(c=>`<option ${f.from===c?'selected':''}>${c}</option>`).join('')}</select><div class="hint">Available: ${fmt(balOf(f.from),f.from)}</div></div>
+   <div class="field"><label>To</label><select onchange="S.fx.to=this.value;rr()">${VA_CCYS.filter(c=>c!==f.from).map(c=>`<option ${f.to===c?'selected':''}>${c}</option>`).join('')}</select></div>
+  </div>
+  <div class="field"><label>Amount (${f.from})</label><input type="number" min="0" value="${esc(f.amt)}" oninput="S.fx.amt=this.value;save()" onchange="rr()"></div>
+  ${amt>0?`<div class="kv" style="margin-bottom:14px">
+   <div class="k">Mid market</div><div>1 ${f.from} = ${mid.toFixed(4)} ${f.to}</div>
+   <div class="k">Margin</div><div>0.5%, itemised (${fmt(amt*mid*FXM,f.to)})</div>
+   <div class="k">You receive</div><div class="b">${fmt(recv,f.to)}</div>
+   <div class="k">Quote</div><div class="small muted">Refreshes every 30 seconds in production</div>
+  </div>`:''}
+  <button class="btn btn-p" onclick="doFx()">Convert</button>
+ </div>`;
+}
+function doFx(){
+ const f=S.fx,amt=Number(f.amt);
+ if(!(amt>0)){toast('Enter an amount');return}
+ if(f.from===f.to){toast('Pick two different currencies');return}
+ if(amt>balOf(f.from)){toast('Not enough '+f.from);return}
+ const recv=conv(amt,f.from,f.to)*(1-FXM);
+ debit(f.from,amt);credit(f.to,recv);
+ S.plat.txns.unshift({id:uid(),t:Date.now(),who:'FX conversion',dir:'in',amt:recv,ccy:f.to,note:'Converted from '+fmt(amt,f.from)+' at mid plus 0.5% itemised'});
+ S.fx.amt='';rr();toast('Converted. '+fmt(recv,f.to)+' is in your balance.');
+}
+/* ---- team (Wise roles) ---- */
+function tTeam(){
+ return `<h1 style="margin-bottom:6px">Team</h1>
+ <p class="muted" style="margin-bottom:20px">Invite your accountant, your ops person, your co-founder. Roles follow the Wise model, everyone gets exactly the access their job needs.</p>
+ <div class="card" style="margin-bottom:16px"><h3 style="margin-bottom:10px">Members</h3>
+  <table><tr><th>Person</th><th>Role</th><th>Status</th><th></th></tr>
+  ${S.plat.team.map(m=>`<tr><td class="b">${esc(m.name||m.email)}<div class="small muted">${esc(m.email)}</div></td>
+   <td>${m.role==='owner'?'<span class="tag tag-b">Owner</span>':`<select onchange="S.plat.team.find(x=>x.id==='${m.id}').role=this.value;save();toast('Role updated')" style="padding:5px 8px;border:1.5px solid var(--line);border-radius:8px">${ROLES.slice(1).map(r=>`<option value="${r[0]}" ${m.role===r[0]?'selected':''}>${r[1]}</option>`).join('')}</select>`}</td>
+   <td><span class="tag ${m.st==='active'?'tag-ok':'tag-mut'}">${m.st}</span></td>
+   <td>${m.role!=='owner'?`<button class="btn btn-g btn-sm" style="color:#B42318" onclick="S.plat.team=S.plat.team.filter(x=>x.id!=='${m.id}');rr()">Remove</button>`:''}</td></tr>`).join('')}</table>
+  <div class="row2" style="margin-top:14px"><div class="field"><label>Invite by email</label><input id="tm-em" placeholder="colleague@company.com"></div>
+  <div class="field"><label>Role</label><select id="tm-rl">${ROLES.slice(1).map(r=>`<option value="${r[0]}">${r[1]}</option>`).join('')}</select></div></div>
+  <button class="btn btn-p" onclick="inviteMember()">Send invite</button>
+ </div>
+ <div class="card"><h3 style="margin-bottom:8px">What each role can do</h3>
+  <div class="kv">${ROLES.map(r=>`<div class="k">${r[1]}</div><div class="small">${r[2]}</div>`).join('')}</div>
+ </div>`;
+}
+function inviteMember(){
+ const em=$('tm-em').value.trim();
+ if(!emailOk(em)){toast('Enter a valid email');return}
+ if(S.plat.team.some(m=>m.email===em)){toast('Already on the team');return}
+ S.plat.team.push({id:uid(),name:'',email:em,role:$('tm-rl').value,st:'invited'});
+ rr();toast('Invite sent to '+em);
+}
+/* ---- top up ---- */
+function mTopup(){
+ return `<div class="ov" onclick="if(event.target===this){S.modal=null;rr()}"><div class="modal">
+  <h2 style="margin-bottom:14px">Top up your ${home()} balance</h2>
+  <div class="field"><label>Amount (${home()})</label><input id="tu-amt" type="number" min="0" placeholder="0.00"></div>
+  <div class="sel" onclick="topup('bank')"><span style="font-size:17px">🏦</span><span style="flex:1"><span class="b">Bank transfer</span><br><span class="small muted">Free. Use your local account details, funds land in minutes.</span></span><span class="b">Free</span></div>
+  <div class="sel" onclick="topup('card')"><span style="font-size:17px">💳</span><span style="flex:1"><span class="b">Debit or credit card</span><br><span class="small muted">Instant. The fee is shown before you pay, never after.</span></span><span class="b">2.9%</span></div>
+  <button class="btn btn-s" onclick="S.modal=null;rr()">Cancel</button>
+ </div></div>`;
+}
+function topup(method){
+ const amt=Number($('tu-amt').value);
+ if(!(amt>0)){toast('Enter an amount first');return}
+ if(method==='bank'){S.modal=null;rr();toast('Use your '+home()+' account details ('+VAD[home()]+'). In this prototype, bank top ups are instant via a payment link simulation.');return}
+ const fee=amt*0.029;
+ credit(home(),amt);
+ S.plat.txns.unshift({id:uid(),t:Date.now(),who:'Card top up',dir:'in',amt:amt,ccy:home(),note:'Card charged '+fmt(amt+fee)+' including the 2.9% fee ('+fmt(fee)+'), shown before you paid'});
+ S.modal=null;rr();toast('Topped up '+fmt(amt)+'. Card was charged '+fmt(amt+fee)+'.');
+}
+/* ---- AskMO ---- */
+const MO_PROMPTS=['What is my balance?','What are my limits?','What is my FX risk?','What did I earn in treasury?'];
+function moAsk(q){
+ S.mo.msgs.push({me:true,t:q});
+ const ql=q.toLowerCase();let a;
+ if(!live())a='I can see your application status: '+REVIEW_STAGES[app_().stage].t.toLowerCase()+'. Money questions unlock once you are approved.';
+ else if(ql.includes('balance'))a='Your total is '+fmt(totalHome())+' ('+Object.entries(S.plat.bals).filter(([c,n])=>n>0.005).map(([c,n])=>fmt(n,c)).join(', ')+'), synced live. One number, one ledger, no stale cache.';
+ else if(ql.includes('limit'))a=limited()?('Starter limits: '+fmt(lim().tx)+' per transfer, '+fmt(lim().mo)+' per month, cards at full approval. The team usually clears these within 1 to 2 days. Your risk score was '+app_().risk.score+', you can open the report from your home page.'):'No limits on your account, you are fully approved.';
+ else if(ql.includes('due')||ql.includes('bill')){const bs=S.plat.bills.filter(b=>new Date(b.due)-Date.now()<7*86400000);a=bs.length?('Due within 7 days: '+bs.map(b=>b.who.split(' ·')[0]+' '+fmt(b.amt)+' on '+b.due).join('; ')+'. Want me to queue any of them?'):'Nothing due in the next 7 days.'}
+ else if(ql.includes('treasury')||ql.includes('earn')||ql.includes('yield')||ql.includes('interest'))a=Object.keys(S.plat.treas.holdings).length?('You hold '+fmt(treasTotal())+' in treasury and accrued about '+fmt(accruedToday())+' today. Yield posts daily.'):'Nothing in treasury yet. Your idle cash could earn around 3.6% in a tokenised USD money market fund, want to look?';
+ else if(ql.includes('fx')||ql.includes('risk')||ql.includes('var')){const pp=vrParams(),ex=fxExposures(pp.basis),r=varCalc(ex,pp);const ks=Object.keys(r.comp).sort((a,b)=>r.comp[b]-r.comp[a]);a=ks.length?('Your '+pp.conf+'% VaR over '+({1:'1 day',5:'1 week',21:'1 month'}[pp.hor])+' is '+fmt(r.v)+'. '+ks[0]+' drives most of it. I can convert part of it now or arm a target rate trigger, your call on the FX screen.'):'No FX risk right now, you hold only '+home()+'. I will flag it here the moment a foreign balance or receivable appears.'}
+ else if(ql.includes('burn')||ql.includes('outflow'))a='Committed outflows for the next two weeks total '+fmt(S.plat.bills.reduce((t,b)=>t+b.amt,0))+'. Against '+fmt(totalHome())+' you are covered.';
+ else a='In this prototype I answer questions about balances, limits, bills and treasury, from the same ledger the dashboard reads. In production I route anything else to the right internal specialist.';
+ S.mo.msgs.push({me:false,t:a});rr();
+ setTimeout(()=>{const b=document.querySelector('.mo-msgs');if(b)b.scrollTop=b.scrollHeight},30);
+}
+function vMo(){
+ return `<div class="mo-drawer">
+  <div style="padding:16px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:9px"><span style="font-size:17px">✦</span><span class="b">AskMO</span><span class="tag tag-b">${S.acct==='biz'?'operations assistant':'your money, answered'}</span><button class="btn btn-g btn-sm" style="margin-left:auto" onclick="S.mo.open=false;rr()">Close</button></div>
+  <div class="mo-msgs">
+   ${S.mo.msgs.length?'':'<div class="small muted" style="margin-bottom:10px">Every suggested prompt below is guaranteed to work. MO never advertises a question it cannot answer.</div>'}
+   ${S.mo.msgs.map(m=>`<div class="msg ${m.me?'me':'mo'}">${esc(m.t)}</div>`).join('')}
+  </div>
+  <div style="padding:14px 18px;border-top:1px solid var(--line)">
+   <div style="margin-bottom:8px">${MO_PROMPTS.map(p=>`<button class="pchip" onclick="moAsk('${p}')">${p}</button>`).join('')}</div>
+   <div style="display:flex;gap:8px"><input id="moin" placeholder="Ask about your money…" style="flex:1;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px" onkeydown="if(event.key==='Enter'&&this.value.trim()){moAsk(this.value.trim());this.value=''}">
+   <button class="btn btn-p" onclick="const i=$('moin');if(i.value.trim()){moAsk(i.value.trim());i.value=''}">Send</button></div>
+  </div>
+ </div>`;
+}
+/* ============ render ============ */
+function render(){
+ const views={signup:vSignup,verify:vVerify,kybintro:vIntro,wizard:vWizard,screening:vScreening,tracker:vTracker,app:vApp};
+ $('app').innerHTML=(views[S.view]||vSignup)()+demoBar();
+}
+</script>
+</body>
+</html>

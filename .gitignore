@@ -1,0 +1,9 @@
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# Working notes not meant for the public repo
+Finmo Dashboard Rebuild - Siddharth Karmarkar.txt
