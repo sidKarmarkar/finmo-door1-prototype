@@ -8,8 +8,9 @@ A clickable, single-file prototype of Finmo's **Door 1** journey: from signup to
 
 - **`index.html`** — landing page (the Pages entry point).
 - **`finmo-door1-prototype.html`** — the prototype. One file, no build, no network, no dependencies. All data is fake and lives only in your browser (localStorage), so progress survives a refresh and a full reset is one click.
-- **`DESIGN_DECISIONS.md`** — every design choice and its defense, edge cases, and where each simulated seam swaps for production.
-- **`PROD_IMPLEMENTATION.md`** — how the demo ships on Finmo's stack (AWS, polyglot databases, Bedrock), focused on the AI side, proving feasibility.
+- **`DESIGN_DECISIONS.md`** — every design choice and its defense, edge cases, and where each simulated seam swaps for production. Rendered for the web as **`design-decisions.html`**.
+- **`PROD_IMPLEMENTATION.md`** — how the demo ships on Finmo's stack (AWS, polyglot databases, Bedrock), focused on the AI side, proving feasibility. Rendered for the web as **`production.html`**.
+- **`build-docs.py`** — regenerates the two `.html` docs from the markdown source (`python3 build-docs.py`). Edit the `.md`, rerun, commit both.
 
 ## What it covers
 

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Production implementation · Finmo Door 1</title>
+<style>
+:root{--b600:#7A47E8;--b700:#6538CE;--b50:#F7F4FE;--b100:#EFE8FC;--b200:#DCCEF9;
+--ink:#101828;--ink2:#344054;--ink3:#667085;--line:#E4E7EC;--bg:#F9FAFB}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink2);
+font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+font-size:16px;line-height:1.7;-webkit-font-smoothing:antialiased}
+.top{position:sticky;top:0;z-index:5;background:rgba(255,255,255,.86);backdrop-filter:blur(8px);
+border-bottom:1px solid var(--line);padding:12px 24px;display:flex;align-items:center;gap:12px}
+.top a.back{color:var(--ink3);text-decoration:none;font-size:14px;font-weight:600}
+.top a.back:hover{color:var(--b700)}
+.logo{display:inline-flex;align-items:center;gap:8px;font-weight:800;font-size:17px;letter-spacing:-.02em;color:var(--ink)}
+.logo .lg{width:26px;height:26px;border-radius:7px;background:var(--b600);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:13px}
+.wrap{max-width:820px;margin:0 auto;padding:44px 24px 96px}
+h1{font-size:34px;line-height:1.2;letter-spacing:-.025em;color:var(--ink);margin:0 0 6px}
+h1+p{font-size:15px;color:var(--ink3);margin-top:0}
+h2{font-size:23px;letter-spacing:-.02em;color:var(--ink);margin:44px 0 12px;padding-top:14px;border-top:1px solid var(--line)}
+h3{font-size:17px;letter-spacing:-.01em;color:var(--ink);margin:26px 0 6px}
+p{margin:0 0 15px}
+strong{color:var(--ink);font-weight:650}
+a{color:var(--b700)}
+ul,ol{margin:0 0 16px;padding-left:22px}
+li{margin:5px 0}
+hr{border:none;border-top:1px solid var(--line);margin:30px 0}
+code{background:var(--b50);border:1px solid var(--b100);border-radius:5px;padding:1px 6px;font-size:13.5px;
+font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--b700)}
+table{width:100%;border-collapse:collapse;margin:8px 0 22px;font-size:14.5px;background:#fff;
+border:1px solid var(--line);border-radius:12px;overflow:hidden}
+th{text-align:left;background:var(--b50);color:var(--ink);font-weight:650;font-size:13px;
+text-transform:uppercase;letter-spacing:.03em;padding:11px 16px;border-bottom:1px solid var(--line)}
+td{padding:12px 16px;border-bottom:1px solid #F2F4F7;vertical-align:top}
+tr:last-child td{border-bottom:none}
+td strong{color:var(--b700)}
+blockquote{margin:0 0 15px;padding:2px 18px;border-left:3px solid var(--b200);color:var(--ink3)}
+.toc{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 22px;margin:26px 0 8px}
+.toc .t{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ink3);margin-bottom:8px}
+.toc ul{margin:0;padding-left:18px}
+.toc li{margin:3px 0}
+.toc a{text-decoration:none;color:var(--ink2);font-size:14.5px}
+.toc a:hover{color:var(--b700)}
+.foot{margin-top:52px;padding-top:20px;border-top:1px solid var(--line);color:#98A2B3;font-size:13px}
+@media(max-width:640px){.wrap{padding:28px 18px 72px}h1{font-size:27px}h2{font-size:20px}}
+</style></head>
+<body>
+<div class="top"><span class="logo"><span class="lg">f</span>finmo</span>
+<a class="back" href="./index.html">&larr; Back to overview</a></div>
+<main class="wrap"><h1 id="production-implementation">Production implementation</h1>
+<p><strong>Finmo Door 1 prototype — Siddharth Karmarkar</strong></p><nav class="toc"><div class="t">Contents</div><ul><li><a href="#architecture-at-a-glance">Architecture at a glance</a></li><li><a href="#the-mo-runtime">The MO runtime</a></li><li><a href="#module-mapping">Module mapping</a></li><li><a href="#cross-cutting">Cross-cutting</a></li><li><a href="#build-sequence-and-honest-risks">Build sequence and honest risks</a></li></ul></nav>
+<p>The design document defends the choices. This one proves they ship. It maps every part of the prototype onto Finmo's existing stack: AWS hosting, a mix of databases chosen per workload, and Bedrock for AI. The AI side gets the most detail, because that is where the product thesis lives.</p>
+<p>The claim is stronger than "feasible." Most of the demo is assembly of patterns that are already routine in production somewhere, and the parts that are not routine are deliberately fenced behind provider interfaces. The demo's AI is ambitious as product and conservative as engineering, which is the right place for a licensed institution to put its ambition.</p>
+<hr />
+<h2 id="architecture-at-a-glance">Architecture at a glance</h2>
+<p>One platform, organised as services around an event backbone, mirroring the loop: see, decide, move, learn.</p>
+<ul>
+<li><strong>Frontend.</strong> React served from S3 behind CloudFront. The prototype's render functions become components; its single state object splits into server state and a client store.</li>
+<li><strong>Services.</strong> API Gateway in front of ECS Fargate for the long-lived services (ledger, payments orchestration, MO runtime) and Lambda for the bursty ones (document processing, webhooks, checks).</li>
+<li><strong>Event backbone.</strong> EventBridge. Every state transition in onboarding, payments, cards and treasury is an event. This is what makes each later feature a new consumer instead of a schema change.</li>
+</ul>
+<h3 id="data-chosen-per-workload">Data, chosen per workload</h3>
+<p>The rule that settles every future storage debate: <strong>money truth lives in the Postgres journal; everything else is a projection that can be rebuilt from it.</strong></p>
+<table>
+<thead>
+<tr>
+<th>Store</th>
+<th>Holds</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Aurora Postgres</strong></td>
+<td>Ledger as an append-only double-entry journal, with balances as materialised views. Accounts, invoices, bills, payouts, cards, treasury holdings.</td>
+</tr>
+<tr>
+<td><strong>DynamoDB</strong></td>
+<td>High-write, key-shaped state: onboarding aggregates, wizard progress (the demo's save-and-resume), idempotency keys, limit and usage counters, feature flags.</td>
+</tr>
+<tr>
+<td><strong>S3</strong></td>
+<td>Every uploaded document and generated report, immutable and versioned.</td>
+</tr>
+<tr>
+<td><strong>OpenSearch</strong></td>
+<td>Fuzzy search: counterparty names for matching, screening-list caches, transaction search.</td>
+</tr>
+<tr>
+<td><strong>ElastiCache (Redis)</strong></td>
+<td>FX rates and live quotes.</td>
+</tr>
+<tr>
+<td><strong>Timestream</strong></td>
+<td>Rate history for the risk engine.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="the-mo-runtime">The MO runtime</h2>
+<p>This is the most important decision in the document, so it comes first. <strong>All AI goes through one internal service that fronts Bedrock. No product service calls Bedrock directly.</strong> The runtime has four layers.</p>
+<h3 id="model-routing">Model routing</h3>
+<p>Bedrock with a routing table, not a single model. Nothing in Door 1 needs the largest models.</p>
+<table>
+<thead>
+<tr>
+<th>Work</th>
+<th>Model class</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Field extraction, categorisation, intent routing</td>
+<td>Haiku</td>
+<td>Milliseconds, fractions of a cent, high volume</td>
+</tr>
+<tr>
+<td>Report narratives, match tie-breaks, AskMO chat</td>
+<td>Sonnet</td>
+<td>Judgement and language, lower volume</td>
+</tr>
+</tbody>
+</table>
+<p>Prompt caching is on for fixed system prompts. Provisioned throughput is bought only for the two user-facing synchronous paths, live checks and AskMO. Every call is logged with model id, prompt hash, token counts and latency, so cost per feature is a dashboard rather than an investigation.</p>
+<h3 id="tool-registry">Tool registry</h3>
+<p>How MO touches the platform: a registry of typed tools, each an internal API with a JSON schema, a permission scope and an audit tag. Read tools are broad. <strong>Write tools are narrow, and every one of them returns a proposal, not an action.</strong> The model literally has no tool that moves money; it has tools that create proposals, which the product surfaces as the approval cards you see in the demo, and a human click converts a proposal into a command handled by deterministic services. The only standing exceptions are rules the human already approved, FX triggers and auto-categorisation, both writing to reversible or advisory state. A new AI capability is a new tool plus an evaluation set, no new architecture.</p>
+<h3 id="safety">Safety</h3>
+<p>Bedrock Guardrails plus our own: PII redaction before prompts leave the VPC; injection hardening on every path where input comes from customer documents or free text, where extracted text is treated as data and never concatenated into instructions; output-schema validation with one retry then a deterministic fallback; and a per-tool kill switch in AppConfig so any capability can be disabled without a deploy.</p>
+<h3 id="evaluation">Evaluation</h3>
+<p>What makes the AI shippable rather than demoable. Every capability has a golden set: labelled documents for extraction, labelled payin-invoice pairs for matching, labelled transactions for categorisation, a question bank for AskMO. CI runs the sets on every prompt or model change. Production corrections become new labels, which retune thresholds and few-shot exemplars weekly. The feedback loop the design doc promises is concretely this.</p>
+<hr />
+<h2 id="module-mapping">Module mapping</h2>
+<p>Each row is short on purpose. The pattern, then where the AI sits.</p>
+<h3 id="onboarding">Onboarding</h3>
+<p>The application aggregate lives in DynamoDB; the process runs on Step Functions, one definition with the step list injected per product. Pause-and-resume is the built-in <code>waitForTaskToken</code> pattern: the execution parks when compliance requests a document and the upload webhook resumes it. Uploads are S3 presigned URLs, then a chain of virus scan, Textract for OCR, then MO extraction, with every document state in the demo driven by that chain and a dead-letter alarm enforcing the no-silent-failure rule.</p>
+<p><em>AI:</em> prefill is Textract plus a Haiku-class extraction call returning value and confidence per field against the country pack. Registration format and PO Box checks are deterministic, client and server side, because regex problems should not cost tokens. The website-versus-description check is one small model call returning match, mismatch or unclear with a reason. Extraction and single-question classification are the two most commoditised LLM tasks there are, and Textract plus Bedrock is AWS's own reference pattern.</p>
+<h3 id="screening-scoring-and-instant-approval">Screening, scoring and instant approval</h3>
+<p>Sanctions and PEP screening is a vendor integration behind a <code>ScreeningProvider</code> interface, called asynchronously on person-save, with an OpenSearch prescreen for the instant chip. The scorecard is deterministic and versioned, with weighted signals and reason codes, because MAS expects explainable onboarding and a model must not decide. Approval-with-limits is configuration: the limits object becomes a policy record, counters live in DynamoDB with atomic conditional writes, and clearing limits is one event.</p>
+<p><em>AI:</em> a Sonnet-class call assembles the analyst-facing narrative from the signal table, with every claim grounded in a signal id so it cannot invent facts. A future ML risk model slots in as one more signal with its own reason code; it does not replace the auditable frame.</p>
+<h3 id="accounts-and-collections">Accounts and collections</h3>
+<p>A partner-integration service owns the J.P. Morgan surface: virtual-account issuance, credit webhooks, and daily reconciliation against our journal, with breaks surfacing in an ops queue. Issuance is event-driven off the approval events, matching the demo's unlock moment. Collect-only currencies are a routing-table entry. <code>VirtualAccountProvider</code> is an interface, so a second issuer is an implementation, not a redesign.</p>
+<h3 id="payments">Payments</h3>
+<p>Payouts run as a saga on Step Functions (quote, pre-flight, debit, submit, confirm) with idempotency keys and compensating entries. Rail adapters implement one interface per rail family; the demo's rail picker becomes a pricing service. Bill ingestion reuses the onboarding document chain unchanged.</p>
+<p><em>AI:</em> detection is deterministic or statistical and cheap; language is where the model spends. Duplicate detection is a database query first, then embedding similarity on counterparty names to catch near-matches, with the model only writing the warning. Anomaly flags start as statistics against the customer's own history, each a scored signal, and a learned model can replace them later behind the same interface. A wrong block costs trust; a wrong explanation costs a reword.</p>
+<h3 id="collections">Collections</h3>
+<p>Matching is candidate generation (SQL over open invoices), then ranking (embedding similarity plus amount and reference heuristics), then a model tie-break only for ambiguous pairs, landing as a proposal. Confirmations and rejections are labels. Auto-match above high confidence can be enabled per tenant later as a standing rule. Nudges are a Sonnet draft from invoice facts, queued for approval. Payment links need no AI, which is worth stating in a document about AI: knowing where not to spend a model is part of the argument.</p>
+<h3 id="cards">Cards</h3>
+<p>An issuer processor (Marqeta or Lithic class) behind a <code>CardProvider</code> interface, with authorisation webhooks into the journal in real time. Spend controls evaluate in the authorisation callback against policy records. Categorisation is MCC and merchant rules first, then embeddings against the tenant's corrected history, then a small model call for the long tail. Receipt chasing is an MO standing rule.</p>
+<h3 id="treasury">Treasury</h3>
+<p>Finmo is sub-distributor; Synthesys holds the principal and client-money accounts. The consequence: our journal is the source of truth for customer positions, an omnibus network holding mapped to per-customer rows. That is why the only allowed movement is business account to treasury and back, enforced in the transfer service. The order service batches against the 14:00 SGT cutoff, tracks settlement per fund, and posts daily NAV and yield as journal entries so yesterday's interest is a real ledger line. The suitability gate stores each accepted disclosure with version and timestamp, immutable in S3, because when a fund has a bad quarter the evidence of informed consent is the product. AI here is thin on purpose: investment advice is a regulated act, so the idle-cash suggestion is a threshold rule with a model-written sentence.</p>
+<h3 id="fx-and-var">FX and VaR</h3>
+<p>The demo's engine ports almost line for line; the one upgrade is the covariance input. Rates stream into Redis for quoting and Timestream for history; a nightly job computes volatilities and correlations, and the engine takes a <code>CovarianceProvider</code> interface so the demo's representative numbers and production's estimated ones are two implementations of one signature. VaR runs on demand for the screen and nightly for the home tile and backtesting, where realised P&amp;L is compared against the forecast band and the hit rate is shown to the customer. Triggers are standing orders evaluated against the rate stream, with balance pre-checks and loud failure. The cash-tools version widens the position sources to connected banks and forecast flows, which is exactly why the engine was built interface-free.</p>
+<h3 id="askmo">AskMO</h3>
+<p>The conversational face of the runtime: intent routing on a small model, tool calls against the read registry, and the rule that any number in a response must come from a tool, not from generation. Curated prompts are registered against health checks, so a prompt whose backing service is degraded is swapped out before a customer can click it. That turns the failed-marquee-prompt finding into a structural impossibility.</p>
+<hr />
+<h2 id="cross-cutting">Cross-cutting</h2>
+<p><strong>Scale.</strong> The ledger partitions by tenant and posts through an append-only journal, so read load goes to projections and caches while the write path stays narrow. Everything AI is asynchronous except live checks and chat, so Bedrock throughput is a queue-depth question, not an availability one. Step Functions and Lambda absorb onboarding and document spikes without capacity planning.</p>
+<p><strong>Flexibility.</strong> Provider interfaces for screening, virtual accounts, card issuing, acquiring, the fund network and market data, so every partner is swappable. Country packs, scorecards, limits, the fund catalogue and rail tables are configuration. The event backbone means a future lending product, a Door 2 forecaster or an accounting sync each subscribes to events that already exist.</p>
+<p><strong>Compliance.</strong> Data residency per region under the existing licence map; reproducible decisions and immutable documents for the audit trail; model risk handled by the deterministic scorecard frame with AI in assembly and language roles; human accountability preserved by the proposal pattern wherever money moves.</p>
+<hr />
+<h2 id="build-sequence-and-honest-risks">Build sequence and honest risks</h2>
+<p>A credible order: the document chain and MO runtime first, since onboarding, bills and receipts all ride on it; then scored onboarding with limits; then JPM accounts and the payout saga; then matching and categorisation, the highest visible AI value per unit of effort; then cards, treasury, and the risk service. Each stage ships customer-visible value on its own.</p>
+<p>The real risks are not the AI. They are partner timelines (JPM onboarding, the issuer processor, the Synthesys integration) and the operational load of reconciliation and compliance queues. Every AI component here is a pattern with public production precedent on Bedrock, and every one degrades to a manual path, because the manual path is what the proposal pattern falls back to by construction.</p>
+<div class="foot">Finmo Door 1 prototype · Siddharth Karmarkar. Prototype only; all data is illustrative.</div>
+</main></body></html>

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Design decisions · Finmo Door 1</title>
+<style>
+:root{--b600:#7A47E8;--b700:#6538CE;--b50:#F7F4FE;--b100:#EFE8FC;--b200:#DCCEF9;
+--ink:#101828;--ink2:#344054;--ink3:#667085;--line:#E4E7EC;--bg:#F9FAFB}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink2);
+font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+font-size:16px;line-height:1.7;-webkit-font-smoothing:antialiased}
+.top{position:sticky;top:0;z-index:5;background:rgba(255,255,255,.86);backdrop-filter:blur(8px);
+border-bottom:1px solid var(--line);padding:12px 24px;display:flex;align-items:center;gap:12px}
+.top a.back{color:var(--ink3);text-decoration:none;font-size:14px;font-weight:600}
+.top a.back:hover{color:var(--b700)}
+.logo{display:inline-flex;align-items:center;gap:8px;font-weight:800;font-size:17px;letter-spacing:-.02em;color:var(--ink)}
+.logo .lg{width:26px;height:26px;border-radius:7px;background:var(--b600);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:13px}
+.wrap{max-width:820px;margin:0 auto;padding:44px 24px 96px}
+h1{font-size:34px;line-height:1.2;letter-spacing:-.025em;color:var(--ink);margin:0 0 6px}
+h1+p{font-size:15px;color:var(--ink3);margin-top:0}
+h2{font-size:23px;letter-spacing:-.02em;color:var(--ink);margin:44px 0 12px;padding-top:14px;border-top:1px solid var(--line)}
+h3{font-size:17px;letter-spacing:-.01em;color:var(--ink);margin:26px 0 6px}
+p{margin:0 0 15px}
+strong{color:var(--ink);font-weight:650}
+a{color:var(--b700)}
+ul,ol{margin:0 0 16px;padding-left:22px}
+li{margin:5px 0}
+hr{border:none;border-top:1px solid var(--line);margin:30px 0}
+code{background:var(--b50);border:1px solid var(--b100);border-radius:5px;padding:1px 6px;font-size:13.5px;
+font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--b700)}
+table{width:100%;border-collapse:collapse;margin:8px 0 22px;font-size:14.5px;background:#fff;
+border:1px solid var(--line);border-radius:12px;overflow:hidden}
+th{text-align:left;background:var(--b50);color:var(--ink);font-weight:650;font-size:13px;
+text-transform:uppercase;letter-spacing:.03em;padding:11px 16px;border-bottom:1px solid var(--line)}
+td{padding:12px 16px;border-bottom:1px solid #F2F4F7;vertical-align:top}
+tr:last-child td{border-bottom:none}
+td strong{color:var(--b700)}
+blockquote{margin:0 0 15px;padding:2px 18px;border-left:3px solid var(--b200);color:var(--ink3)}
+.toc{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 22px;margin:26px 0 8px}
+.toc .t{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ink3);margin-bottom:8px}
+.toc ul{margin:0;padding-left:18px}
+.toc li{margin:3px 0}
+.toc a{text-decoration:none;color:var(--ink2);font-size:14.5px}
+.toc a:hover{color:var(--b700)}
+.foot{margin-top:52px;padding-top:20px;border-top:1px solid var(--line);color:#98A2B3;font-size:13px}
+@media(max-width:640px){.wrap{padding:28px 18px 72px}h1{font-size:27px}h2{font-size:20px}}
+</style></head>
+<body>
+<div class="top"><span class="logo"><span class="lg">f</span>finmo</span>
+<a class="back" href="./index.html">&larr; Back to overview</a></div>
+<main class="wrap"><h1 id="design-decisions">Design decisions</h1>
+<p><strong>Finmo Door 1 prototype — Siddharth Karmarkar</strong></p><nav class="toc"><div class="t">Contents</div><ul><li><a href="#how-to-read-the-demo">How to read the demo</a></li><li><a href="#principles">Principles</a></li><li><a href="#two-doors-one-engine">Two doors, one engine</a></li><li><a href="#onboarding">Onboarding</a></li><li><a href="#uploads">Uploads</a></li><li><a href="#accounts-and-collections">Accounts and collections</a></li><li><a href="#payments-intelligence">Payments intelligence</a></li><li><a href="#cards">Cards</a></li><li><a href="#treasury">Treasury</a></li><li><a href="#fx-risk-and-value-at-risk">FX risk and Value at Risk</a></li><li><a href="#askmo">AskMO</a></li><li><a href="#navigation">Navigation</a></li><li><a href="#edge-cases-handled">Edge cases handled</a></li><li><a href="#deliberately-out-of-scope">Deliberately out of scope</a></li><li><a href="#what-i-would-measure">What I would measure</a></li></ul></nav>
+<p>This is the reasoning behind <code>finmo-door1-prototype.html</code>. It explains what the prototype does and, for every choice that mattered, why I made it that way. A companion document, <em>Production implementation</em>, shows how the same demo maps onto Finmo's stack. Read this to understand the choices. Read that to see them ship.</p>
+<p>The prototype is one HTML file with no build step, no network calls and no dependencies. All data is fake and lives in the browser, so progress survives a refresh and a reset is one click. That constraint is deliberate: the person reviewing this should be able to open it and walk the whole product alone.</p>
+<hr />
+<h2 id="how-to-read-the-demo">How to read the demo</h2>
+<p>Signup opens with a choice between a <strong>business account</strong> and a <strong>personal account</strong> (Finmo Remit). The dark <em>Demo controls</em> box in the bottom right is the remote: it fills any step with sample data, forces an upload to fail, fast forwards the compliance review, triggers a document request, clears limits, and resets. Everything below is reachable in about three minutes.</p>
+<p>The intended path: sign up, complete KYB, get approved with starter limits, use the platform, then reset and try the sanctions and personal paths. If a screen ever seems empty, that is by design and there is a demo button to populate it.</p>
+<hr />
+<h2 id="principles">Principles</h2>
+<p>Five ideas run through every screen. When a decision was ambiguous, these broke the tie.</p>
+<table>
+<thead>
+<tr>
+<th>Principle</th>
+<th>What it means here</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>One loop</strong></td>
+<td>See the money, decide, move it, learn from the outcome. Every insight ends in a button.</td>
+</tr>
+<tr>
+<td><strong>Propose, approve, execute</strong></td>
+<td>The AI never moves money on its own. It proposes, a person approves, the rails execute, the result feeds back.</td>
+</tr>
+<tr>
+<td><strong>No silent failures</strong></td>
+<td>Every upload, payment and check ends in a visible state with a reason. Nothing vanishes.</td>
+</tr>
+<tr>
+<td><strong>Money words, plumbing hidden</strong></td>
+<td>Navigation reads Pay, Get paid, FX, not wallets and ledgers. Mechanics stay internal.</td>
+</tr>
+<tr>
+<td><strong>Configuration, not code</strong></td>
+<td>Countries, limits, rails, funds and rules are data. A new market is a new row, not a new build.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="two-doors-one-engine">Two doors, one engine</h2>
+<p>The account type is chosen at signup because everything downstream differs. KYB collects the entity, its owners and its documents. KYC collects one person, one ID, one selfie. They share the same wizard shell, upload engine, screening pipeline and risk engine. In the code this is two step lists over one state machine, which is exactly how a second product line should look: reuse the whole verification stack, change only the steps.</p>
+<h2 id="onboarding">Onboarding</h2>
+<p><strong>Live checks as you type.</strong> Registration-number format and PO Box detection are deterministic and run inline. The website-versus-description match is a soft check: a mismatch feeds the risk score, it does not block, because a heuristic should never turn away a good customer. The point is to catch at the field what used to surface days later, so nothing is a surprise at submit.</p>
+<p><strong>Prefill, then approve.</strong> Uploading the certificate lets MO prefill the business fields, each marked with a suggestion chip that clears when you edit it. Nothing is submitted until you review it. The first "yes" a customer ever gives Finmo is on their own company data, which is the cheapest possible demonstration of the trust pattern.</p>
+<p><strong>Screening in the background.</strong> Each person is screened the moment their card is saved, shown as a quiet status chip. By the time you reach the review step, most of the work is already done.</p>
+<p><strong>Instant approval with limits.</strong> On submit, MO assembles a KYB or KYC report, scores it, and sends it to the compliance queue. Below the risk threshold the account opens immediately with starter limits and the customer transacts at once, while the team clears the limits within one to two days. Above the threshold, or on any sanctions flag, the file routes to a manual review. Both paths share one state machine; approval-with-limits is simply a state between submitted and approved. This is the economics the brief asked for: low-risk customers move in minute one, the human review runs in parallel instead of in front.</p>
+<p><strong>Pause and resume.</strong> When the review needs a document it pauses, names exactly what it wants and why, shows an inline uploader, and resumes the moment the file verifies. A missing document never costs the customer their place. This was the specific ask, and it is modelled as a request attached to the application, not as a rejection.</p>
+<h2 id="uploads">Uploads</h2>
+<p>Every upload is one component with explicit states: uploading, checking, verified, or failed with a reason and a retry. Validation runs before the upload starts: accepted formats only, a 10 MB cap, empty files rejected with an actionable message. This answers the clearest finding from my testing, a statement upload that failed silently with no error, no record and no retry. Handling failure well is the feature.</p>
+<h2 id="accounts-and-collections">Accounts and collections</h2>
+<p>Local collection accounts in eight currencies plus one SWIFT account, each labelled as issued through J.P. Morgan. Starter limits open the home-currency account only; full approval opens the grid, so clearing limits has a visible reward. PHP, IDR and THB are handled honestly as collect-only: the payer pays local, the customer is credited in USD, and the transaction says so. The rule that a currency can be collected but not held lives in one config list.</p>
+<p><strong>Collections read as invoices, payouts read as Bill Pay</strong>, matching the Brex shape requested. Invoices support statuses, nudges and MO payin-matching. Bills arrive, MO reads the vendor, amount and due date, and the human approves.</p>
+<h2 id="payments-intelligence">Payments intelligence</h2>
+<p>Every payout runs the same pattern: the AI proposes, a person approves, the rails execute. A repeat payout to the same payee for the same amount trips a duplicate check that needs an explicit acknowledgement. A payment over 60 percent of balance flags for a second approver. Rail selection shows cost against speed instead of burying it, and defaults to the cheapest rail that meets the deadline. When a payment sends, the balance, the activity feed and the burn number all move at once, which is the one-ledger argument made visible.</p>
+<h2 id="cards">Cards</h2>
+<p>Virtual cards issue instantly with a monthly limit and an optional category lock; plastic is available on request with a shipping state. Spend lands categorised, and missing receipts are chased by MO rather than by a finance person. Cards are the one feature gated to full approval, because card issuing is the highest-risk surface in the product and gating it gives the starter tier a clean boundary.</p>
+<h2 id="treasury">Treasury</h2>
+<p>The treasury account opens with the business account, the Wise way, because the low-risk money-market products carry no extra onboarding. The fund list is the real Synthesys catalogue with real minimums, settlement windows and stablecoin flags. Money moves only between the business account and treasury, never externally, and that safeguard is enforced in the transfer function, not just the copy. Higher-risk funds sit behind an explicit disclosure gate with three separate acknowledgements. Yield accrues and displays daily. Finmo is the sub-distributor and keeps the ledger; the funds sit with the managers, and the interface says exactly that.</p>
+<h2 id="fx-risk-and-value-at-risk">FX risk and Value at Risk</h2>
+<p>Exposure is assembled from what the platform already knows: foreign-currency balances, and on a toggle, unpaid foreign-currency receivables. No data entry; the ledger is the risk input.</p>
+<p>The VaR engine is a set of pure functions, kept free of the interface so the treasury cash-tools product can reuse it unchanged. It exposes the toggles asked for: confidence (90, 95, 99), horizon (one day, one week, one month), method (parametric or Monte Carlo), and exposure basis (balances, or balances plus expected flows). Parametric is variance-covariance with representative volatilities and a single correlation factor. Monte Carlo runs four thousand seeded paths, deterministic on purpose so a demo never shows two numbers for one question.</p>
+<p>The headline is in plain money, not a Greek letter: on a bad day for the currencies you hold, one in twenty odds, FX could cost you up to this amount this week, a model estimate rather than a promise. Below it sit per-currency contribution bars, scenario chips, and the full model disclosure. Then the number ends in a button: MO names the currency driving the risk, quotes what converting half of it does to the VaR, and offers to convert now or arm a target-rate trigger that fires automatically when the rate improves. That closes the loop on risk, the same propose-approve-execute pattern as everywhere else.</p>
+<h2 id="askmo">AskMO</h2>
+<p>One entry point, no agent picker, because routing is the product's job. The suggested prompts are guaranteed to answer from the same ledger the dashboard reads, and anything out of scope gets a graceful boundary instead of a hallucination. This turns the sharpest finding from my testing, a marquee prompt that failed live, into something that cannot happen.</p>
+<h2 id="navigation">Navigation</h2>
+<p>The sidebar follows the current dashboard's format: parent options that expand into sub-options. Accounts, Payments, Collections and Cards each hold their specific surfaces; Home, Treasury and Team stand alone. The grouping keeps the money-words rule, locks appear at the child level so the reason stays visible, and the personal account keeps a flat three-item nav on purpose.</p>
+<hr />
+<h2 id="edge-cases-handled">Edge cases handled</h2>
+<p>Invalid email and short password; wrong verification code with resend; future incorporation dates; minors as directors; ownership over 100 percent; no qualifying owner; PO Box addresses; unsupported, oversized and empty file uploads; upload failure with retry; refresh mid-wizard; back-navigation without data loss; double-submit on the application; insufficient balance and duplicate payouts; starter-limit enforcement per transfer and per month; locked features shown with a reason rather than hidden; zero FX exposure; negligible VaR; a rate trigger that cannot fund itself failing loudly; and a full reset.</p>
+<h2 id="deliberately-out-of-scope">Deliberately out of scope</h2>
+<p>Real authentication, document OCR, registry and sanctions checks, multi-currency settlement, and bank connections. Each has a marked seam. The upload timer swaps for presigned URLs and an async verification vendor; prefill swaps for a real extraction service returning the same shape; the review machine swaps timers for case-management webhooks; the rails config swaps for a quoting API. Historical-simulation VaR was left out knowingly, because faking a return history would undermine credibility.</p>
+<h2 id="what-i-would-measure">What I would measure</h2>
+<p>Completion rate per wizard step and where people drop; time from signup to submitted and submitted to approved; document-failure rate by reason; share of applications that hit a pause and how fast they recover; time to first payment; and the acceptance rate of every MO proposal, prefill fields kept versus edited, matches confirmed, warnings heeded. That last family is the number the whole AI thesis lives on.</p>
+<div class="foot">Finmo Door 1 prototype · Siddharth Karmarkar. Prototype only; all data is illustrative.</div>
+</main></body></html>
