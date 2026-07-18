@@ -139,6 +139,19 @@ td{padding:11px 12px;border-bottom:1px solid #F2F4F7;font-size:13.5px;vertical-a
 .lockhint{font-size:11px;color:#98A2B3;margin-left:auto}
 .live{border:1px solid var(--b200);background:var(--b50);border-radius:12px;padding:12px 14px;margin:6px 0 16px}
 .live .li{display:flex;gap:8px;font-size:12.5px;margin-top:4px;align-items:flex-start}
+/* feedback */
+.fbbtn{position:fixed;left:18px;bottom:18px;z-index:60;background:#101828;color:#fff;border-radius:99px;padding:11px 18px;font-weight:700;font-size:13px;display:inline-flex;gap:8px;align-items:center;box-shadow:0 8px 24px rgba(16,24,40,.25)}
+.fbbtn .n{background:var(--b500);border-radius:99px;min-width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;padding:0 5px}
+.fbbtn.live{background:var(--b600)}
+.fbhint{position:fixed;left:50%;transform:translateX(-50%);top:14px;z-index:80;background:#101828;color:#fff;padding:9px 16px;border-radius:99px;font-size:13px;box-shadow:0 8px 24px rgba(16,24,40,.3)}
+.fbpin{position:absolute;z-index:58;width:24px;height:24px;border-radius:99px 99px 99px 3px;background:var(--b600);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 3px 10px rgba(101,56,206,.4);border:2px solid #fff}
+.fbpin.done{background:#98A2B3}
+.fbpop{position:absolute;z-index:81;width:300px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;box-shadow:0 16px 48px rgba(16,24,40,.18)}
+.fbpop textarea,.fbpop input{width:100%;border:1.5px solid var(--line);border-radius:9px;padding:8px 10px;font:inherit;outline:none;box-sizing:border-box}
+.fbpop textarea:focus,.fbpop input:focus{border-color:var(--b500)}
+.fbdrawer{position:fixed;top:0;right:0;bottom:0;width:380px;max-width:94vw;background:#fff;border-left:1px solid var(--line);z-index:66;display:flex;flex-direction:column;box-shadow:-12px 0 40px rgba(16,24,40,.1)}
+.fbitem{border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:10px}
+.fbitem .q{font-size:12px;color:var(--ink3);border-left:2px solid var(--b200);padding-left:8px;margin:4px 0;font-style:italic}
 @media(max-width:900px){.anrow{grid-template-columns:1fr 1fr!important}.auth{grid-template-columns:1fr}.auth-l{display:none}.wiz{grid-template-columns:1fr}.rail{display:none}.shell{grid-template-columns:1fr}.side{display:none}.grid3,.grid2{grid-template-columns:1fr}.row2{grid-template-columns:1fr}}
 </style>
 </head>
@@ -393,6 +406,8 @@ function demoFillAuth(){S.user.name='Maya Chen';S.user.email='maya@kopiroasters.
 /* ============ boot ============ */
 document.addEventListener('DOMContentLoaded',()=>{
  $('fi').addEventListener('change',ev=>{const f=ev.target.files[0];ev.target.value='';if(f&&pendingSlot)onFilePicked(f)});
+ document.addEventListener('click',fbClickCapture,true);
+ window.addEventListener('resize',()=>fbPins());
  render();
  if(app_().status==='in_review')scheduleReview();
  if(limited())scheduleClear();
@@ -1657,10 +1672,137 @@ function vMo(){
   </div>
  </div>`;
 }
+/* ============ feedback (Google Docs style comments) ============ */
+const FLS='finmo_feedback_v1';
+function loadF(){try{const r=localStorage.getItem(FLS);if(r)return JSON.parse(r)}catch(e){}return{mode:false,open:false,author:'',items:[]}}
+let F=loadF();
+try{Object.defineProperty(window,'F',{get:()=>F,set:v=>{F=v}})}catch(e){}
+function saveF(){try{localStorage.setItem(FLS,JSON.stringify(F))}catch(e){}}
+const SCREENS={signup:'Signup',verify:'Email verify',kybintro:'Verification intro',wizard:'KYB wizard',screening:'Screening',tracker:'Review tracker',app:'Dashboard'};
+function fbScreen(){let n=SCREENS[S.view]||S.view;if(S.view==='app')n='Dashboard · '+(S.tab||'home');return n}
+function cssPath(el){
+ const parts=[];let n=el;
+ while(n&&n.id!=='app'&&n.tagName&&parts.length<12){
+  const p=n.parentElement;if(!p)break;
+  parts.unshift(n.tagName.toLowerCase()+':nth-child('+(Array.from(p.children).indexOf(n)+1)+')');
+  n=p;
+ }
+ return '#app>'+parts.join('>');
+}
+function fbButton(){
+ const open=F.items.filter(i=>!i.done).length;
+ return `<button id="fbbtn" class="fbbtn ${F.mode?'live':''}" onclick="event.stopPropagation();fbToggle()">💬 ${F.mode?'Click anything to comment':'Feedback'}${F.items.length?`<span class="n">${open}</span>`:''}</button>
+ ${F.mode?'<div class="fbhint">Feedback mode is on. Click any element to leave a comment, press the button again to stop.</div>':''}`;
+}
+function fbToggle(){
+ if(F.mode){F.mode=false}
+ else if(F.items.length&&!F.mode){F.open=!F.open;if(!F.open){F.mode=true;F.open=false}}
+ else F.mode=true;
+ if(F.items.length&&!F.mode&&!F.open){F.open=true}
+ saveF();render();
+}
+function fbCompose(x,y,path,snippet){
+ fbCloseP();
+ const d=document.createElement('div');d.className='fbpop';d.id='fbpop';
+ d.style.left=Math.min(x,window.innerWidth-320)+'px';d.style.top=(y+8)+'px';
+ d.innerHTML=`<div class="small b" style="margin-bottom:6px">New comment</div>
+  ${snippet?`<div class="fbitem q" style="border:none;padding:0 0 0 8px;margin:0 0 8px">on: &ldquo;${esc(snippet)}&rdquo;</div>`:''}
+  ${F.author?'':'<input id="fbname" placeholder="Your name" style="margin-bottom:8px">'}
+  <textarea id="fbtext" rows="3" placeholder="What should change?"></textarea>
+  <div style="display:flex;gap:8px;margin-top:10px"><button class="btn btn-p btn-sm" onclick="fbSave('${path}','${esc(snippet).replace(/'/g,'&#39;')}',${x},${y})">Comment</button>
+  <button class="btn btn-s btn-sm" onclick="fbCloseP()">Cancel</button></div>`;
+ document.body.appendChild(d);
+ setTimeout(()=>{const t=$('fbtext');if(t)t.focus()},30);
+}
+function fbSave(path,snippet,x,y){
+ const t=$('fbtext').value.trim();
+ if(!t){toast('Write the comment first');return}
+ const nm=$('fbname');if(nm&&nm.value.trim())F.author=nm.value.trim();
+ F.items.push({id:uid(),text:t,by:F.author||'Anonymous',at:Date.now(),screen:fbScreen(),view:S.view,tab:S.tab,path,snippet,x,y,done:false});
+ saveF();fbCloseP();render();toast('Comment added. Use the Feedback panel to copy everything for WhatsApp.');
+}
+function fbCloseP(){const d=$('fbpop');if(d)d.remove()}
+function fbShow(id){
+ fbCloseP();
+ const it=F.items.find(i=>i.id===id);if(!it)return;
+ const el=document.querySelector(it.path);
+ const r=el?el.getBoundingClientRect():null;
+ const x=r?r.left+window.scrollX:it.x,y=r?r.bottom+window.scrollY:it.y;
+ const d=document.createElement('div');d.className='fbpop';d.id='fbpop';
+ d.style.left=Math.min(x,window.innerWidth-320)+'px';d.style.top=(y+6)+'px';
+ d.innerHTML=`<div style="display:flex;align-items:center;gap:8px"><span class="b small">${esc(it.by)}</span><span class="small muted">${new Date(it.at).toLocaleString('en-SG',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}</span></div>
+  ${it.snippet?`<div class="fbitem q" style="border:none;padding:0 0 0 8px;margin:6px 0 0">&ldquo;${esc(it.snippet)}&rdquo;</div>`:''}
+  <div style="margin:8px 0">${esc(it.text)}</div>
+  <div style="display:flex;gap:8px"><button class="btn btn-s btn-sm" onclick="fbDone('${it.id}')">${it.done?'Reopen':'Resolve'}</button>
+  <button class="btn btn-g btn-sm" style="color:#B42318" onclick="fbDel('${it.id}')">Delete</button>
+  <button class="btn btn-g btn-sm" onclick="fbCloseP()">Close</button></div>`;
+ document.body.appendChild(d);
+}
+function fbDone(id){const it=F.items.find(i=>i.id===id);if(it){it.done=!it.done;saveF();fbCloseP();render()}}
+function fbDel(id){F.items=F.items.filter(i=>i.id!==id);saveF();fbCloseP();render()}
+function fbExport(){
+ if(!F.items.length){toast('No comments yet');return}
+ const lines=['Feedback on the Finmo Door 1 prototype:',''];
+ F.items.forEach((it,i)=>lines.push((i+1)+'. ['+it.screen+']'+(it.snippet?' on "'+it.snippet+'"':'')+' '+(it.done?'(resolved) ':'')+'- '+it.text+' ('+it.by+')'));
+ copyTxt(lines.join('\n'));
+}
+function fbPanel(){
+ if(!F.open)return '';
+ const rows=F.items.slice().reverse().map((it,idx)=>`<div class="fbitem" style="${it.done?'opacity:.55':''}">
+  <div style="display:flex;gap:8px;align-items:center"><span class="fbpin" style="position:static;width:20px;height:20px;font-size:11px" class2>${F.items.indexOf(it)+1}</span>
+   <span class="b small">${esc(it.by)}</span><span class="small muted">${esc(it.screen)}</span>
+   <span style="margin-left:auto"></span>
+   ${it.done?'<span class="tag tag-mut">resolved</span>':''}</div>
+  ${it.snippet?`<div class="q">&ldquo;${esc(it.snippet)}&rdquo;</div>`:''}
+  <div class="small" style="margin-top:4px">${esc(it.text)}</div>
+  <div style="display:flex;gap:6px;margin-top:8px">
+   <button class="btn btn-g btn-sm" onclick="fbJump('${it.id}')">Go to</button>
+   <button class="btn btn-g btn-sm" onclick="fbDone('${it.id}')">${it.done?'Reopen':'Resolve'}</button>
+   <button class="btn btn-g btn-sm" style="color:#B42318" onclick="fbDel('${it.id}')">Delete</button></div>
+ </div>`).join('');
+ return `<div class="fbdrawer">
+  <div style="padding:16px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:9px"><span class="b">Feedback</span><span class="tag tag-b">${F.items.length}</span>
+   <button class="btn btn-g btn-sm" style="margin-left:auto" onclick="F.open=false;saveF();render()">Close</button></div>
+  <div style="flex:1;overflow:auto;padding:16px 18px">
+   ${rows||'<div class="small muted">No comments yet. Turn on feedback mode and click anything.</div>'}
+  </div>
+  <div style="padding:14px 18px;border-top:1px solid var(--line);display:flex;gap:8px;flex-wrap:wrap">
+   <button class="btn btn-p btn-sm" onclick="fbExport()">Copy all for WhatsApp</button>
+   <button class="btn btn-s btn-sm" onclick="F.mode=true;F.open=false;saveF();render()">Add another</button>
+   <button class="btn btn-g btn-sm" style="color:#B42318" onclick="if(confirm('Delete all comments?')){F.items=[];saveF();render()}">Clear all</button>
+  </div></div>`;
+}
+function fbJump(id){
+ const it=F.items.find(i=>i.id===id);if(!it)return;
+ S.view=it.view;if(it.tab)S.tab=it.tab;F.open=false;saveF();render();
+ setTimeout(()=>{const el=document.querySelector(it.path);if(el)el.scrollIntoView({block:'center'});fbShow(id)},60);
+}
+function fbPins(){
+ document.querySelectorAll('.fbpin[data-pin]').forEach(e=>e.remove());
+ F.items.forEach((it,i)=>{
+  if(it.view!==S.view)return;
+  if(it.view==='app'&&it.tab!==S.tab)return;
+  const el=document.querySelector(it.path);if(!el)return;
+  const r=el.getBoundingClientRect();
+  const d=document.createElement('div');d.className='fbpin'+(it.done?' done':'');d.setAttribute('data-pin','1');
+  d.style.left=(r.right+window.scrollX-10)+'px';d.style.top=(r.top+window.scrollY-10)+'px';
+  d.textContent=i+1;d.onclick=ev=>{ev.stopPropagation();fbShow(it.id)};
+  document.body.appendChild(d);
+ });
+}
+function fbClickCapture(ev){
+ if(!F.mode)return;
+ if(ev.target.closest('#fbbtn')||ev.target.closest('.fbpop')||ev.target.closest('.fbdrawer')||ev.target.closest('.fbpin'))return;
+ const t=ev.target.closest('#app *');if(!t)return;
+ ev.preventDefault();ev.stopPropagation();
+ const snippet=(t.innerText||'').trim().replace(/\s+/g,' ').slice(0,70);
+ fbCompose(ev.pageX,ev.pageY,cssPath(t),snippet);
+}
 /* ============ render ============ */
 function render(){
  const views={signup:vSignup,verify:vVerify,kybintro:vIntro,wizard:vWizard,screening:vScreening,tracker:vTracker,app:vApp};
- $('app').innerHTML=(views[S.view]||vSignup)()+demoBar();
+ $('app').innerHTML=(views[S.view]||vSignup)()+demoBar()+fbButton()+fbPanel();
+ fbCloseP();fbPins();
 }
 </script>
 </body>
