@@ -80,6 +80,14 @@ The headline is in plain money, not a Greek letter: on a bad day for the currenc
 
 One entry point, no agent picker, because routing is the product's job. The suggested prompts are guaranteed to answer from the same ledger the dashboard reads, and anything out of scope gets a graceful boundary instead of a hallucination. This turns the sharpest finding from my testing, a marquee prompt that failed live, into something that cannot happen.
 
+## Dashboard analytics
+
+Home leads with the numbers a customer checks most, computed live from the ledger: money received and paid out with a period toggle for today, this month and year to date, money awaiting collection with overdue flagged, a seven-day in-and-out chart, and an invoice breakdown of paid, pending and overdue by count and value.
+
+The set is chosen around the four questions an owner actually asks: what came in, what went out, what is stuck, and how long can we breathe. **Received, paid out and net flow** answer the first two per period, with net flow signed and coloured because direction matters more than magnitude. **Awaiting collection**, **days sales outstanding** and an **aging line** (current, 1 to 30 days late, over 30) answer the third: DSO is open receivables over total billed scaled to a thirty-day period, the standard form, with the slowest payer named and how late they are, and aging tells you where the money is stuck rather than just that it is. **Bills pending this month** and a **cash cover** estimate, how many days the balance lasts at the current pace of outgoings, answer the fourth. Each metric ends in a button, follow up on the slowest payer or review and pay the bills, keeping the rule that every metric leads somewhere.
+
+This is deliberately the operator's cut of analytics rather than the treasurer's: the cash-flow summary on the treasury side reads bank and ERP data, while these read the account's own invoices and bills, which is what a Door 1 customer actually acts on. What was left out is as deliberate as what went in, no vanity charts, no metrics without an action, and nothing that duplicates the treasury view. Everything recomputes as money moves, because it reads the same ledger the rest of the product writes to.
+
 ## Navigation
 
 The sidebar follows the current dashboard's format: parent options that expand into sub-options. Accounts, Payments, Collections and Cards each hold their specific surfaces; Home, Treasury and Team stand alone. The grouping keeps the money-words rule, locks appear at the child level so the reason stays visible, and the personal account keeps a flat three-item nav on purpose.
