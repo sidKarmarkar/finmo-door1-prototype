@@ -179,6 +179,7 @@ const RAILS_LOCAL={USD:['ACH · free · 1 to 2 days','Fedwire · 15.00 · same d
 const RUSD={SGD:1.35,USD:1,EUR:0.92,GBP:0.79,AUD:1.52,NZD:1.65,CAD:1.36,HKD:7.8,PHP:58.4,IDR:16200,THB:36.4};
 const conv=(amt,f,t)=>amt/RUSD[f]*RUSD[t];
 const FXM=0.005;
+const BANK_FXM=0.025;const BANK_WIRE=35;
 /* ============ FX risk engine (pure, liftable into cash tools) ============ */
 const VOLA={USD:4.5,EUR:6,GBP:7,AUD:8,NZD:9,CAD:6,HKD:4.6,SGD:4.5,PHP:7,IDR:8,THB:6};
 const RHO=0.45;
@@ -280,11 +281,11 @@ function DEF(){return{
  kyc:{step:0,status:'draft',stage:0,pausedOnce:false,
   me:{dob:'',nat:'',occupation:''},addr:{l1:'',l2:'',city:'',postal:''},
   docs:{id:slot(),selfie:slot()},act:{purpose:'',vol:'',dests:[]},requests:[],risk:riskDef(),scr:''},
- plat:{bals:{},asOf:null,txns:[],inv:[],bills:[],links:[],cards:[],cardTx:[],team:[],
+ plat:{bals:{},asOf:null,txns:[],inv:[],bills:[],links:[],cards:[],cardTx:[],team:[],approvals:[],policy:{thresh:2000,dual:true},saved:{fx:0,fees:0,yield:0},
   treas:{holdings:{},acceptedHigh:false},payin:null,seeded:false},
  pay:{step:0,from:'',name:'',country:'SG',acct:'',amt:'',note:'',rail:'',dupAck:false,billId:null},
  fx:{from:'',to:'USD',amt:''},
- mo:{open:false,msgs:[]},modal:null,
+ mo:{open:false,msgs:[]},modal:null,role:'owner',
  demo:{failNext:false,sanctionsHit:false,min:false}
 };}
 function load(){try{const r=localStorage.getItem(LS);if(r){const s=JSON.parse(r);if(s&&s.view&&s.kyc)return s}}catch(e){}return DEF()}
@@ -399,6 +400,10 @@ function demoBar(){
   btns+=`<button onclick="approveNow()">Approve now (full)</button>`}
  if(limited())btns+=`<button onclick="clearLimits()">Team clears limits now</button>`;
  if(v==='app'&&S.acct==='biz'&&live())btns+=`<button onclick="loadSampleExposure()">Load sample FX exposure</button>`;
+ if(v==='app'&&S.acct==='biz'&&live()){
+  btns+=`<div style="color:#98A2B3;font-size:11px;padding:6px 9px 2px">ACT AS</div>`;
+  ['owner','admin','payer','preparer','viewer'].forEach(r=>{btns+=`<button onclick="S.role='${r}';rr();toast('Now acting as '+roleName('${r}'))">${S.role===r?'✓ ':''}${roleName(r)}</button>`});
+ }
  btns+=`<button onclick="resetAll()">Reset prototype</button>`;
  return `<div class="demo"><div class="hd" onclick="S.demo.min=!S.demo.min;rr()"><span>DEMO CONTROLS</span><span>${S.demo.min?'+':'–'}</span></div>${S.demo.min?'':`<div class="bd">${btns}</div>`}</div>`;
 }
@@ -1013,21 +1018,21 @@ function railsFor(ccy){
 }
 function lockToast(){toast(live()?'Cards unlock at full approval, usually 1 to 2 days after the starter approval.':'Moving money unlocks once you are verified. The review is on your home page.')}
 function navGo(t){
- const needFull=['cards','spend'],needLive=['payouts','bills','links','collections','fx','treasury','team'];
+ const needFull=['cards','spend'],needLive=['payouts','approvals','bills','links','collections','fx','treasury','team'];
  if(needLive.includes(t)&&!live()){lockToast();return}
  if(needFull.includes(t)&&!fullOk()){lockToast();return}
- S.tab=t;S.pay={step:0,from:home(),name:'',country:S.user.country,acct:'',amt:'',note:'',rail:'',dupAck:false,billId:null};
+ S.tab=t;S.trackId=null;S.pay={step:0,from:home(),name:'',country:S.user.country,acct:'',amt:'',note:'',rail:'',dupAck:false,billId:null};
  if(!S.fx.from)S.fx.from=home();
  rr();
 }
 function vApp(){
  const biz=S.acct==='biz';
  if(!S.navOpen)S.navOpen={};
- const isLk=id=>(['payouts','bills','links','collections','fx','treasury','team'].includes(id)&&!live())||(['cards','spend'].includes(id)&&!fullOk());
+ const isLk=id=>(['payouts','approvals','bills','links','collections','fx','treasury','team'].includes(id)&&!live())||(['cards','spend'].includes(id)&&!fullOk());
  const NAVB=[
   {id:'home',t:'Home'},
   {t:'Accounts',kids:[['accounts','Balances and details'],['topup','Top up']]},
-  {t:'Payments',kids:[['payouts','Send a payout'],['bills','Bills'],['fx','FX and risk']]},
+  {t:'Payments',kids:[['payouts','Send a payout'],['approvals','Approvals'],['bills','Bills'],['fx','FX and risk']]},
   {t:'Collections',kids:[['collections','Invoices'],['links','Payment links']]},
   {t:'Cards',kids:[['cards','Your cards'],['spend','Spend']]},
   {id:'treasury',t:'Treasury'},
@@ -1042,7 +1047,7 @@ function vApp(){
    return `<button class="kid ${S.tab===k[0]?'on':''} ${lk?'lk':''}" onclick="${kidGo(k[0])}">${k[1]}${lk?' <span class="lockhint">🔒</span>':''}</button>`}).join(''):'';
   return `<button class="it" onclick="S.navOpen['${g.t}']=${open?'false':'true'};rr()">${g.t}<span class="chev">${open?'▾':'▸'}</span></button>${kids}`;
  }).join('');
- const body={home:tHome,accounts:tAccounts,payouts:tPayouts,bills:tBills,links:tLinks,spend:tSpend,collections:tCollections,cards:tCards,treasury:tTreasury,fx:tFx,team:tTeam}[S.tab]();
+ const body={home:tHome,accounts:tAccounts,payouts:tPayouts,approvals:tApprovals,bills:tBills,links:tLinks,spend:tSpend,collections:tCollections,cards:tCards,treasury:tTreasury,fx:tFx,team:tTeam}[S.tab]();
  return `<div class="shell">
   <div class="side">
    ${biz?LOGO:LOGO_R}
@@ -1054,6 +1059,8 @@ function vApp(){
     <span class="b">${esc(biz?(S.kyb.biz.legal||'Your business'):S.user.name)}</span>
     <span class="tag tag-mut">Sandbox</span><span class="tag tag-b">Prototype</span>
     ${limited()?'<span class="tag tag-warn">Starter limits</span>':''}
+    ${biz&&live()&&pendingApprovals().length?`<button class="tag tag-warn" onclick="navGo('approvals')">${pendingApprovals().length} awaiting approval</button>`:''}
+    ${biz&&live()?`<span class="tag tag-mut">acting as ${roleName(actingRole())}</span>`:''}
     <span style="margin-left:auto"></span>
     <span class="small muted">${esc(S.user.email)}</span>
     <div style="width:34px;height:34px;border-radius:99px;background:var(--b100);color:var(--b700);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px">${initials(S.user.name)}</div>
@@ -1067,6 +1074,117 @@ function limitsBanner(){
  return `<div class="banner banner-w"><div>⏳</div><div class="small" style="flex:1"><span class="b">Starter limits are on.</span> Up to ${fmt(lim().tx)} per transfer and ${fmt(lim().mo)} per month for collections and payouts${S.acct==='biz'?', and cards unlock at full approval':''}. Our team usually clears these within 1 to 2 days, and you will get an email the moment they do. <a href="#" onclick="viewReport();return false">View your ${S.acct==='biz'?'KYB':'KYC'} report</a></div></div>`;
 }
 /* ---- home ---- */
+/* ============ payout tracking (Wise pattern) ============ */
+const TRACK_STEPS=[['sub','Payment submitted','We have it and the money has left your balance'],
+ ['chk','Checks passed','Compliance and beneficiary checks cleared'],
+ ['rail','Sent on the rail','Handed to the network for delivery'],
+ ['done','Delivered','Money is in the beneficiary account']];
+function railEta(rail){return{FAST:0.02,NPP:0.02,FPS:0.02,FPSHK:0.02,'SEPA Instant':0.02,SEPA:1,ACH:2,EFT:2,'Local NZD':1,FEDWIRE:0.5,UAEFTS:0.5,SWIFT:2}[rail]!==undefined?{FAST:0.02,NPP:0.02,FPS:0.02,FPSHK:0.02,SEPA:1,ACH:2,EFT:2,FEDWIRE:0.5,UAEFTS:0.5,SWIFT:2}[rail]:1}
+function mkTrack(rail,country){
+ const days=railEta(rail);
+ const eta=new Date(Date.now()+days*86400000);
+ return {stage:1,rail,eta:eta.getTime(),days,delayed:false};
+}
+function trackAdvance(txId){
+ const t=S.plat.txns.find(x=>x.id===txId);if(!t||!t.track)return;
+ if(t.track.stage<4){t.track.stage++;rr();
+  toast(t.track.stage===4?'Delivered to '+t.who:'Update: '+TRACK_STEPS[t.track.stage-1][1])}
+}
+function trackDelay(txId){
+ const t=S.plat.txns.find(x=>x.id===txId);if(!t||!t.track)return;
+ t.track.delayed=true;t.track.eta=t.track.eta+86400000;
+ rr();toast('We flagged a delay before you had to ask. The beneficiary bank is doing an extra check.');
+}
+function etaText(tr){
+ if(tr.stage>=4)return 'Delivered';
+ const d=new Date(tr.eta),now=new Date();
+ const sameDay=d.toDateString()===now.toDateString();
+ const mins=(tr.eta-Date.now())/60000;
+ if(tr.days<=0.05)return 'Arriving in minutes';
+ if(sameDay)return 'Should arrive today by '+d.toLocaleTimeString('en-SG',{hour:'2-digit',minute:'2-digit'});
+ return 'Should arrive '+d.toLocaleDateString('en-SG',{weekday:'long',month:'short',day:'numeric'});
+}
+function trackView(txId){
+ const t=S.plat.txns.find(x=>x.id===txId);if(!t||!t.track)return '';
+ const tr=t.track;
+ const steps=TRACK_STEPS.map((st,i)=>{
+  const n=i+1,done=tr.stage>n,on=tr.stage===n;
+  return `<li class="${done?'done':on?'on':''}"><div class="dot">${done?'✓':n}</div>
+   <div><div class="b">${st[1]} ${on&&!done?'<span class="tag tag-b">now</span>':''}</div>
+   <div class="small muted">${st[2]}</div></div></li>`;
+ }).join('');
+ return `<div class="card" style="max-width:560px">
+  <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:6px">
+   <div style="flex:1"><h3>${fmt(t.amt,t.ccy)} to ${esc(t.who)}</h3>
+    <div class="small ${tr.delayed?'':'muted'}" style="${tr.delayed?'color:var(--amber)':''}">${tr.delayed?'Delayed. New estimate: '+etaText(tr):etaText(tr)}</div></div>
+   <span class="tag ${tr.stage>=4?'tag-ok':'tag-b'}">${tr.stage>=4?'Delivered':'On the way'}</span></div>
+  ${tr.delayed?`<div class="banner banner-w" style="margin:10px 0"><div>!</div><div class="small">The beneficiary bank asked for an extra check. Nothing needed from you, we are chasing it and will tell you when it lands.</div></div>`:''}
+  <ul class="tl" style="margin-top:14px">${steps}</ul>
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+   ${tr.stage<4?`<button class="btn btn-s btn-sm" onclick="trackAdvance('${t.id}')">Simulate next update</button>`:''}
+   ${tr.stage<4&&!tr.delayed?`<button class="btn btn-s btn-sm" onclick="trackDelay('${t.id}')">Simulate a delay</button>`:''}
+   <button class="btn btn-g btn-sm" onclick="S.trackId=null;rr()">Back</button></div>
+  <div class="hint" style="margin-top:10px">Every payout gets this. If something slows down we tell you before you have to ask, which is the Wise standard for tracking money.</div>
+ </div>`;
+}
+/* ============ roles + approvals (Brex pattern) ============ */
+const ROLE_CAN={owner:['create','approve','fund','admin'],admin:['create','approve','fund','admin'],payer:['create','approve','fund'],preparer:['create'],viewer:[]};
+function actingRole(){return S.role||'owner'}
+function can(x){return (ROLE_CAN[actingRole()]||[]).includes(x)}
+function roleName(r){const f=ROLES.find(x=>x[0]===r);return f?f[1]:r}
+function needsApproval(amtHome){return S.plat.policy.dual&&amtHome>=S.plat.policy.thresh}
+function pendingApprovals(){return S.plat.approvals.filter(a=>a.st==='pending')}
+function submitForApproval(p,rail,amtHome){
+ const a={id:uid(),by:S.user.name||'You',byRole:actingRole(),at:Date.now(),
+  name:p.name.trim(),country:p.country,acct:p.acct,from:p.from,amt:Number(p.amt),fee:rail.fee,rail:p.rail,
+  note:p.note,amtHome,st:'pending',reason:'Above the '+fmt(S.plat.policy.thresh)+' approval threshold',billId:p.billId||null};
+ S.plat.approvals.unshift(a);return a;
+}
+function approvePayment(id){
+ const a=S.plat.approvals.find(x=>x.id===id);if(!a||a.st!=='pending')return;
+ if(!can('approve')){toast(roleName(actingRole())+' cannot approve payments. Switch role in demo controls.');return}
+ if(a.by===(S.user.name||'You')&&a.byRole==='preparer'&&actingRole()==='preparer'){toast('The person who prepared a payment cannot approve it');return}
+ if(balOf(a.from)<a.amt+a.fee){toast('Not enough '+a.from+' to release this payment');return}
+ a.st='approved';a.approvedBy=roleName(actingRole());a.approvedAt=Date.now();
+ debit(a.from,a.amt+a.fee);
+ const tx={id:uid(),t:Date.now(),who:a.name,dir:'out',amt:a.amt,ccy:a.from,note:(a.note||'Approved by '+a.approvedBy),track:mkTrack(a.rail,a.country)};
+ S.plat.txns.unshift(tx);
+ S.plat.saved.fees+=Math.max(0,conv(BANK_WIRE,'USD',home())-conv(a.fee,a.from,home()));
+ if(a.from!==CC[a.country].ccy)S.plat.saved.fx+=a.amtHome*(BANK_FXM-FXM);
+ if(a.billId)S.plat.bills=S.plat.bills.filter(b=>b.id!==a.billId);
+ rr();toast('Approved and sent. '+fmt(a.amt,a.from)+' to '+a.name);
+}
+function rejectPayment(id){
+ const a=S.plat.approvals.find(x=>x.id===id);if(!a||a.st!=='pending')return;
+ if(!can('approve')){toast(roleName(actingRole())+' cannot decline payments');return}
+ a.st='rejected';a.approvedBy=roleName(actingRole());rr();toast('Payment declined. The preparer is notified with your reason.');
+}
+function tApprovals(){
+ const ps=pendingApprovals(),done=S.plat.approvals.filter(a=>a.st!=='pending').slice(0,6);
+ const row=a=>`<div class="card" style="margin-bottom:12px">
+  <div style="display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap">
+   <div style="flex:1;min-width:220px">
+    <div class="b" style="font-size:16px">${fmt(a.amt,a.from)} to ${esc(a.name)}</div>
+    <div class="small muted">${CC[a.country].name} · ${a.rail} · prepared by ${esc(a.by)} (${roleName(a.byRole)}) ${new Date(a.at).toLocaleString('en-SG',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
+    ${a.note?`<div class="small muted">Note: ${esc(a.note)}</div>`:''}
+    <div class="tag tag-warn" style="margin-top:6px">${esc(a.reason)}</div>
+   </div>
+   <div style="display:flex;gap:8px">
+    <button class="btn btn-p btn-sm" onclick="approvePayment('${a.id}')">Approve and send</button>
+    <button class="btn btn-s btn-sm" onclick="rejectPayment('${a.id}')">Decline</button></div>
+  </div></div>`;
+ return `<h1 style="margin-bottom:6px">Approvals</h1>
+ <p class="muted" style="margin-bottom:16px">Payments over ${fmt(S.plat.policy.thresh)} need a second person. Whoever prepares a payment cannot be the one who releases it.</p>
+ <div class="banner banner-i"><div>👤</div><div class="small" style="flex:1">You are acting as <span class="b">${roleName(actingRole())}</span>. ${can('approve')?'You can approve payments.':'This role can prepare but not release payments.'} Switch roles from the demo controls to see both sides.</div></div>
+ ${ps.length?ps.map(row).join(''):'<div class="card"><div class="muted small">Nothing waiting on you. Payments above the threshold will land here.</div></div>'}
+ ${done.length?`<h3 style="margin:22px 0 10px">Recently decided</h3>
+  <div class="card"><table><tr><th>Payment</th><th>Prepared by</th><th>Outcome</th></tr>
+  ${done.map(a=>`<tr><td>${fmt(a.amt,a.from)} to ${esc(a.name)}</td><td class="muted">${esc(a.by)}</td><td><span class="tag ${a.st==='approved'?'tag-ok':'tag-bad'}">${a.st} ${a.approvedBy?'by '+esc(a.approvedBy):''}</span></td></tr>`).join('')}</table></div>`:''}
+ <div class="card" style="margin-top:16px"><h3 style="margin-bottom:8px">Approval policy</h3>
+  <div class="row2"><div class="field"><label>Second approver required above</label><input type="number" min="0" value="${S.plat.policy.thresh}" onchange="S.plat.policy.thresh=Number(this.value)||0;rr();toast('Policy updated')"></div>
+  <div class="field"><label>&nbsp;</label><label style="display:flex;gap:9px;align-items:center;padding-top:10px"><input type="checkbox" ${S.plat.policy.dual?'checked':''} onchange="S.plat.policy.dual=this.checked;rr()" style="width:auto"> <span class="small">Require dual approval</span></label></div></div>
+ </div>`;
+}
 function _sameMonth(t){const n=new Date(),d=new Date(t);return d.getMonth()===n.getMonth()&&d.getFullYear()===n.getFullYear()}
 function _sameDay(t){const n=new Date(),d=new Date(t);return d.toDateString()===n.toDateString()}
 function analytics(){
@@ -1119,6 +1237,23 @@ function analytics(){
    <div class="sub">${billsMon.length?billsMon.length+' to pay this month'+(nextBill?' · next: '+esc(nextBill.who.split(' ·')[0])+' '+fmt(nextBill.amt)+' on '+nextBill.due:''):'Nothing pending this month'}</div>
    ${billsMon.length?`<button class="btn btn-g btn-sm" style="padding-left:0" onclick="navGo('bills')">Review and pay →</button>`:''}</div>
  </div>
+ ${(()=>{const sv=S.plat.saved||{fx:0,fees:0,yield:0};
+  const yld=accruedToday()*30;const tot=sv.fx+sv.fees+yld;
+  return `<div class="card" style="margin-bottom:14px;border-color:var(--b200);background:linear-gradient(180deg,var(--b50),#fff)">
+   <div style="display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap">
+    <div style="flex:1;min-width:230px">
+     <div class="lbl small b" style="color:var(--b700)">Saved with Finmo · ${monname}</div>
+     <div style="font-size:28px;font-weight:700;letter-spacing:-.02em;margin:2px 0">${fmt(tot)}</div>
+     <div class="small muted">Against what a typical business bank would have charged you</div>
+    </div>
+    <div style="display:flex;gap:22px;flex-wrap:wrap">
+     <div><div class="small muted">FX margin avoided</div><div class="b">${fmt(sv.fx)}</div><div class="small muted">0.5% vs 2.5% typical</div></div>
+     <div><div class="small muted">Wire fees avoided</div><div class="b">${fmt(sv.fees)}</div><div class="small muted">local rails vs ${fmt(conv(BANK_WIRE,'USD',home()))} a wire</div></div>
+     <div><div class="small muted">Treasury yield</div><div class="b">${fmt(yld)}</div><div class="small muted">run rate on today's accrual</div></div>
+    </div>
+   </div>
+   <div class="hint" style="margin-top:10px">How this is worked out: FX savings compare our 0.5% margin against a 2.5% bank spread on the amounts you actually converted. Fee savings compare each rail's fee against a ${fmt(conv(BANK_WIRE,'USD',home()))} wire. Yield is your accrual today times thirty. Conservative on purpose, and every number traces to a transaction.</div>
+  </div>`})()}
  <div class="grid2">
   <div class="card"><h3 style="margin-bottom:2px">Money in and out</h3><div class="small muted" style="margin-bottom:4px">Last 7 days, in ${h}</div>
    <div class="chart">${bars}</div>
@@ -1180,7 +1315,7 @@ function tHome(){
  </div>`:''}
  <div class="card"><h3 style="margin-bottom:8px">Recent activity</h3>
   ${S.plat.txns.length?`<table><tr><th>When</th><th>Counterparty</th><th style="text-align:right">Amount</th></tr>
-  ${S.plat.txns.map(t=>`<tr><td class="muted">${new Date(t.t).toLocaleDateString('en-SG',{month:'short',day:'numeric'})}</td><td>${esc(t.who)}<div class="small muted">${esc(t.note||'')}</div></td><td style="text-align:right" class="${t.dir==='in'?'amt-in':'amt-out'}">${t.dir==='in'?'+':'−'}${fmt(t.amt,t.ccy)}</td></tr>`).join('')}</table>`
+  ${S.plat.txns.map(t=>`<tr><td class="muted">${new Date(t.t).toLocaleDateString('en-SG',{month:'short',day:'numeric'})}</td><td>${esc(t.who)}<div class="small muted">${esc(t.note||'')}</div>${t.track?`<div style="margin-top:3px"><span class="tag ${t.track.stage>=4?'tag-ok':t.track.delayed?'tag-warn':'tag-b'}" style="font-size:11px">${t.track.stage>=4?'Delivered':t.track.delayed?'Delayed':etaText(t.track)}</span> <button class="btn btn-g btn-sm" style="padding:2px 6px;font-size:11px" onclick="S.trackId='${t.id}';navGo('payouts');S.trackId='${t.id}';rr()">Track</button></div>`:''}</td><td style="text-align:right" class="${t.dir==='in'?'amt-in':'amt-out'}">${t.dir==='in'?'+':'−'}${fmt(t.amt,t.ccy)}</td></tr>`).join('')}</table>`
   :'<div class="muted small">No activity yet.</div>'}
  </div>`;
 }
@@ -1219,6 +1354,7 @@ function tAccounts(){
 /* ---- payouts (Bill Pay + send flow) ---- */
 function tPayouts(){
  const biz=S.acct==='biz';
+ if(S.trackId)return `<h1 style="margin-bottom:16px">Tracking</h1>`+trackView(S.trackId);
  if(S.pay.step>0)return payFlow();
  return `<h1 style="margin-bottom:6px">${biz?'Send a payout':'Send money'}</h1>
  <p class="muted" style="margin-bottom:20px">${biz?'One-off payouts. Recurring vendor bills live under Payments, Bills.':'Mid market rate, itemised fee, delivery estimate before you commit.'}</p>
@@ -1278,10 +1414,23 @@ function payFlow(){
   <div style="display:flex;gap:10px"><button class="btn btn-s" onclick="S.pay.step=1;rr()">Back</button>
   <button class="btn btn-p" onclick="sendPayment()">Confirm and send</button></div></div>`;
  }
- return `<div class="card" style="max-width:560px;text-align:center;padding:44px">
-  <div style="font-size:40px">✓</div><h2 style="margin:10px 0 6px">Payout sent</h2>
-  <p class="muted">${fmt(Number(p.amt),p.from)} to ${esc(p.name)} is on its way. It lands in your activity, your balance and your outflow numbers at once, because it is all one ledger.</p>
-  <button class="btn btn-p" style="margin-top:18px" onclick="navGo('home')">Back to home</button></div>`;
+ if(p.step===4){
+  const a=S.plat.approvals.find(x=>x.id===p.apprId);
+  return `<div class="card" style="max-width:560px;padding:36px">
+   <div style="font-size:36px">🕓</div><h2 style="margin:10px 0 6px">Waiting on a second approver</h2>
+   <p class="muted">${fmt(Number(p.amt),p.from)} to ${esc(p.name)} is prepared and sitting in Approvals. ${a&&!can('fund')?'Your role can prepare payments but not release them.':'It is over the '+fmt(S.plat.policy.thresh)+' threshold, so someone else has to release it.'} Nothing has left your balance yet.</p>
+   <div style="display:flex;gap:10px;margin-top:18px"><button class="btn btn-p" onclick="navGo('approvals')">Go to approvals</button>
+   <button class="btn btn-s" onclick="navGo('home')">Back to home</button></div></div>`;
+ }
+ const tx=S.plat.txns.find(x=>x.id===p.txId);
+ return `<div class="card" style="max-width:560px;padding:36px">
+  <div style="font-size:38px">✓</div><h2 style="margin:10px 0 4px">Payout sent</h2>
+  <p class="muted" style="margin-bottom:4px">${fmt(Number(p.amt),p.from)} to ${esc(p.name)}.</p>
+  ${tx&&tx.track?`<div class="b" style="color:var(--b700);margin-bottom:14px">${etaText(tx.track)}</div>`:''}
+  <p class="small muted">It lands in your activity, your balance and your outflow numbers at once, because it is all one ledger.</p>
+  <div style="display:flex;gap:10px;margin-top:18px">
+   ${tx?`<button class="btn btn-p" onclick="S.trackId='${tx.id}';navGo('payouts')">Track this payment</button>`:''}
+   <button class="btn btn-s" onclick="navGo('home')">Back to home</button></div></div>`;
 }
 function moChecks(){
  const p=S.pay,amt=Number(p.amt)||0;
@@ -1295,6 +1444,7 @@ function moChecks(){
 }
 function payToReview(){
  const p=S.pay,amt=Number(p.amt);
+ if(!can('create')){toast(roleName(actingRole())+' can view but not create payments');return}
  if(!(amt>0)){toast('Enter an amount');return}
  if(!p.rail){toast('Pick a rail');return}
  const fee=railsFor(CC[p.country].ccy).find(r=>r.id===p.rail).fee;
@@ -1306,10 +1456,18 @@ function sendPayment(){
  const chk=moChecks();
  if(chk.dup&&!S.pay.dupAck){toast('Confirm the duplicate check first');return}
  const p=S.pay,amt=Number(p.amt),rail=railsFor(CC[p.country].ccy).find(r=>r.id===p.rail);
+ const amtHome=conv(amt,p.from,home());
+ if(needsApproval(amtHome)||!can('fund')){
+  const a=submitForApproval(p,rail,amtHome);
+  p.step=4;p.apprId=a.id;rr();return;
+ }
  debit(p.from,amt+rail.fee);
- S.plat.txns.unshift({id:uid(),t:Date.now(),who:p.name.trim(),dir:'out',amt:amt,ccy:p.from,note:(p.note||rail.label)});
+ const tx={id:uid(),t:Date.now(),who:p.name.trim(),dir:'out',amt:amt,ccy:p.from,note:(p.note||rail.label),track:mkTrack(p.rail,p.country)};
+ S.plat.txns.unshift(tx);
+ S.plat.saved.fees+=Math.max(0,conv(BANK_WIRE,'USD',home())-conv(rail.fee,p.from,home()));
+ if(p.from!==CC[p.country].ccy)S.plat.saved.fx+=amtHome*(BANK_FXM-FXM);
  if(p.billId)S.plat.bills=S.plat.bills.filter(b=>b.id!==p.billId);
- p.step=3;rr();
+ p.step=3;p.txId=tx.id;rr();
 }
 /* ---- add bill modal ---- */
 function mAddBill(){
@@ -1594,6 +1752,7 @@ function doFx(){
  if(amt>balOf(f.from)){toast('Not enough '+f.from);return}
  const recv=conv(amt,f.from,f.to)*(1-FXM);
  debit(f.from,amt);credit(f.to,recv);
+ S.plat.saved.fx+=conv(amt,f.from,home())*(BANK_FXM-FXM);
  S.plat.txns.unshift({id:uid(),t:Date.now(),who:'FX conversion',dir:'in',amt:recv,ccy:f.to,note:'Converted from '+fmt(amt,f.from)+' at mid plus 0.5% itemised'});
  S.fx.amt='';rr();toast('Converted. '+fmt(recv,f.to)+' is in your balance.');
 }

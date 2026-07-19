@@ -24,6 +24,13 @@ h1{font-size:34px;letter-spacing:-.02em;margin:34px 0 10px}
 .feat{background:var(--b50);border:1px solid var(--b200);border-radius:12px;padding:14px 16px;font-size:13.5px}
 .feat b{display:block;margin-bottom:2px}
 .foot{margin-top:36px;color:#98A2B3;font-size:13px}
+table.cmp{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;font-size:13.5px}
+table.cmp th{text-align:left;background:var(--b50);color:var(--ink);font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;font-weight:700;padding:10px 14px;border-bottom:1px solid var(--line)}
+table.cmp td{padding:12px 14px;border-bottom:1px solid #F2F4F7;vertical-align:top;color:var(--ink3)}
+table.cmp tr:last-child td{border-bottom:none}
+table.cmp td.b{color:var(--ink);font-weight:700;white-space:nowrap}
+.moat{background:linear-gradient(180deg,var(--b50),#fff);border:1px solid var(--b200);border-radius:14px;padding:16px 18px;margin-top:14px;font-size:14px;color:var(--ink3)}
+.moat b{color:var(--b700);display:block;margin-bottom:4px}
 @media(max-width:640px){.grid{grid-template-columns:1fr}h1{font-size:28px}}
 </style>
 </head>
@@ -40,6 +47,20 @@ h1{font-size:34px;letter-spacing:-.02em;margin:34px 0 10px}
     <div class="feat"><b>Payments &amp; collections</b>Payouts as Bill Pay, collections as invoices, payment links, JPM local accounts and SWIFT.</div>
     <div class="feat"><b>Cards &amp; treasury</b>Virtual and physical cards on the expense route, Synthesys tokenised funds with daily yield.</div>
     <div class="feat"><b>FX risk &amp; VaR</b>Value at Risk from your own ledger, toggleable parameters, auto-executing rate triggers.</div>
+  </div>
+
+  <h2 style="font-size:20px;letter-spacing:-.02em;margin:38px 0 4px">Where Finmo wins</h2>
+  <p style="color:var(--ink3);font-size:14px;margin-bottom:14px">This prototype borrows openly. Each of these companies does one thing better than anyone, and the build takes the lesson. What none of them can do is the reason Finmo exists.</p>
+
+  <table class="cmp">
+    <tr><th>Company</th><th>What they do best (and what I took)</th><th>Where they stop</th></tr>
+    <tr><td class="b">Brex</td><td>Controls that finance teams trust. Took the approval workflow: payments over a threshold need a second person, and the preparer cannot release their own payment.</td><td>US only, card led. No cross border rails, no licences outside the US.</td></tr>
+    <tr><td class="b">Ramp</td><td>Proving value in money terms. Took the savings card: FX margin avoided, wire fees avoided, treasury yield, with the method shown.</td><td>US only, spend first. Fused software with an account, but cannot move money across borders.</td></tr>
+    <tr><td class="b">Wise</td><td>Treating a transfer like a parcel. Took payment tracking: staged progress, an honest arrival estimate, and a delay flagged before the customer asks.</td><td>An account, not a finance OS. No opinion on whether you should pay, or what it does to next month.</td></tr>
+  </table>
+
+  <div class="moat">
+    <b>The gap none of them cross.</b> Brex and Ramp can think and hold money, in one country, on cards. Wise can move money everywhere, without judgment. Finmo is treasury first, cross border, on its own licences in five jurisdictions, with an AI that proposes actions and rails that actually settle them. The others recommend without executing, or execute without recommending. This demo closes that loop: every insight, from an overdue invoice to an FX exposure, ends in a button that moves real money.
   </div>
 
   <div class="card">

@@ -56,6 +56,18 @@ Local collection accounts in eight currencies plus one SWIFT account, each label
 
 **Collections read as invoices, payouts read as Bill Pay**, matching the Brex shape requested. Invoices support statuses, nudges and MO payin-matching. Bills arrive, MO reads the vendor, amount and due date, and the human approves.
 
+## What I took from Brex, Ramp and Wise
+
+Three patterns are borrowed deliberately, one per company, each named here so the lineage is explicit.
+
+**Approvals, from Brex.** Payments above a configurable threshold need a second person, and whoever prepared a payment cannot be the one who releases it. This turns two things that were previously decorative, the Wise-style roles and MO's large-payment flag, into actual product: a Preparer creates and an Admin or Payer releases, money leaves the balance only on approval, and every decision is recorded with who and when. Finance teams buy controls, and controls are the cheapest credibility a payments product can carry. The demo lets you switch acting role to see both sides of the same payment.
+
+**Proving the saving, from Ramp.** Ramp's growth motion is telling customers what they saved. The Home dashboard now carries a Saved with Finmo figure, itemised into FX margin avoided (our 0.5 percent against a typical 2.5 percent bank spread), wire fees avoided (local rails against a wire), and treasury yield earned, with the method written underneath. Every number traces to a real transaction in the ledger and the assumptions are deliberately conservative, because a savings claim that cannot be audited is worth less than no claim at all. It also weaponises the transparent pricing the product already practises.
+
+**Tracking, from Wise.** Wise treats a transfer like a parcel, and that is the most loved pattern in consumer money movement. Every payout now has a staged tracker, submitted, checks passed, on the rail, delivered, with an arrival estimate that reflects the chosen rail, minutes for FAST or NPP, dated for SWIFT. If something slows down, the product says so before the customer asks, which is the same no-silent-failures rule applied to money in transit rather than documents.
+
+The point of borrowing openly is the sentence that follows it. Brex and Ramp are US only and card led. Wise moves money everywhere with no view on whether you should. Finmo is treasury first, cross border, on its own licences, with an AI that proposes and rails that settle. The others recommend without executing or execute without recommending, and closing that loop is the whole thesis.
+
 ## Payments intelligence
 
 Every payout runs the same pattern: the AI proposes, a person approves, the rails execute. A repeat payout to the same payee for the same amount trips a duplicate check that needs an explicit acknowledgement. A payment over 60 percent of balance flags for a second approver. Rail selection shows cost against speed instead of burying it, and defaults to the cheapest rail that meets the deadline. When a payment sends, the balance, the activity feed and the burn number all move at once, which is the one-ledger argument made visible.
