@@ -88,6 +88,52 @@ The VaR engine is a set of pure functions, kept free of the interface so the tre
 
 The headline is in plain money, not a Greek letter: on a bad day for the currencies you hold, one in twenty odds, FX could cost you up to this amount this week, a model estimate rather than a promise. Below it sit per-currency contribution bars, scenario chips, and the full model disclosure. Then the number ends in a button: MO names the currency driving the risk, quotes what converting half of it does to the VaR, and offers to convert now or arm a target-rate trigger that fires automatically when the rate improves. That closes the loop on risk, the same propose-approve-execute pattern as everywhere else.
 
+## What I took from Sourav's prototype
+
+Sourav built a business account prototype in parallel, strongest on the accounting data layer. Three ideas from it are better than what I had, so I took them and said so.
+
+**Cash runway.** His framing ties everything to the number an owner actually feels: how long the money lasts. Home now carries a forward projection built from the due dates on unpaid invoices and upcoming bills, with a period switch of 7, 14 or 30 days, the projected balance as a line, and the tightest point in the window called out. One deliberate difference: **overdue receivables are excluded from the projected line.** Money you were already promised and did not receive is not money you can plan around, and a forecast that counts it flatters the customer into a cash crunch. They appear instead as an insight with a chase button, which is where they can actually be acted on.
+
+**Insights as sentences.** Above the chart sit plain statements rather than metrics: what is more than thirty days overdue, where cash dips and when, the largest outflow ahead, and whether the window ends up or down. Each one that can be acted on ends in a button, which is the same rule as everywhere else in the product.
+
+**Aging as charts.** Receivables and payables aging were a line of text; they are now bucketed bar charts, receivables by how late (not due, 1 to 30, 31 to 60, 60+) and payables by when due (overdue, this week, 8 to 30, 31+), with colour carrying the risk. The buckets sum exactly to the underlying totals, which is asserted in the tests, because a chart that does not reconcile to the ledger is worse than no chart.
+
+**List depth.** Invoices and bills both got search, status filters, a due date range, per row day counts, and amounts shown in their own currency with the home equivalent underneath. Manual upload sits alongside the accounting sync as a fallback, because the sync will always miss something and the user should never be stuck.
+
+One place I deliberately diverged: his invoice screen has a receivables and payables toggle in one list. Since collections is money in and payouts is money out, I kept receivables under Collections and payables under Payouts, and gave both the same list depth rather than merging them. Same capability, without breaking the split.
+
+## Navigation: money out, money in, and FX outside both
+
+The sidebar now names things the way the business thinks about them. **Payouts** is money going out (send a payout, approvals, bills). **Collections** is money coming in (invoices, payment links). Calling the first one Payments was wrong, because a collection is also a payment, just in the other direction, so the pair had no symmetry.
+
+**FX sits outside both.** Converting money is not a kind of payment, it is something you do to money you already hold, and it applies equally to money on its way in and on its way out. It gets its own section with three sub-options: Convert, Stablecoins, FX risk.
+
+**Convert** is the Wise pattern applied honestly: pick what you hold, pick what you want, see the mid market rate, the fee as a separate line, and what you actually receive, then it happens instantly because the money never leaves Finmo. On fiat pairs it also shows what a bank would have charged, which is the same savings logic as the dashboard card.
+
+**Stablecoins** treat USDC and USDT as two more currencies in the same account rather than a crypto annex. That single choice is what makes everything else free: they appear in balances, in conversions, in the risk engine, in analytics and under the same approval rules, with no separate plumbing. You get a deposit address per coin per network, and the network is chosen *before* the address is shown, because sending USDT on the wrong chain is the most common way people lose money on chain. The margin is tighter between two stablecoins (0.1 percent) than between a stablecoin and a currency (0.5 percent), because one is a swap and the other is real FX.
+
+## Multiple entities
+
+A group signs up once and then grows: the Singapore company, then the Australian one. The design follows Brex, where entities live under one organisation rather than as separate logins.
+
+**One verification, many companies.** The group's owners, control person and risk rating are already held, so adding an entity checks only the new company's registration and local documents. That is why the second entity opens in about a day instead of repeating the full application, and it is the honest reason the flow is short rather than a shortcut.
+
+**Each entity keeps its own books.** Separate balances, transactions, invoices and bills, because mixing two companies' ledgers is exactly what an auditor will not accept. The entity switcher sits in the top bar next to the account name.
+
+**Combined view for seeing, single entity for acting.** You can look at the whole group's balances at once, but every action happens inside one entity. Seeing is safe to aggregate; moving money is not.
+
+**Intercompany transfers settle inside Finmo.** Moving money from the Singapore company to the Australian one is a ledger movement with an FX conversion if the currencies differ, not an external wire. No rail fee, no waiting. This is also the foundation of the treasury chain from the original report, where the AI spots one entity short for payroll while another sits on surplus and proposes the transfer.
+
+**Roles scope to entities.** A bookkeeper can be given the Australian company only. Access is a pair, what you can do and where you can do it.
+
+## Accounting integrations
+
+Finance teams live in Xero or QuickBooks and treat the bank as a place to retype numbers into. So the product connects to the books, pulls in unpaid bills and outstanding invoices, lets you pay them from your Finmo balance, and then **writes the payment back** so the books reconcile themselves.
+
+The write-back is the part that matters and the part most integrations skip. Pulling data in is a convenience; pushing the result back is what removes the manual reconciliation where duplicate payments are born. Everything that came from the accounting system carries a source badge, and disconnecting removes only the synced items and leaves yours alone, because a customer should never lose their own data by turning off an integration.
+
+There is a second reason this exists: due dates. Bills with real due dates from the accounting system are what make a cash forecast credible rather than decorative.
+
 ## AskMO
 
 One entry point, no agent picker, because routing is the product's job. The suggested prompts are guaranteed to answer from the same ledger the dashboard reads, and anything out of scope gets a graceful boundary instead of a hallucination. This turns the sharpest finding from my testing, a marquee prompt that failed live, into something that cannot happen.
