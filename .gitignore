@@ -7,3 +7,6 @@ Thumbs.db
 
 # Working notes not meant for the public repo
 Finmo Dashboard Rebuild - Siddharth Karmarkar.txt
+
+# test harness (local only)
+.tests/

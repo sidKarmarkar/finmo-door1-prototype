@@ -100,6 +100,20 @@ Sourav built a business account prototype in parallel, strongest on the accounti
 
 **List depth.** Invoices and bills both got search, status filters, a due date range, per row day counts, and amounts shown in their own currency with the home equivalent underneath. Manual upload sits alongside the accounting sync as a fallback, because the sync will always miss something and the user should never be stuck.
 
+## Where his architecture was pointing, and what I built next
+
+Sourav's screen states his thesis plainly: bring receivables and payables into Finmo to collect and pay in one place. The accounting system stays the record of what you owe and are owed, and Finmo becomes the layer that acts on it. Follow that one step further and the gap is obvious. Both prototypes could show you a beautiful payables aging chart and then make you pay the bills one at a time. No finance team works that way. So I built the three things the architecture implies.
+
+**Contacts, the counterparty master.** He has it in his navigation; this is what it is for. Every customer and vendor, built automatically from invoices and bills including everything synced from the accounting system, with payment details saved once so a payout is never a retyped account number. It also carries payment behaviour: measured from when each customer actually paid against when the invoice was due. That number is not decoration, it is what makes a cash forecast honest, and it is what lets the chasing sequences start firm with a customer who is reliably thirty days late.
+
+**The payment run.** The thing a finance team actually does on a Friday. Select everything due, and the product does the work around it: totals per currency, a funding check across your balances, MO's pre-flight on the whole batch (duplicates, missing payee details, size against your balance), then one approval covering the run rather than one per bill. Each payment still executes and tracks individually, and anything that came from the accounting system is written back as paid.
+
+One case in there is worth calling out because it only appears once you build it. If the run needs USD you do not have, the obvious move is to convert from your largest balance. But that balance may already be committed to its own bills in the same run, so converting quietly creates a second shortfall. The funding check therefore only offers a source with surplus **after** its own share of the run, and says so plainly when nothing qualifies. Fixing one currency should never break another.
+
+**Chasing.** The symmetric half. Overdue invoices get an escalating reminder sequence, friendly at day one, firm at day seven, final at day fourteen, drafted by MO from the invoice and adapted to that customer's known payment behaviour. You approve the sequence once rather than each email, and it stops by itself the moment the invoice is paid. Approving a policy instead of approving every message is the only version of this that saves anyone time, and it is the same propose, approve, execute pattern applied to collections.
+
+Together these close his loop: the accounting system says what is owed, the intelligence says what matters, and the product moves the money in one action instead of twenty.
+
 One place I deliberately diverged: his invoice screen has a receivables and payables toggle in one list. Since collections is money in and payouts is money out, I kept receivables under Collections and payables under Payouts, and gave both the same list depth rather than merging them. Same capability, without breaking the split.
 
 ## Navigation: money out, money in, and FX outside both
@@ -112,11 +126,23 @@ The sidebar now names things the way the business thinks about them. **Payouts**
 
 **Stablecoins** treat USDC and USDT as two more currencies in the same account rather than a crypto annex. That single choice is what makes everything else free: they appear in balances, in conversions, in the risk engine, in analytics and under the same approval rules, with no separate plumbing. You get a deposit address per coin per network, and the network is chosen *before* the address is shown, because sending USDT on the wrong chain is the most common way people lose money on chain. The margin is tighter between two stablecoins (0.1 percent) than between a stablecoin and a currency (0.5 percent), because one is a swap and the other is real FX.
 
+## Balances on the dashboard
+
+The first version buried the money: you could see a total, but you had to open Accounts to find out what you actually held in each currency. That is backwards for a business account, where the first question every morning is what have I got and in what.
+
+Home now lists every open wallet with its balance, its home equivalent and buttons to convert or send from that currency directly. Underneath sits a convert box, so the most common action in a multi currency account never requires leaving the page. Opening a new currency is one click from the same place, and a new wallet appears immediately with a zero balance rather than being hidden until it has money in it. That last detail matters: an empty wallet you can see is an invitation to fund it, and a wallet you cannot see until it is funded is a chicken and egg problem.
+
+## Currencies you can actually hold
+
+Nine local currencies (USD, CAD, GBP, EUR, HKD, AUD, SGD, NZD, AED) plus the two stablecoins, and conversion works between any pair, not just into and out of the home currency. Previously the conversion source was limited to currencies that already had a balance, which made the screen look like it only supported one direction. Now any open wallet is a valid source, which is the Wise behaviour: hold what you like, move between them instantly, see the fee as a line item.
+
 ## Multiple entities
 
 A group signs up once and then grows: the Singapore company, then the Australian one. The design follows Brex, where entities live under one organisation rather than as separate logins.
 
-**One verification, many companies.** The group's owners, control person and risk rating are already held, so adding an entity checks only the new company's registration and local documents. That is why the second entity opens in about a day instead of repeating the full application, and it is the honest reason the flow is short rather than a shortcut.
+**Ownership decides the speed, not the paperwork.** When you add an entity you say whether it has the same owners as its parent. If it does, we already screened those people and nothing about the risk picture changed, so we check the new registration and the entity opens immediately. If the owners are different, we collect and screen the new people first, which takes about a day. This is the honest reason one path is instant and the other is not, and it is a better answer than a blanket promise about speed.
+
+**Structures nest.** Parent, child, and child of child, as deep as the real group goes, because a holding company above operating companies in three markets is the normal shape of the customer we are describing, not an edge case. Each entity shows its own balance and, where it has companies beneath it, the rolled up total of everything below. The market list marks where Finmo holds its own licence (Singapore, Australia, the UK, Dubai, Hong Kong) since those open fastest.
 
 **Each entity keeps its own books.** Separate balances, transactions, invoices and bills, because mixing two companies' ledgers is exactly what an auditor will not accept. The entity switcher sits in the top bar next to the account name.
 
@@ -131,6 +157,8 @@ A group signs up once and then grows: the Singapore company, then the Australian
 Finance teams live in Xero or QuickBooks and treat the bank as a place to retype numbers into. So the product connects to the books, pulls in unpaid bills and outstanding invoices, lets you pay them from your Finmo balance, and then **writes the payment back** so the books reconcile themselves.
 
 The write-back is the part that matters and the part most integrations skip. Pulling data in is a convenience; pushing the result back is what removes the manual reconciliation where duplicate payments are born. Everything that came from the accounting system carries a source badge, and disconnecting removes only the synced items and leaves yours alone, because a customer should never lose their own data by turning off an integration.
+
+**Scheduled and recurring invoices.** An invoice can go out now or on a future date, and can repeat weekly, monthly or quarterly. A scheduled invoice is deliberately excluded from receivables, from the aging buckets and from the cash forecast until it actually goes out, because counting money you have not yet asked for is the fastest way to make a forecast lie. It also cannot be scheduled to send after its own due date, which is the kind of small validation that stops a support ticket.
 
 There is a second reason this exists: due dates. Bills with real due dates from the accounting system are what make a cash forecast credible rather than decorative.
 

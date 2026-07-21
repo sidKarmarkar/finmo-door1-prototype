@@ -196,11 +196,13 @@ const CC={
  NZ:{name:'New Zealand',ccy:'NZD',reg:'NZBN',regHint:'13 digits',regRx:/^\d{13}$/,certLabel:'NZ Companies Office extract',hasState:false},
  AE:{name:'Other markets',ccy:'USD',reg:'Registration number',regHint:'As registered locally',regRx:/^.{5,}$/,certLabel:'Certificate of incorporation or trade licence',hasState:false}
 };
-const VA_CCYS=['USD','CAD','GBP','EUR','HKD','AUD','SGD','NZD'];
+const VA_CCYS=['USD','CAD','GBP','EUR','HKD','AUD','SGD','NZD','AED'];
+const CCY_NAME={USD:'US dollar',CAD:'Canadian dollar',GBP:'British pound',EUR:'Euro',HKD:'Hong Kong dollar',AUD:'Australian dollar',SGD:'Singapore dollar',NZD:'New Zealand dollar',AED:'UAE dirham',USDC:'USD Coin',USDT:'Tether'};
+const CCY_FLAG={USD:'\u{1F1FA}\u{1F1F8}',CAD:'\u{1F1E8}\u{1F1E6}',GBP:'\u{1F1EC}\u{1F1E7}',EUR:'\u{1F1EA}\u{1F1FA}',HKD:'\u{1F1ED}\u{1F1F0}',AUD:'\u{1F1E6}\u{1F1FA}',SGD:'\u{1F1F8}\u{1F1EC}',NZD:'\u{1F1F3}\u{1F1FF}',AED:'\u{1F1E6}\u{1F1EA}',USDC:'\u25CE',USDT:'\u25CE',PHP:'\u{1F1F5}\u{1F1ED}',IDR:'\u{1F1EE}\u{1F1E9}',THB:'\u{1F1F9}\u{1F1ED}'};
 const COLLECT_ONLY=['PHP','IDR','THB'];
-const VAD={USD:'ACH routing 021000021 · Fedwire · account ending 8837',CAD:'Institution 001 · transit 00022 · EFT',GBP:'Sort code 04-00-75 · Faster Payments',EUR:'IBAN DE89 3704 0044 xxxx · SEPA',HKD:'Clearing 007 · FPS',AUD:'BSB 013-943 · NPP',SGD:'Bank code 7171 · FAST',NZD:'Bank 01-0001 · local NZD'};
+const VAD={USD:'ACH routing 021000021 · Fedwire · account ending 8837',CAD:'Institution 001 · transit 00022 · EFT',GBP:'Sort code 04-00-75 · Faster Payments',EUR:'IBAN DE89 3704 0044 xxxx · SEPA',HKD:'Clearing 007 · FPS',AUD:'BSB 013-943 · NPP',SGD:'Bank code 7171 · FAST',NZD:'Bank 01-0001 · local NZD',AED:'IBAN AE07 0331 2345 xxxx · UAEFTS'};
 const RAILS_LOCAL={USD:['ACH · free · 1 to 2 days','Fedwire · 15.00 · same day'],CAD:['EFT · free · 1 to 2 days'],GBP:['Faster Payments · free · minutes'],EUR:['SEPA · free · same day','SEPA Instant · 1.00 · seconds'],HKD:['FPS · free · minutes'],AUD:['NPP · free · minutes'],SGD:['FAST · free · minutes'],NZD:['Local NZD · free · same day']};
-const RUSD={SGD:1.35,USD:1,EUR:0.92,GBP:0.79,AUD:1.52,NZD:1.65,CAD:1.36,HKD:7.8,PHP:58.4,IDR:16200,THB:36.4,USDC:1,USDT:1};
+const RUSD={SGD:1.35,USD:1,EUR:0.92,GBP:0.79,AUD:1.52,NZD:1.65,CAD:1.36,HKD:7.8,AED:3.67,PHP:58.4,IDR:16200,THB:36.4,USDC:1,USDT:1};
 const STABLES=['USDC','USDT'];
 const CHAINS={USDC:[['ethereum','Ethereum','ERC-20'],['base','Base','Base'],['solana','Solana','SPL']],
  USDT:[['ethereum','Ethereum','ERC-20'],['tron','Tron','TRC-20']]};
@@ -269,6 +271,7 @@ function fireTrigger(id){
  rr();toast('Target hit. Converted '+fmt(tg.amt,tg.from)+' automatically.');
 }
 function cancelTrigger(id){S.plat.fxTriggers=S.plat.fxTriggers.filter(x=>x.id!==id);rr()}
+const LICENSED={SG:'MAS major payment institution',AU:'AFSL',GB:'FCA electronic money institution',AE:'DFSA',HK:'MSO'};
 const ENTITIES=['Private limited company','Public company','Limited liability company','Partnership','Sole proprietorship','Holding company'];
 const INDUSTRIES=['Food and beverage','E-commerce and retail','Software and IT services','Professional services','Manufacturing','Logistics and trade','Media and marketing','Other'];
 const ROLES=[
@@ -317,7 +320,7 @@ function DEF(){return{
  kyc:{step:0,status:'draft',stage:0,pausedOnce:false,
   me:{dob:'',nat:'',occupation:''},addr:{l1:'',l2:'',city:'',postal:''},
   docs:{id:slot(),selfie:slot()},act:{purpose:'',vol:'',dests:[]},requests:[],risk:riskDef(),scr:''},
- plat:{bals:{},asOf:null,txns:[],inv:[],bills:[],links:[],cards:[],cardTx:[],team:[],approvals:[],policy:{thresh:2000,dual:true},saved:{fx:0,fees:0,yield:0},ents:[],entId:null,entData:{},acct:{conn:null,lastSync:null,syncing:false,pulledInv:0,pulledBills:0,writeback:[]},
+ plat:{bals:{},asOf:null,txns:[],inv:[],bills:[],links:[],cards:[],cardTx:[],team:[],approvals:[],policy:{thresh:2000,dual:true},saved:{fx:0,fees:0,yield:0},ents:[],entId:null,entData:{},open:[],contacts:[],runs:[],dunning:[],acct:{conn:null,lastSync:null,syncing:false,pulledInv:0,pulledBills:0,writeback:[]},
   treas:{holdings:{},acceptedHigh:false},payin:null,seeded:false},
  pay:{step:0,from:'',name:'',country:'SG',acct:'',amt:'',note:'',rail:'',dupAck:false,billId:null},
  fx:{from:'',to:'USD',amt:''},chain:{USDC:'ethereum',USDT:'ethereum'},invF:{q:'',st:'all',from:'',to:''},billF:{q:'',st:'all',from:'',to:''},
@@ -998,6 +1001,7 @@ function seedPlatform(){
  if(S.plat.seeded)return;
  const h=home(),now=Date.now(),day=86400000;
  S.plat.seeded=true;S.plat.bals={};S.plat.bals[h]=25000;S.plat.asOf=now;
+ S.plat.open=[h].concat(h==='USD'?[]:['USD']);
  S.plat.txns=[{id:uid(),t:now-2*3600000,who:'Demo seed payin',dir:'in',amt:25000,ccy:h,note:'Sample funds so you can explore. Marked as demo data.'}];
  S.plat.team=[{id:uid(),name:S.user.name,email:S.user.email,role:'owner',st:'active',ents:'all'}];
  seedEntities();
@@ -1007,6 +1011,19 @@ function seedPlatform(){
    {id:uid(),no:'INV-1041',client:'Northwind Logistics',amt:2150,due:new Date(now-3*day).toISOString().slice(0,10),st:'overdue'},
    {id:uid(),no:'INV-1040',client:'Blue Harbor Media',amt:1600,due:new Date(now-9*day).toISOString().slice(0,10),st:'paid'}];
   S.plat.payin={amt:4800,from:'ACME TRADING PTE LTD',matched:false,dismissed:false};
+  const dOf=n=>new Date(now-n*day).toISOString().slice(0,10);
+  S.plat.inv.push(
+   {id:uid(),no:'INV-1039',client:'Acme Trading Pte Ltd',amt:3900,ccy:h,due:dOf(38),st:'paid',paidOn:dOf(41)},
+   {id:uid(),no:'INV-1038',client:'Acme Trading Pte Ltd',amt:2600,ccy:h,due:dOf(66),st:'paid',paidOn:dOf(68)},
+   {id:uid(),no:'INV-1037',client:'Northwind Logistics',amt:1800,ccy:h,due:dOf(72),st:'paid',paidOn:dOf(40)},
+   {id:uid(),no:'INV-1036',client:'Blue Harbor Media',amt:1400,ccy:h,due:dOf(45),st:'paid',paidOn:dOf(44)});
+  S.plat.contacts=[
+   {id:uid(),name:'Acme Trading Pte Ltd',type:'customer',country:'SG',ccy:h,acct:''},
+   {id:uid(),name:'Northwind Logistics',type:'customer',country:'SG',ccy:h,acct:''},
+   {id:uid(),name:'Blue Harbor Media',type:'customer',country:'SG',ccy:h,acct:''},
+   {id:uid(),name:'CapitaLand',type:'vendor',country:'SG',ccy:h,acct:'071882140021'},
+   {id:uid(),name:'AWS',type:'vendor',country:'US',ccy:'USD',acct:'998877661'},
+   {id:uid(),name:'Payroll',type:'vendor',country:'SG',ccy:h,acct:'071882140099'}];
   S.plat.bills=[
    {id:uid(),who:'Office rent · CapitaLand',amt:3200,due:new Date(now+4*day).toISOString().slice(0,10),src:'seed'},
    {id:uid(),who:'AWS · cloud hosting',amt:890,due:new Date(now+6*day).toISOString().slice(0,10),src:'seed'},
@@ -1075,7 +1092,7 @@ function railsFor(ccy){
 }
 function lockToast(){toast(live()?'Cards unlock at full approval, usually 1 to 2 days after the starter approval.':'Moving money unlocks once you are verified. The review is on your home page.')}
 function navGo(t){
- const needFull=['cards','spend'],needLive=['payouts','approvals','bills','links','collections','fx','fxrisk','stable','treasury','team','entities','integrations'];
+ const needFull=['cards','spend'],needLive=['payouts','approvals','bills','links','collections','fx','fxrisk','stable','treasury','team','entities','integrations','contacts','run','chasing'];
  if(needLive.includes(t)&&!live()){lockToast();return}
  if(needFull.includes(t)&&!fullOk()){lockToast();return}
  S.tab=t;S.trackId=null;S.pay={step:0,from:home(),name:'',country:S.user.country,acct:'',amt:'',note:'',rail:'',dupAck:false,billId:null};
@@ -1085,16 +1102,17 @@ function navGo(t){
 function vApp(){
  const biz=S.acct==='biz';
  if(!S.navOpen)S.navOpen={};
- const isLk=id=>(['payouts','approvals','bills','links','collections','fx','fxrisk','stable','treasury','team','entities','integrations'].includes(id)&&!live())||(['cards','spend'].includes(id)&&!fullOk());
+ const isLk=id=>(['payouts','approvals','bills','links','collections','fx','fxrisk','stable','treasury','team','entities','integrations','contacts','run','chasing'].includes(id)&&!live())||(['cards','spend'].includes(id)&&!fullOk());
  const NAVB=[
   {id:'home',t:'Home'},
   {t:'Accounts',kids:[['accounts','Balances and details'],['topup','Top up']]},
-  {t:'Payouts',kids:[['payouts','Send a payout'],['approvals','Approvals'],['bills','Bills']]},
-  {t:'Collections',kids:[['collections','Invoices'],['links','Payment links']]},
+  {t:'Payouts',kids:[['payouts','Send a payout'],['run','Payment run'],['approvals','Approvals'],['bills','Bills']]},
+  {t:'Collections',kids:[['collections','Invoices'],['chasing','Chasing'],['links','Payment links']]},
   {t:'Cards',kids:[['cards','Your cards'],['spend','Spend']]},
   {t:'FX',kids:[['fx','Convert'],['stable','Stablecoins'],['fxrisk','FX risk']]},
   {id:'treasury',t:'Treasury'},
   {t:'Team',kids:[['team','People and roles'],['entities','Entities']]},
+  {id:'contacts',t:'Contacts'},
   {id:'integrations',t:'Accounting'}];
  const NAVI=[{id:'home',t:'Home'},{id:'payouts',t:'Send money'},{id:'fx',t:'Convert'}];
  const kidGo=id=>id==='topup'?(live()?"S.modal='topup';rr()":"lockToast()"):`navGo('${id}')`;
@@ -1106,7 +1124,7 @@ function vApp(){
    return `<button class="kid ${S.tab===k[0]?'on':''} ${lk?'lk':''}" onclick="${kidGo(k[0])}">${k[1]}${lk?' <span class="lockhint">🔒</span>':''}</button>`}).join(''):'';
   return `<button class="it" onclick="S.navOpen['${g.t}']=${open?'false':'true'};rr()">${g.t}<span class="chev">${open?'▾':'▸'}</span></button>${kids}`;
  }).join('');
- const body={home:tHome,accounts:tAccounts,payouts:tPayouts,approvals:tApprovals,bills:tBills,links:tLinks,spend:tSpend,collections:tCollections,cards:tCards,treasury:tTreasury,fx:tFx,stable:tStable,fxrisk:tFxRisk,team:tTeam,entities:tEntities,integrations:tIntegrations}[S.tab]();
+ const body={home:tHome,accounts:tAccounts,payouts:tPayouts,approvals:tApprovals,bills:tBills,links:tLinks,spend:tSpend,collections:tCollections,cards:tCards,treasury:tTreasury,fx:tFx,stable:tStable,fxrisk:tFxRisk,team:tTeam,entities:tEntities,integrations:tIntegrations,contacts:tContacts,run:tRun,chasing:tDunning}[S.tab]();
  return `<div class="shell">
   <div class="side">
    ${biz?LOGO:LOGO_R}
@@ -1129,13 +1147,399 @@ function vApp(){
    </div>
    <div class="content">${body}</div>
   </div>
- </div>${S.mo.open?vMo():''}${S.modal==='report'?mReport():''}${S.modal==='topup'?mTopup():''}${S.modal==='addbill'?mAddBill():''}${S.modal==='newcard'?mNewCard():''}${S.modal==='addent'?mAddEntity():''}${S.modal==='upinv'?mUploadInv():''}${S.modal==='ic'?mIcTransfer():''}${S.modal&&S.modal.startsWith&&S.modal.startsWith('fund:')?mFund():''}`;
+ </div>${S.mo.open?vMo():''}${S.modal==='report'?mReport():''}${S.modal==='topup'?mTopup():''}${S.modal==='addbill'?mAddBill():''}${S.modal==='newcard'?mNewCard():''}${S.modal==='addent'?mAddEntity():''}${S.modal==='upinv'?mUploadInv():''}${S.modal==='openccy'?mOpenCcy():''}${(S.modal==='addct'||(S.modal||'').startsWith('ct:'))?mAddContact():''}${S.modal==='ic'?mIcTransfer():''}${S.modal&&S.modal.startsWith&&S.modal.startsWith('fund:')?mFund():''}`;
 }
 function limitsBanner(){
  if(!limited())return '';
  return `<div class="banner banner-w"><div>⏳</div><div class="small" style="flex:1"><span class="b">Starter limits are on.</span> Up to ${fmt(lim().tx)} per transfer and ${fmt(lim().mo)} per month for collections and payouts${S.acct==='biz'?', and cards unlock at full approval':''}. Our team usually clears these within 1 to 2 days, and you will get an email the moment they do. <a href="#" onclick="viewReport();return false">View your ${S.acct==='biz'?'KYB':'KYC'} report</a></div></div>`;
 }
 /* ---- home ---- */
+/* ============ collections automation (dunning) ============ */
+const DUN_STEPS=[
+ {at:1,tone:'Friendly nudge',body:i=>'Hi '+i.client+', just a note that invoice '+i.no+' for '+fmt(i.amt,i.ccy||home())+' became due yesterday. If it is already scheduled, ignore this. If it is easier, the payment link in the original email still works.'},
+ {at:7,tone:'Firm reminder',body:i=>'Hi '+i.client+', invoice '+i.no+' for '+fmt(i.amt,i.ccy||home())+' is now a week overdue. Could you let us know the expected payment date, or flag anything that is holding it up?'},
+ {at:14,tone:'Final notice',body:i=>'Hi '+i.client+', invoice '+i.no+' for '+fmt(i.amt,i.ccy||home())+' is two weeks overdue. We would like to resolve this before it affects future orders, so please confirm payment or come back to us this week.'}];
+function dunOf(invId){return (S.plat.dunning||[]).find(d=>d.invId===invId)}
+function startDunning(invId){
+ const i=(S.plat.inv||[]).find(x=>x.id===invId);if(!i)return;
+ if(dunOf(invId)){toast('A sequence is already running for '+i.no);return}
+ const c=findContact(i.client),st=c?contactStats(c):{avgDays:null};
+ S.plat.dunning.push({id:uid(),invId:invId,no:i.no,client:i.client,startedAt:Date.now(),step:0,sent:[],
+  note:st.avgDays!==null&&st.avgDays>10?'This customer pays about '+st.avgDays+' days late on average, so MO starts firm rather than gentle.':null});
+ rr();toast('Reminder sequence armed for '+i.no+'. You approved the wording once, MO sends each step on schedule.');
+}
+function stopDunning(invId){
+ S.plat.dunning=(S.plat.dunning||[]).filter(d=>d.invId!==invId);rr();toast('Sequence stopped');
+}
+function sendDunStep(invId){
+ const d=dunOf(invId);if(!d)return;
+ const i=(S.plat.inv||[]).find(x=>x.id===invId);
+ if(!i||i.st==='paid'){stopDunning(invId);toast('Invoice is paid, so the sequence stopped itself');return}
+ if(d.step>=DUN_STEPS.length){toast('Sequence finished. MO suggests a call or escalation now.');return}
+ const st=DUN_STEPS[d.step];
+ d.sent.push({at:Date.now(),tone:st.tone,body:st.body(i)});
+ d.step++;rr();
+ toast(st.tone+' sent to '+i.client+(d.step>=DUN_STEPS.length?'. That was the last step.':'. Next step in '+(DUN_STEPS[d.step].at-st.at)+' days.'));
+}
+function tDunning(){
+ const h=home();
+ const overdue=(S.plat.inv||[]).filter(i=>i.st!=='paid'&&i.st!=='scheduled'&&daysLate(i.due)>0)
+  .sort((a,b)=>daysLate(b.due)-daysLate(a.due));
+ const active=(S.plat.dunning||[]);
+ const totOverdue=overdue.reduce((t,i)=>t+conv(i.amt,i.ccy||h,h),0);
+ return `<h1 style="margin-bottom:6px">Chasing</h1>
+ <p class="muted" style="margin-bottom:16px">Overdue invoices, and the reminder sequences doing the chasing for you. You approve the wording once and MO runs it, escalating politely until they pay.</p>
+ ${limitsBanner()}
+ <div class="grid3" style="margin-bottom:16px">
+  <div class="mtile"><div class="lbl">Overdue</div><div class="v">${fmt(totOverdue)}</div><div class="sub">${overdue.length} invoice${overdue.length===1?'':'s'}</div></div>
+  <div class="mtile"><div class="lbl">Sequences running</div><div class="v">${active.length}</div><div class="sub">${active.reduce((t,d)=>t+d.sent.length,0)} reminders sent</div></div>
+  <div class="mtile"><div class="lbl">Oldest</div><div class="v">${overdue.length?daysLate(overdue[0].due)+' days':'—'}</div><div class="sub">${overdue.length?esc(overdue[0].client):'nothing overdue'}</div></div>
+ </div>
+ ${overdue.length?`<div class="card" style="margin-bottom:16px"><h3 style="margin-bottom:10px">Overdue invoices</h3>
+  <table><tr><th>Invoice</th><th>Client</th><th>Late by</th><th style="text-align:right">Amount</th><th>Chasing</th></tr>
+  ${overdue.map(i=>{const d=dunOf(i.id),c=findContact(i.client),stt=c?contactStats(c):{avgDays:null};
+   return `<tr><td class="b">${i.no}</td><td>${esc(i.client)}<div class="eqv">${stt.avgDays!==null?'typically '+stt.avgDays+' days late':'no history'}</div></td>
+   <td><span class="tag ${daysLate(i.due)>30?'tag-bad':'tag-warn'}">${daysLate(i.due)} days</span></td>
+   <td style="text-align:right">${amtCell(i.amt,i.ccy||h)}</td>
+   <td>${d?`<span class="tag tag-b">step ${d.step} of ${DUN_STEPS.length}</span>
+     <button class="btn btn-g btn-sm" onclick="sendDunStep('${i.id}')">Send next</button>
+     <button class="btn btn-g btn-sm" style="color:#B42318" onclick="stopDunning('${i.id}')">Stop</button>`
+    :`<button class="btn btn-s btn-sm" onclick="S.dunPrev='${i.id}';rr()">Set up chasing</button>`}</td></tr>`}).join('')}</table></div>`
+ :'<div class="card" style="margin-bottom:16px"><div class="muted small">Nothing overdue. When something slips past its due date it appears here with a one click sequence.</div></div>'}
+ ${S.dunPrev?(()=>{const i=(S.plat.inv||[]).find(x=>x.id===S.dunPrev);if(!i)return '';
+   const c=findContact(i.client),stt=c?contactStats(c):{avgDays:null};
+   return `<div class="card" style="margin-bottom:16px;border-color:var(--b200)">
+   <h3 style="margin-bottom:4px">Reminder sequence for ${i.no}</h3>
+   <p class="small muted" style="margin-bottom:10px">MO drafted these from the invoice. Read them once, approve the sequence, and it runs on its own until ${esc(i.client)} pays.</p>
+   ${stt.avgDays!==null&&stt.avgDays>10?`<div class="ins info"><span class="ic">✦</span><span>${esc(i.client)} pays about ${stt.avgDays} days late on average, so the sequence starts firmer than the default.</span></div>`:''}
+   ${DUN_STEPS.map((st,n)=>`<div style="border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:8px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px"><span class="tag tag-mut">Day ${st.at}</span><span class="b small">${st.tone}</span></div>
+    <div class="small muted">${esc(st.body(i))}</div></div>`).join('')}
+   <button class="btn btn-p" onclick="startDunning('${i.id}');S.dunPrev=null;rr()">Approve and start</button>
+   <button class="btn btn-s" style="margin-left:8px" onclick="S.dunPrev=null;rr()">Cancel</button>
+   <div class="hint" style="margin-top:8px">Approve the sequence, not each email. It stops by itself the moment the invoice is paid, which is the whole point of running it here rather than in your inbox.</div>
+  </div>`})():''}
+ ${active.some(d=>d.sent.length)?`<div class="card"><h3 style="margin-bottom:8px">Sent</h3>
+  <table><tr><th>When</th><th>Invoice</th><th>Step</th><th>Message</th></tr>
+  ${active.flatMap(d=>d.sent.map(sn=>({d:d,s:sn}))).sort((a,b)=>b.s.at-a.s.at).slice(0,10)
+   .map(x=>`<tr><td class="muted">${new Date(x.s.at).toLocaleString('en-SG',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}</td>
+   <td class="b">${x.d.no}</td><td><span class="tag tag-mut">${x.s.tone}</span></td>
+   <td class="small muted">${esc(x.s.body.slice(0,90))}…</td></tr>`).join('')}</table></div>`:''}`;
+}
+/* ============ payment run: what a finance team actually does on a Friday ============ */
+function runSel(){return S.runSel||(S.runSel={})}
+function runScopeBills(){
+ const n=new Date();n.setHours(0,0,0,0);
+ const sc=S.runScope||'week';
+ return (S.plat.bills||[]).filter(b=>{
+  const d=Math.round((new Date(b.due)-n)/86400000);
+  if(sc==='overdue')return d<0;
+  if(sc==='week')return d<=7;
+  if(sc==='month')return d<=30;
+  return true;
+ });
+}
+function runSelected(){return runScopeBills().filter(b=>runSel()[b.id])}
+function runTotals(){
+ const t={};
+ runSelected().forEach(b=>{const c=b.ccy||home();t[c]=(t[c]||0)+b.amt});
+ return t;
+}
+function runFunding(){
+ const t=runTotals();
+ return Object.entries(t).map(([c,need])=>{
+  const have=balOf(c),short=Math.max(0,need-have);
+  let src=null;
+  if(short>0){
+   // A source can only help with what it does not already owe this run,
+   // otherwise fixing one currency quietly breaks another.
+   src=openCcys().filter(x=>x!==c)
+    .map(x=>({c:x,surplus:Math.max(0,balOf(x)-(t[x]||0))}))
+    .filter(x=>conv(x.surplus,x.c,c)*(1-FXM)>=short)
+    .sort((a,b)=>conv(b.surplus,b.c,home())-conv(a.surplus,a.c,home()))[0];
+  }
+  return {ccy:c,need:need,have:have,short:short,src:src?src.c:null,srcSurplus:src?src.surplus:0};
+ });
+}
+function runFundShort(){return runFunding().filter(f=>f.short>0)}
+function runFixFunding(f){
+ if(!f.src){toast('No balance has enough spare after its own bills to cover the '+f.ccy+' shortfall. Top up or take something out of the run.');return}
+ const needSrc=conv(f.short,f.ccy,f.src)/(1-FXM)*1.002;
+ const t=runTotals();
+ const spare=balOf(f.src)-(t[f.src]||0);
+ if(needSrc>spare){toast(f.src+' is already committed to this run. Converting would leave it short.');return}
+ S.fx={from:f.src,to:f.ccy,amt:String(Math.ceil(needSrc*100)/100)};doFx();
+ toast('Converted to cover the '+f.ccy+' shortfall. The run is funded.');
+}
+function runChecks(){
+ const out=[],sel=runSelected(),h=home();
+ const seen={};
+ sel.forEach(b=>{const k=(b.who+'|'+b.amt).toLowerCase();if(seen[k])out.push({lvl:'warn',t:'Two identical bills for '+esc(b.who.split(' ·')[0])+' at '+fmt(b.amt,b.ccy||h)+' are both selected. Check this is not the same invoice twice.'});seen[k]=1});
+ sel.forEach(b=>{const c=findContact(b.who.split(' ·')[0]);if(c&&!c.acct)out.push({lvl:'warn',t:'No saved account details for '+esc(b.who.split(' ·')[0])+'. Add them before this one can go out.'})});
+ const tot=sel.reduce((t,b)=>t+conv(b.amt,b.ccy||h,h),0);
+ if(tot>0.6*totalHome())out.push({lvl:'info',t:'This run is '+Math.round(tot/totalHome()*100)+'% of your total balance. Large runs route to a second approver.'});
+ const n=new Date();n.setHours(0,0,0,0);
+ const late=sel.filter(b=>new Date(b.due)<n).length;
+ if(late)out.push({lvl:'info',t:late+' of these are already past due, so paying this run clears them today.'});
+ if(!out.length&&sel.length)out.push({lvl:'good',t:'MO checked all '+sel.length+' payments. Saved account details on file, no duplicates, amounts in your normal range.'});
+ return out;
+}
+function runToggle(id){runSel()[id]=!runSel()[id];rr()}
+function runSelectAll(on){const m=runSel();runScopeBills().forEach(b=>{m[b.id]=on});rr()}
+function executePaymentRun(){
+ const sel=runSelected(),h=home();
+ if(!sel.length){toast('Select at least one bill');return}
+ if(!can('create')){toast(roleName(actingRole())+' cannot create payments');return}
+ const short=runFundShort();
+ if(short.length){toast('Fund the '+short[0].ccy+' shortfall first, MO has a one click conversion ready');return}
+ const missing=sel.filter(b=>{const c=findContact(b.who.split(' ·')[0]);return !c||!c.acct});
+ if(missing.length){toast('Add account details for '+missing[0].who.split(' ·')[0]+' before running');return}
+ const totHome=sel.reduce((t,b)=>t+conv(b.amt,b.ccy||h,h),0);
+ const needsAppr=needsApproval(totHome)||!can('fund');
+ const run={id:uid(),t:Date.now(),by:S.user.name||'You',n:sel.length,totHome:totHome,
+  items:sel.map(b=>({id:b.id,who:b.who,amt:b.amt,ccy:b.ccy||h,due:b.due,ref:b.ref||null,src:b.src||null,app:b.app||null,st:'queued'})),
+  st:needsAppr?'pending':'executed'};
+ if(needsAppr){
+  S.plat.runs.unshift(run);
+  S.plat.approvals.unshift({id:uid(),by:run.by,byRole:actingRole(),at:Date.now(),name:sel.length+' payments in a run',
+   country:S.user.country,acct:'batch',from:h,amt:totHome,fee:0,rail:'BATCH',note:'Payment run of '+sel.length+' bills',
+   amtHome:totHome,st:'pending',reason:'Payment run above the '+fmt(S.plat.policy.thresh)+' approval threshold',runId:run.id});
+  S.runSel={};rr();toast('Run prepared and sent for approval. Nothing has left your balance yet.');return;
+ }
+ settleRun(run);
+}
+function settleRun(run){
+ const h=home();
+ run.items.forEach(it=>{
+  if(balOf(it.ccy)<it.amt){it.st='failed';it.why='Not enough '+it.ccy+' when the run executed';return}
+  debit(it.ccy,it.amt);
+  const c=findContact(it.who.split(' ·')[0]);
+  const tx={id:uid(),t:Date.now(),who:it.who.split(' ·')[0],dir:'out',amt:it.amt,ccy:it.ccy,
+   note:'Payment run · '+new Date(run.t).toLocaleDateString('en-SG',{day:'numeric',month:'short'}),
+   track:mkTrack(it.ccy===home()?'FAST':'SWIFT',c?c.country:S.user.country)};
+  S.plat.txns.unshift(tx);
+  S.plat.saved.fees+=Math.max(0,conv(BANK_WIRE,'USD',h));
+  if(it.src==='acct')writeBack('bill',it.ref||it.who,it.amt);
+  it.st='paid';it.txId=tx.id;
+ });
+ const paidIds=run.items.filter(i=>i.st==='paid').map(i=>i.id);
+ S.plat.bills=(S.plat.bills||[]).filter(b=>!paidIds.includes(b.id));
+ run.st='executed';run.settledAt=Date.now();
+ if(!S.plat.runs.find(r=>r.id===run.id))S.plat.runs.unshift(run);
+ S.runSel={};S.lastRun=run.id;rr();
+ const failed=run.items.filter(i=>i.st==='failed').length;
+ toast(failed?('Run finished with '+failed+' failure'+(failed===1?'':'s')+'. Nothing silent, each one says why.'):('Run complete. '+run.items.length+' payments sent, '+fmt(run.totHome)+' total.'));
+}
+function tRun(){
+ const h=home(),bills=runScopeBills(),sel=runSelected(),tot=runTotals(),fund=runFunding(),checks=runChecks();
+ const totHome=sel.reduce((t,b)=>t+conv(b.amt,b.ccy||h,h),0);
+ const scope=(id,t)=>`<button class="pchip" style="${(S.runScope||'week')===id?'background:var(--b600);color:#fff;border-color:var(--b600)':''}" onclick="S.runScope='${id}';rr()">${t}</button>`;
+ const last=S.lastRun?(S.plat.runs||[]).find(r=>r.id===S.lastRun):null;
+ return `<h1 style="margin-bottom:6px">Payment run</h1>
+ <p class="muted" style="margin-bottom:16px">Pay everything that is due in one pass. Select the bills, we check funding across your currencies, one approval covers the whole run.</p>
+ ${limitsBanner()}
+ ${last&&last.st==='executed'?`<div class="banner banner-g"><div>✓</div><div class="small" style="flex:1"><span class="b">Last run settled.</span> ${last.items.filter(i=>i.st==='paid').length} of ${last.items.length} payments, ${fmt(last.totHome)}. ${last.items.some(i=>i.st==='failed')?'<span style="color:#B42318">'+last.items.filter(i=>i.st==='failed').length+' failed, see below.</span>':'All tracked individually in your activity.'}<button class="btn btn-g btn-sm" onclick="S.lastRun=null;rr()">Dismiss</button></div></div>`:''}
+ <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+  <span class="small muted">Show</span>${scope('overdue','Overdue only')}${scope('week','Due within 7 days')}${scope('month','Due within 30 days')}${scope('all','Everything')}
+  <span style="margin-left:auto"></span>
+  <button class="btn btn-g btn-sm" onclick="runSelectAll(true)">Select all</button>
+  <button class="btn btn-g btn-sm" onclick="runSelectAll(false)">Clear</button>
+ </div>
+ <div class="card" style="margin-bottom:14px">
+  ${bills.length?`<table><tr><th style="width:34px"></th><th>Vendor</th><th>Due</th><th>Details on file</th><th style="text-align:right">Amount</th></tr>
+  ${bills.map(b=>{const c=findContact(b.who.split(' ·')[0]);const n=new Date();n.setHours(0,0,0,0);
+   const d=Math.round((new Date(b.due)-n)/86400000);
+   return `<tr><td><input type="checkbox" ${runSel()[b.id]?'checked':''} onchange="runToggle('${b.id}')"></td>
+   <td>${esc(b.who.split(' ·')[0])}${b.src==='acct'?` <span class="chip" style="background:#E8F7FC;color:#0A7EA4">${ACCT_APPS[b.app].name}</span>`:''}</td>
+   <td class="muted">${b.due}<div class="eqv" style="${d<0?'color:#B42318':''}">${d<0?Math.abs(d)+' days late':'in '+d+' days'}</div></td>
+   <td>${c&&c.acct?'<span class="tag tag-ok">saved</span>':'<span class="tag tag-warn">missing</span>'}</td>
+   <td style="text-align:right">${amtCell(b.amt,b.ccy||h)}</td></tr>`}).join('')}</table>`
+  :'<div class="muted small">Nothing due in this window.</div>'}
+ </div>
+ ${sel.length?`
+ <div class="grid2" style="margin-bottom:14px">
+  <div class="card"><h3 style="margin-bottom:8px">Funding check</h3>
+   ${fund.map(f=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #F2F4F7">
+    <span class="b" style="width:52px">${f.ccy}</span>
+    <div style="flex:1"><div class="small">Need ${fmt(f.need,f.ccy)} · have ${fmt(f.have,f.ccy)}</div>
+     ${f.short>0?`<div class="small" style="color:#B42318">Short ${fmt(f.short,f.ccy)}</div>`:'<div class="small" style="color:#027A48">Covered</div>'}</div>
+    ${f.short>0?(f.src?`<button class="btn btn-p btn-sm" onclick='runFixFunding(${JSON.stringify(f)})'>Convert from ${f.src}</button>`:'<span class="tag tag-bad" title="Every other balance is already committed to this run">no spare balance</span>'):'<span class="tag tag-ok">✓</span>'}
+   </div>`).join('')}
+   <div class="hint" style="margin-top:8px">A run only executes when every currency is covered. If one is short, MO converts from the balance that can cover it, at the same 0.5% you always pay.</div></div>
+  <div class="card"><h3 style="margin-bottom:8px">MO pre-flight</h3>
+   ${checks.map(c=>`<div class="ins ${c.lvl==='good'?'good':c.lvl==='warn'?'warn':'info'}"><span class="ic">${c.lvl==='good'?'✓':c.lvl==='warn'?'!':'ⓘ'}</span><span>${c.t}</span></div>`).join('')}
+  </div>
+ </div>
+ <div class="card" style="border-color:var(--b200);background:var(--b50)">
+  <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+   <div style="flex:1;min-width:200px"><div class="small muted">Run total</div>
+    <div style="font-size:26px;font-weight:700;letter-spacing:-.02em">${fmt(totHome)}</div>
+    <div class="small muted">${sel.length} payment${sel.length===1?'':'s'} · ${Object.entries(tot).map(([c,v])=>fmt(v,c)).join(' + ')}</div></div>
+   <button class="btn btn-p" onclick="executePaymentRun()">${needsApproval(totHome)||!can('fund')?'Send run for approval':'Pay '+sel.length+' bill'+(sel.length===1?'':'s')}</button>
+  </div>
+  <div class="hint" style="margin-top:8px">${needsApproval(totHome)||!can('fund')?'This run is above your approval threshold, so a second person releases it. Nothing leaves your balance until they do.':'Each payment is tracked separately after it goes out, and anything from your accounting system is marked paid there automatically.'}</div>
+ </div>`:'<div class="card"><div class="muted small">Select bills above to build a run.</div></div>'}
+ ${last?`<div class="card" style="margin-top:16px"><h3 style="margin-bottom:8px">Run detail</h3>
+  <table><tr><th>Vendor</th><th style="text-align:right">Amount</th><th>Result</th></tr>
+  ${last.items.map(i=>`<tr><td>${esc(i.who.split(' ·')[0])}</td><td style="text-align:right">${fmt(i.amt,i.ccy)}</td>
+   <td>${i.st==='paid'?'<span class="tag tag-ok">sent</span>':'<span class="tag tag-bad">failed</span>'+(i.why?`<div class="eqv">${esc(i.why)}</div>`:'')}</td></tr>`).join('')}</table></div>`:''}`;
+}
+/* ============ contacts: the counterparty master ============ */
+function contacts(){return S.plat.contacts||(S.plat.contacts=[])}
+function findContact(name){
+ const n=(name||'').trim().toLowerCase();
+ return contacts().find(c=>c.name.trim().toLowerCase()===n);
+}
+function upsertContact(name,type,extra){
+ if(!name||!name.trim())return null;
+ let c=findContact(name);
+ if(!c){c={id:uid(),name:name.trim(),type:type,country:S.user.country,ccy:home(),acct:''};contacts().push(c)}
+ else if(c.type!==type&&c.type!=='both')c.type='both';
+ if(extra)Object.assign(c,extra);
+ return c;
+}
+function syncContacts(){
+ (S.plat.inv||[]).forEach(i=>upsertContact(i.client,'customer',null));
+ (S.plat.bills||[]).forEach(b=>upsertContact(b.who.split(' ·')[0],'vendor',null));
+}
+function contactStats(c){
+ const h=home();
+ const inv=(S.plat.inv||[]).filter(i=>i.client===c.name);
+ const paid=inv.filter(i=>i.st==='paid'&&i.paidOn);
+ const open=inv.filter(i=>i.st!=='paid'&&i.st!=='scheduled');
+ const days=paid.map(i=>Math.round((new Date(i.paidOn)-new Date(i.due))/86400000));
+ const avg=days.length?Math.round(days.reduce((a,b)=>a+b,0)/days.length):null;
+ const bills=(S.plat.bills||[]).filter(b=>b.who.split(' ·')[0]===c.name);
+ return {
+  billed:inv.reduce((t,i)=>t+conv(i.amt,i.ccy||h,h),0),
+  openAmt:open.reduce((t,i)=>t+conv(i.amt,i.ccy||h,h),0),
+  openN:open.length,paidN:paid.length,avgDays:avg,
+  owedAmt:bills.reduce((t,b)=>t+conv(b.amt,b.ccy||h,h),0),owedN:bills.length
+ };
+}
+function behaviourTag(avg){
+ if(avg===null)return '<span class="small muted">no history yet</span>';
+ if(avg<=0)return '<span class="tag tag-ok">pays on time</span>';
+ if(avg<=10)return '<span class="tag tag-mut">pays '+avg+' days late</span>';
+ return '<span class="tag tag-warn">pays '+avg+' days late</span>';
+}
+function tContacts(){
+ syncContacts();
+ const f=S.ctF||(S.ctF={q:'',type:'all'});
+ const rows=contacts().filter(c=>{
+  if(f.q&&!c.name.toLowerCase().includes(f.q.toLowerCase()))return false;
+  if(f.type!=='all'&&c.type!==f.type&&c.type!=='both')return false;
+  return true;
+ });
+ const h=home();
+ return `<h1 style="margin-bottom:6px">Contacts</h1>
+ <p class="muted" style="margin-bottom:16px">Everyone you bill and everyone you pay, in one list, with their details saved so paying is one click and never a retyped account number.</p>
+ ${limitsBanner()}
+ <div class="filtbar">
+  <div class="fi" style="flex:2"><label>Search</label><input value="${esc(f.q)}" oninput="S.ctF.q=this.value;rr()" placeholder="Name"></div>
+  <div class="fi"><label>Type</label><select onchange="S.ctF.type=this.value;rr()">
+   ${[['all','Everyone'],['customer','Customers'],['vendor','Vendors']].map(o=>`<option value="${o[0]}" ${f.type===o[0]?'selected':''}>${o[1]}</option>`).join('')}</select></div>
+  <button class="btn btn-s btn-sm" onclick="S.modal='addct';rr()">+ Add a contact</button>
+ </div>
+ <div class="card">
+  ${rows.length?`<table><tr><th>Name</th><th>Type</th><th>Payment behaviour</th><th style="text-align:right">Owed to you</th><th style="text-align:right">You owe</th><th></th></tr>
+  ${rows.map(c=>{const st=contactStats(c);
+   return `<tr><td><span class="b">${esc(c.name)}</span><div class="small muted">${CC[c.country]?CC[c.country].name:''} · ${c.ccy}${c.acct?' · '+esc(c.acct):' · no payment details'}</div></td>
+   <td><span class="tag tag-mut">${c.type==='both'?'customer + vendor':c.type}</span></td>
+   <td>${c.type==='vendor'?'<span class="small muted">—</span>':behaviourTag(st.avgDays)+(st.paidN?`<div class="eqv">${st.paidN} paid invoice${st.paidN===1?'':'s'}</div>`:'')}</td>
+   <td style="text-align:right">${st.openAmt>0?`<span class="b">${fmt(st.openAmt)}</span><div class="eqv">${st.openN} open</div>`:'<span class="muted">—</span>'}</td>
+   <td style="text-align:right">${st.owedAmt>0?`<span class="b">${fmt(st.owedAmt)}</span><div class="eqv">${st.owedN} bill${st.owedN===1?'':'s'}</div>`:'<span class="muted">—</span>'}</td>
+   <td style="text-align:right">${(c.type==='vendor'||c.type==='both')?`<button class="btn btn-g btn-sm" onclick="payContact('${c.id}')">Pay</button>`:''}
+    <button class="btn btn-g btn-sm" onclick="S.modal='ct:${c.id}';rr()">Edit</button></td></tr>`}).join('')}</table>`
+  :'<div class="muted small">No contacts match.</div>'}
+  <div class="hint" style="margin-top:10px">Contacts build themselves from your invoices and bills, including everything pulled from your accounting system. Payment behaviour is measured from when each customer actually paid against when it was due, which is what makes the cash forecast honest rather than optimistic.</div>
+ </div>`;
+}
+function payContact(id){
+ const c=contacts().find(x=>x.id===id);if(!c)return;
+ navGo('payouts');
+ S.pay.name=c.name;S.pay.country=c.country;S.pay.acct=c.acct||'';S.pay.from=openCcys().includes(c.ccy)?c.ccy:home();
+ rr();if(!c.acct)toast('No saved account for '+c.name+'. Add it once and it is remembered.');
+}
+function mAddContact(){
+ const id=(S.modal||'').startsWith('ct:')?S.modal.slice(3):null;
+ const c=id?contacts().find(x=>x.id===id):null;
+ return `<div class="ov" onclick="if(event.target===this){S.modal=null;rr()}"><div class="modal">
+  <h2 style="margin-bottom:4px">${c?'Edit contact':'Add a contact'}</h2>
+  <p class="small muted" style="margin-bottom:14px">Saved details are reused every time you pay, which removes the most common source of a misdirected payment.</p>
+  <div class="field"><label>Name</label><input id="ct-nm" value="${c?esc(c.name):''}" placeholder="Business or person"></div>
+  <div class="row2">
+   <div class="field"><label>Type</label><select id="ct-ty">${['customer','vendor','both'].map(t=>`<option ${c&&c.type===t?'selected':''}>${t}</option>`).join('')}</select></div>
+   <div class="field"><label>Country</label><select id="ct-cy">${Object.keys(CC).map(k=>`<option value="${k}" ${c&&c.country===k?'selected':''}>${CC[k].name}</option>`).join('')}</select></div>
+  </div>
+  <div class="row2">
+   <div class="field"><label>Currency</label><select id="ct-cc">${[...VA_CCYS,...STABLES].map(x=>`<option ${c&&c.ccy===x?'selected':''}>${x}</option>`).join('')}</select></div>
+   <div class="field"><label>Account number or IBAN</label><input id="ct-ac" value="${c?esc(c.acct||''):''}"></div>
+  </div>
+  <button class="btn btn-p" onclick="saveContact(${c?"'"+c.id+"'":'null'})">Save</button>
+  ${c?`<button class="btn btn-g" style="margin-left:8px;color:#B42318" onclick="S.plat.contacts=contacts().filter(x=>x.id!=='${c.id}');S.modal=null;rr()">Delete</button>`:''}
+  <button class="btn btn-s" style="margin-left:8px" onclick="S.modal=null;rr()">Cancel</button>
+ </div></div>`;
+}
+function saveContact(id){
+ const nm=$('ct-nm').value.trim();
+ if(nm.length<2){toast('Enter a name');return}
+ const data={name:nm,type:$('ct-ty').value,country:$('ct-cy').value,ccy:$('ct-cc').value,acct:$('ct-ac').value.trim()};
+ if(id){const c=contacts().find(x=>x.id===id);Object.assign(c,data)}
+ else{if(findContact(nm)){toast('That contact already exists');return}contacts().push(Object.assign({id:uid()},data))}
+ S.modal=null;rr();toast('Contact saved');
+}
+/* ============ currency wallets ============ */
+function openCcys(){
+ const o=(S.plat.open||[]).slice();
+ Object.keys(S.plat.bals||{}).forEach(c=>{if(!o.includes(c))o.push(c)});
+ if(!o.includes(home()))o.unshift(home());
+ return o;
+}
+function openWallet(c){
+ if(!S.plat.open)S.plat.open=[];
+ if(S.plat.open.includes(c)||balOf(c)>0){toast(c+' is already open');return}
+ S.plat.open.push(c);
+ if(S.plat.bals[c]===undefined)S.plat.bals[c]=0;
+ S.modal=null;rr();
+ toast(c+' wallet opened. '+(VA_CCYS.includes(c)?'Local account details are ready, so you can be paid like a local.':'You can convert into it right away.'));
+}
+function closeWallet(c){
+ if(c===home()){toast('Your home currency wallet stays open');return}
+ if(balOf(c)>0.005){toast('Move the '+c+' balance out before closing this wallet');return}
+ S.plat.open=(S.plat.open||[]).filter(x=>x!==c);delete S.plat.bals[c];rr();toast(c+' wallet closed');
+}
+function mOpenCcy(){
+ const avail=[...VA_CCYS,...STABLES].filter(c=>!openCcys().includes(c));
+ return `<div class="ov" onclick="if(event.target===this){S.modal=null;rr()}"><div class="modal">
+  <h2 style="margin-bottom:4px">Open a currency</h2>
+  <p class="small muted" style="margin-bottom:14px">Hold it, get paid into it, convert between any of them instantly. Opening a wallet is free and takes effect immediately.</p>
+  ${avail.length?avail.map(c=>`<div class="sel" onclick="openWallet('${c}')">
+   <span style="font-size:20px">${CCY_FLAG[c]||'\u25CF'}</span>
+   <span style="flex:1"><span class="b">${c}</span> <span class="small muted">${CCY_NAME[c]||''}</span><br>
+   <span class="small muted">${STABLES.includes(c)?'Stablecoin, on chain deposits':(VA_CCYS.includes(c)?'Local account details included':'Convert only')}</span></span>
+   <span class="btn btn-s btn-sm">Open</span></div>`).join('')
+  :'<div class="small muted">You already hold every supported currency.</div>'}
+  <button class="btn btn-s" style="margin-top:6px" onclick="S.modal=null;rr()">Close</button>
+ </div></div>`;
+}
+function walletRows(compact){
+ const h=home();
+ return openCcys().map(c=>{
+  const n=balOf(c);
+  return `<div style="display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid #F2F4F7">
+   <span style="font-size:19px;width:26px">${CCY_FLAG[c]||'\u25CF'}</span>
+   <div style="flex:1;min-width:96px"><div class="b">${c}${STABLES.includes(c)?' <span class="tag tag-b" style="font-size:10px">stablecoin</span>':''}</div>
+    <div class="small muted">${CCY_NAME[c]||''}</div></div>
+   <div style="text-align:right;min-width:120px"><div class="b">${fmt(n,c)}</div>
+    ${c!==h?`<div class="eqv">\u2248 ${fmt(conv(n,c,h))}</div>`:''}</div>
+   ${compact?'':`<div style="display:flex;gap:6px">
+    <button class="btn btn-g btn-sm" onclick="S.fx={from:'${c}',to:'${c===h?(openCcys().find(x=>x!==c)||'USD'):h}',amt:''};navGo('fx')">Convert</button>
+    <button class="btn btn-g btn-sm" onclick="S.pay={step:0,from:'${c}',name:'',country:S.user.country,acct:'',amt:'',note:'',rail:'',dupAck:false,billId:null};navGo('payouts')">Send</button>
+   </div>`}
+  </div>`;
+ }).join('');
+}
 /* ============ accounting integrations (Xero / QuickBooks) ============ */
 const ACCT_APPS={xero:{name:'Xero',color:'#13B5EA'},qbo:{name:'QuickBooks',color:'#2CA01C'}};
 function acctConn(){return (S.plat.acct||{}).conn}
@@ -1224,7 +1628,7 @@ function entName(){const e=curEnt();return e?e.name:(S.kyb.biz.legal||'Your busi
 function seedEntities(){
  if(ents().length)return;
  const id=uid();
- S.plat.ents=[{id,name:S.kyb.biz.legal||'Your business',country:S.user.country,ccy:home(),status:'active',primary:true,reg:S.kyb.biz.reg}];
+ S.plat.ents=[{id:id,name:S.kyb.biz.legal||'Your business',country:S.user.country,ccy:home(),status:'active',primary:true,reg:S.kyb.biz.reg,parent:null,ubo:'own'}];
  S.plat.entId=id;S.plat.entData={};
 }
 function switchEnt(id){
@@ -1251,15 +1655,28 @@ function entTotal(e){
  const b=e.id===S.plat.entId?S.plat.bals:((S.plat.entData[e.id]||{}).bals||{});
  return Object.entries(b).reduce((t,[c,n])=>t+conv(n,c,home()),0);
 }
+function childrenOf(pid){return ents().filter(e=>(e.parent||null)===pid)}
+function descendants(id){const out=[];const walk=p=>childrenOf(p).forEach(c=>{out.push(c);walk(c.id)});walk(id);return out}
+function entDepth(e){let d=0,cur=e;while(cur&&cur.parent){cur=ents().find(x=>x.id===cur.parent);d++;if(d>6)break}return d}
+function rollupTotal(e){return [e,...descendants(e.id)].reduce((t,x)=>t+entTotal(x),0)}
 function addEntity(){
  const nm=$('en-nm').value.trim(),cy=$('en-cy').value,rg=$('en-rg').value.trim();
+ const parent=$('en-pa').value||null,ubo=$('en-ubo').value;
  if(nm.length<2){toast('Enter the legal name');return}
  if(rg.length<4){toast('Enter the '+CC[cy].reg);return}
+ if(ubo==='new'){
+  const on=($('en-on')||{}).value||'';
+  if(on.trim().length<2){toast('Name the owner of the new entity, since the owners differ');return}
+ }
  const id=uid();
- S.plat.ents.push({id,name:nm,country:cy,ccy:CC[cy].ccy,status:'verifying',primary:false,reg:rg});
+ const instant=(ubo==='same');
+ S.plat.ents.push({id:id,name:nm,country:cy,ccy:CC[cy].ccy,status:instant?'active':'verifying',primary:false,reg:rg,parent:parent,ubo:ubo,owner:ubo==='new'?($('en-on')||{}).value:null});
  S.plat.entData[id]={bals:{},txns:[],inv:[],bills:[]};
- S.modal=null;rr();toast('Entity added. Because your group is already verified, we only check the new company, usually same day.');
- setTimeout(()=>{const e=ents().find(x=>x.id===id);if(e&&e.status==='verifying'){e.status='active';rr();toast(nm+' is live. Its accounts are open.')}},9000);
+ if(!S.plat.entData[id].open)S.plat.entData[id].open=[CC[cy].ccy];
+ S.modal=null;rr();
+ if(instant)toast(nm+' is live already. Same owners as the parent, so we reused the verified people and only checked the new registration.');
+ else{toast('Added. Different owners means we verify the new people, usually within a day.');
+  setTimeout(()=>{const e=ents().find(x=>x.id===id);if(e&&e.status==='verifying'){e.status='active';rr();toast(nm+' is live. Its accounts are open.')}},9000)}
 }
 function activateEnt(id){const e=ents().find(x=>x.id===id);if(e){e.status='active';rr();toast(e.name+' is live.')}}
 function icTransfer(){
@@ -1280,15 +1697,29 @@ function icTransfer(){
  S.modal=null;rr();toast('Sent '+fmt(amt,ccy)+' to '+dest.name+'. Settles inside Finmo, no external rail.');
 }
 function mAddEntity(){
+ const ubo=S.entUbo||'same';
  return `<div class="ov" onclick="if(event.target===this){S.modal=null;rr()}"><div class="modal">
   <h2 style="margin-bottom:4px">Add an entity</h2>
-  <p class="small muted" style="margin-bottom:14px">A second company under the same group. We already hold your owners, directors and control person, so this is a short check on the new company only, not a full application again.</p>
+  <p class="small muted" style="margin-bottom:14px">Another company in your group. It can sit under the top company or under any entity you already have, so parent, child and child of child all work.</p>
   <div class="field"><label>Legal name</label><input id="en-nm" placeholder="e.g. Kopi Roasters Pty Ltd"></div>
   <div class="row2">
-   <div class="field"><label>Country</label><select id="en-cy" onchange="rr()">${Object.keys(CC).map(k=>`<option value="${k}" ${k===S.user.country?'':''}>${CC[k].name}</option>`).join('')}</select></div>
-   <div class="field"><label>Registration number</label><input id="en-rg" placeholder="As registered locally"></div>
+   <div class="field"><label>Sits under</label><select id="en-pa">
+    ${ents().filter(e=>e.status==='active').map(e=>`<option value="${e.id}" ${e.id===S.plat.entId?'selected':''}>${'— '.repeat(entDepth(e))}${esc(e.name)}</option>`).join('')}</select>
+    <div class="hint">Its parent in the group structure</div></div>
+   <div class="field"><label>Market</label><select id="en-cy">
+    ${Object.keys(CC).map(k=>`<option value="${k}" ${k===S.user.country?'selected':''}>${CC[k].name}${LICENSED[k]?' · our licence':''}</option>`).join('')}</select>
+    <div class="hint">Markets on our own licence open fastest</div></div>
   </div>
-  <div class="banner banner-i"><div>✦</div><div class="small">What carries over: your verified owners and control person, your risk rating, your team and their roles. What we check fresh: the new company's registration and its local documents.</div></div>
+  <div class="field"><label>Registration number</label><input id="en-rg" placeholder="As registered locally"></div>
+  <div class="field"><label>Ownership</label>
+   <div class="sel ${ubo==='same'?'on':''}" onclick="S.entUbo='same';rr()"><input type="radio" ${ubo==='same'?'checked':''} style="width:auto;margin-top:3px">
+    <span style="flex:1"><span class="b">Same owners as the parent</span><br><span class="small muted">We reuse the people we already verified and only check the new registration. Opens immediately.</span></span></div>
+   <div class="sel ${ubo==='new'?'on':''}" onclick="S.entUbo='new';rr()"><input type="radio" ${ubo==='new'?'checked':''} style="width:auto;margin-top:3px">
+    <span style="flex:1"><span class="b">Different owners</span><br><span class="small muted">We need the new owners and their IDs. Usually verified within a day.</span></span></div>
+   <input type="hidden" id="en-ubo" value="${ubo}">
+  </div>
+  ${ubo==='new'?`<div class="field"><label>Owner of the new entity</label><input id="en-on" placeholder="Full legal name of the owner holding 25% or more"><div class="hint">In production this opens the same people step as the main application, with ID upload and screening.</div></div>`:''}
+  <div class="banner banner-i"><div>✦</div><div class="small">${ubo==='same'?'Carries over: verified owners and control person, your risk rating, your team and their roles. Checked fresh: the new company registration and its local documents.':'Carries over: your group risk rating and team. Checked fresh: the new owners, their IDs, screening and the company registration.'}</div></div>
   <button class="btn btn-p" onclick="addEntity()">Add entity</button>
   <button class="btn btn-s" style="margin-left:8px" onclick="S.modal=null;rr()">Cancel</button>
  </div></div>`;
@@ -1310,26 +1741,32 @@ function mIcTransfer(){
  </div></div>`;
 }
 function tEntities(){
- const list=ents().map(e=>{
+ const list=ents().slice().sort((a,b)=>{
+  const path=x=>{const p=[];let c=x;while(c){p.unshift(c.name);c=ents().find(y=>y.id===c.parent)}return p.join('/')};
+  return path(a).localeCompare(path(b));
+ }).map(e=>{
   const active=e.id===S.plat.entId;
   return `<div class="card" style="margin-bottom:12px;${active?'border-color:var(--b500)':''}">
    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-    <div style="flex:1;min-width:200px">
-     <div style="display:flex;align-items:center;gap:8px"><span class="b" style="font-size:16px">${esc(e.name)}</span>
-      ${e.primary?'<span class="tag tag-b">primary</span>':''}
+    <div style="flex:1;min-width:200px;padding-left:${entDepth(e)*20}px">
+     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">${entDepth(e)?'<span class="muted" style="margin-left:-14px">↳</span>':''}
+      <span class="b" style="font-size:16px">${esc(e.name)}</span>
+      ${e.primary?'<span class="tag tag-b">parent</span>':''}
       <span class="tag ${e.status==='active'?'tag-ok':'tag-warn'}">${e.status==='active'?'Active':'Verifying'}</span>
-      ${active?'<span class="tag tag-mut">you are here</span>':''}</div>
-     <div class="small muted">${CC[e.country].name} · ${e.ccy} · ${esc(e.reg||'')}</div>
+      ${e.ubo==='same'?'<span class="tag tag-mut">same owners</span>':e.ubo==='new'?'<span class="tag tag-mut">own owners</span>':''}
+      ${active?'<span class="tag tag-b">you are here</span>':''}</div>
+     <div class="small muted">${CC[e.country].name}${LICENSED[e.country]?' · '+LICENSED[e.country]:''} · ${e.ccy} · ${esc(e.reg||'')}</div>
     </div>
-    <div class="b">${fmt(entTotal(e))}</div>
+    <div style="text-align:right"><div class="b">${fmt(entTotal(e))}</div>
+     ${descendants(e.id).length?`<div class="eqv">${fmt(rollupTotal(e))} incl. ${descendants(e.id).length} below</div>`:''}</div>
     ${!active&&e.status==='active'?`<button class="btn btn-s btn-sm" onclick="switchEnt('${e.id}')">Switch to</button>`:''}
     ${e.status==='verifying'?`<button class="btn btn-g btn-sm" onclick="activateEnt('${e.id}')">Simulate approval</button>`:''}
    </div></div>`;
  }).join('');
  return `<h1 style="margin-bottom:6px">Entities</h1>
- <p class="muted" style="margin-bottom:16px">One group, many companies. Each entity has its own accounts and its own books, and money moves between them inside Finmo.</p>
+ <p class="muted" style="margin-bottom:16px">One group, many companies, nested as deep as your structure goes. Each entity has its own accounts and books, the parent sees everything below it, and money moves between them inside Finmo.</p>
  <div class="grid3" style="margin-bottom:16px">
-  <div class="mtile"><div class="lbl">Group total</div><div class="v">${fmt(allEntTotal())}</div><div class="sub">${ents().length} entit${ents().length===1?'y':'ies'}</div></div>
+  <div class="mtile"><div class="lbl">Group total</div><div class="v">${fmt(allEntTotal())}</div><div class="sub">${ents().length} entit${ents().length===1?'y':'ies'} across ${new Set(ents().map(e=>e.country)).size} market${new Set(ents().map(e=>e.country)).size===1?'':'s'}</div></div>
   <div class="mtile"><div class="lbl">Working in</div><div class="v" style="font-size:17px">${esc(entName())}</div><div class="sub">All actions apply here</div></div>
   <div class="mtile"><div class="lbl">Move money</div><div class="v" style="font-size:17px">Intercompany</div>
    <button class="btn btn-g btn-sm" style="padding-left:0" onclick="S.modal='ic';rr()">Transfer between entities →</button></div>
@@ -1337,7 +1774,7 @@ function tEntities(){
  ${list}
  <button class="btn btn-p" onclick="S.modal='addent';rr()">+ Add an entity</button>
  <div class="card" style="margin-top:16px"><h3 style="margin-bottom:6px">How adding an entity works</h3>
-  <p class="small muted">The group is verified once. A new company reuses your owners, control person and risk rating, so we only check the new registration and its local documents. That is why the second entity opens in about a day instead of repeating the whole application. Team roles can be scoped per entity, so your Australian bookkeeper sees only the Australian company.</p></div>`;
+  <p class="small muted">The group is verified once, not per company. If the new entity has the same owners, we reuse the people we already screened and it opens immediately, because nothing about the risk picture changed. If the owners are different, we collect and screen those people and it takes about a day. Either way the group risk rating, the team and their roles carry over. Entities nest, so a holding company can sit above operating companies in several markets, and each parent sees the balances of everything beneath it. Team roles scope per entity, so your Australian bookkeeper sees only the Australian company.</p></div>`;
 }
 /* ============ payout tracking (Wise pattern) ============ */
 const TRACK_STEPS=[['sub','Payment submitted','We have it and the money has left your balance'],
@@ -1409,8 +1846,10 @@ function approvePayment(id){
  const a=S.plat.approvals.find(x=>x.id===id);if(!a||a.st!=='pending')return;
  if(!can('approve')){toast(roleName(actingRole())+' cannot approve payments. Switch role in demo controls.');return}
  if(a.by===(S.user.name||'You')&&a.byRole==='preparer'&&actingRole()==='preparer'){toast('The person who prepared a payment cannot approve it');return}
- if(balOf(a.from)<a.amt+a.fee){toast('Not enough '+a.from+' to release this payment');return}
+ if(a.rail!=='BATCH'&&balOf(a.from)<a.amt+a.fee){toast('Not enough '+a.from+' to release this payment');return}
  a.st='approved';a.approvedBy=roleName(actingRole());a.approvedAt=Date.now();
+ if(a.runId){const run=(S.plat.runs||[]).find(r=>r.id===a.runId);
+  if(run){settleRun(run);toast('Run approved and sent. '+run.items.length+' payments on their way.');return}}
  debit(a.from,a.amt+a.fee);
  const tx={id:uid(),t:Date.now(),who:a.name,dir:'out',amt:a.amt,ccy:a.from,note:(a.note||'Approved by '+a.approvedBy),track:mkTrack(a.rail,a.country)};
  S.plat.txns.unshift(tx);
@@ -1463,7 +1902,7 @@ function runwayData(days){
  const rows=[{d:new Date(today),ds:iso(today),ar:0,ap:0,bal:bal}];
  for(let i=1;i<=days;i++){
   const d=new Date(today);d.setDate(d.getDate()+i);const ds=iso(d);
-  const ar=(S.plat.inv||[]).filter(x=>x.st!=='paid'&&x.due===ds).reduce((t,x)=>t+conv(x.amt,x.ccy||h,h),0);
+  const ar=(S.plat.inv||[]).filter(x=>x.st!=='paid'&&x.st!=='scheduled'&&x.due===ds).reduce((t,x)=>t+conv(x.amt,x.ccy||h,h),0);
   const ap=(S.plat.bills||[]).filter(b=>b.due===ds).reduce((t,b)=>t+conv(b.amt,b.ccy||h,h),0);
   bal=bal+ar-ap;
   rows.push({d:d,ds:ds,ar:ar,ap:ap,bal:bal});
@@ -1503,7 +1942,7 @@ function shortMoney(v){
 function agingBuckets(){
  const h=home(),now=new Date();now.setHours(0,0,0,0);
  const dl=x=>Math.round((now-new Date(x.due))/86400000);
- const unpaid=(S.plat.inv||[]).filter(i=>i.st!=='paid');
+ const unpaid=(S.plat.inv||[]).filter(i=>i.st!=='paid'&&i.st!=='scheduled');
  const ar=[['Not due',unpaid.filter(i=>dl(i)<=0)],['1 to 30',unpaid.filter(i=>dl(i)>0&&dl(i)<=30)],
   ['31 to 60',unpaid.filter(i=>dl(i)>30&&dl(i)<=60)],['60+',unpaid.filter(i=>dl(i)>60)]];
  const bills=(S.plat.bills||[]);
@@ -1533,8 +1972,8 @@ function cashRunway(){
  const runway=burnRate>0?Math.round(start/burnRate):null;
  const bigBill=(S.plat.bills||[]).slice().sort((a,b)=>conv(b.amt,b.ccy||h,h)-conv(a.amt,a.ccy||h,h))[0];
  const ins=[];
- if(overdue30>0)ins.push(['warn','!','<span class="b">'+fmt(overdue30)+'</span> of receivables is more than 30 days overdue. Collecting it is the fastest way to protect your runway.','navGo(\'collections\')','Chase it']);
- else if(overdueAll>0)ins.push(['warn','!','<span class="b">'+fmt(overdueAll)+'</span> is past its due date across '+ag.ar.filter(b=>b.k!=='Not due').reduce((t,b)=>t+b.n,0)+' invoices.','navGo(\'collections\')','Chase it']);
+ if(overdue30>0)ins.push(['warn','!','<span class="b">'+fmt(overdue30)+'</span> of receivables is more than 30 days overdue. Collecting it is the fastest way to protect your runway.','navGo(\'chasing\')','Chase it']);
+ else if(overdueAll>0)ins.push(['warn','!','<span class="b">'+fmt(overdueAll)+'</span> is past its due date across '+ag.ar.filter(b=>b.k!=='Not due').reduce((t,b)=>t+b.n,0)+' invoices.','navGo(\'chasing\')','Chase it']);
  if(lowest.bal<start*0.5&&lowest.bal<start)ins.push(['info','↓','Cash dips to <span class="b">'+fmt(lowest.bal)+'</span> on '+lowest.d.toLocaleDateString('en-SG',{day:'numeric',month:'long'})+', the tightest point in this window.','','']);
  if(bigBill)ins.push(['info','◆','Largest outflow ahead is <span class="b">'+fmt(conv(bigBill.amt,bigBill.ccy||h,h))+'</span> to '+esc(bigBill.who.split(' ·')[0])+' on '+bigBill.due+'.','navGo(\'bills\')','Review bills']);
  if(end>=start&&totalIn>0)ins.push(['good','✓','You end this window <span class="b">'+fmt(end-start)+'</span> up, with '+fmt(totalIn)+' expected in against '+fmt(totalOut)+' going out.','','']);
@@ -1673,7 +2112,7 @@ function tHome(){
   </div>
   <div class="card"><h3 style="margin-bottom:10px">By entity</h3>
    <table><tr><th>Entity</th><th>Country</th><th>Status</th><th style="text-align:right">Balance</th><th></th></tr>
-   ${ents().map(e=>`<tr><td class="b">${esc(e.name)}</td><td class="muted">${CC[e.country].name}</td>
+   ${ents().map(e=>`<tr><td class="b" style="padding-left:${12+entDepth(e)*18}px">${entDepth(e)?'↳ ':''}${esc(e.name)}</td><td class="muted">${CC[e.country].name}</td>
     <td><span class="tag ${e.status==='active'?'tag-ok':'tag-warn'}">${e.status}</span></td>
     <td style="text-align:right">${fmt(entTotal(e))}</td>
     <td style="text-align:right">${e.status==='active'?`<button class="btn btn-g btn-sm" onclick="switchEnt('${e.id}')">Open</button>`:''}</td></tr>`).join('')}</table>
@@ -1685,18 +2124,38 @@ function tHome(){
  <p class="muted" style="margin-bottom:20px">${biz?'Everything about your money, in money words.':'Send money abroad at the mid market rate plus a small itemised fee.'}</p>
  ${verifyCard}${limitsBanner()}
  <div class="card" style="margin-bottom:18px">
-  <div style="display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap">
+  <div style="display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap;margin-bottom:${live()?'14px':'0'}">
    <div style="flex:1;min-width:220px">
-    <div class="small muted">Total balance</div>
+    <div class="small muted">Total balance${ents().length>1?' · '+esc(entName()):''}</div>
     <div style="font-size:30px;font-weight:700;letter-spacing:-.02em">${live()?fmt(totalHome()):'—'}</div>
-    <div class="small muted">${live()?'Balance as of live · synced just now':'Available after verification'}</div>
-    ${bals.length>1?`<div style="margin-top:8px">${bals.map(([c,n])=>`<span class="tag tag-mut" style="margin-right:6px">${c} ${Number(n).toLocaleString('en-US',{maximumFractionDigits:0})}</span>`).join('')}</div>`:''}
+    <div class="small muted">${live()?'Across '+openCcys().length+' currenc'+(openCcys().length===1?'y':'ies')+' · live':'Available after verification'}</div>
    </div>
    <button class="btn btn-p" ${live()?'':'disabled title="Unlocks after verification"'} onclick="navGo('payouts')">${biz?'Pay out':'Send money'}</button>
    ${biz?`<button class="btn btn-s" ${live()?'':'disabled'} onclick="navGo('links')">Get paid</button>`:''}
    <button class="btn btn-s" ${live()?'':'disabled'} onclick="S.modal='topup';rr()">Top up</button>
   </div>
+  ${live()?`<div style="border-top:1px solid var(--line);padding-top:6px">
+   ${walletRows(false)}
+   <div style="display:flex;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap">
+    <button class="btn btn-s btn-sm" onclick="S.modal='openccy';rr()">+ Open a currency</button>
+    <span class="small muted">Hold ${VA_CCYS.length} currencies and stablecoins, convert between any of them instantly.</span>
+   </div></div>`:''}
  </div>
+ ${live()&&biz?`<div class="card" style="margin-bottom:18px;border-color:var(--b200);background:var(--b50)">
+  <div style="display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap">
+   <div style="flex:1;min-width:140px"><label class="small b" style="display:block;margin-bottom:5px">Convert</label>
+    <select onchange="S.qcFrom=this.value;rr()" style="width:100%;padding:9px 11px;border:1.5px solid var(--line);border-radius:9px;background:#fff">
+     ${openCcys().map(c=>`<option ${(S.qcFrom||openCcys()[0])===c?'selected':''}>${c}</option>`).join('')}</select></div>
+   <div style="flex:1;min-width:120px"><label class="small b" style="display:block;margin-bottom:5px">Amount</label>
+    <input id="qc-amt" type="number" min="0" placeholder="0.00" style="width:100%;padding:9px 11px;border:1.5px solid var(--line);border-radius:9px"></div>
+   <div style="flex:1;min-width:140px"><label class="small b" style="display:block;margin-bottom:5px">To</label>
+    <select onchange="S.qcTo=this.value;rr()" style="width:100%;padding:9px 11px;border:1.5px solid var(--line);border-radius:9px;background:#fff">
+     ${[...VA_CCYS,...STABLES].filter(c=>c!==(S.qcFrom||openCcys()[0])).map(c=>`<option ${(S.qcTo||home())===c?'selected':''}>${c}</option>`).join('')}</select></div>
+   <button class="btn btn-p" onclick="quickConvert()">Convert</button>
+   <button class="btn btn-g btn-sm" onclick="navGo('fx')">Rates and risk →</button>
+  </div>
+  <div class="small muted" style="margin-top:8px">Mid market rate, 0.5% fee itemised, lands instantly. No need to leave this page.</div>
+ </div>`:''}
  ${biz&&live()?analytics():''}
  ${biz?`<div class="grid3" style="margin-bottom:18px">
   <div class="tile"><div class="small muted">Committed outflows, 14 days</div><div class="v">${live()?fmt(burn):'—'}</div><div class="small muted">${(()=>{if(!live())return 'Rent, cloud and payroll';const out30=S.plat.txns.filter(t=>t.dir==='out'&&Date.now()-t.t<30*86400000).reduce((x,t)=>x+conv(t.amt,t.ccy,home()),0)+burn;const rate=out30/30;return rate>0?'Balance covers about '+Math.min(999,Math.round(totalHome()/rate))+' days at this pace':'Rent, cloud and payroll'})()}</div></div>
@@ -1772,6 +2231,7 @@ function tBills(){
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap"><h3>Bills inbox</h3>
    <span class="small muted">${rows.length} of ${(S.plat.bills||[]).length} · ${fmt(shown)} in view</span>
    <span style="margin-left:auto"></span>
+   <button class="btn btn-s btn-sm" onclick="navGo('run')">Pay these in one run</button>
    <button class="btn btn-s btn-sm" onclick="S.modal='addbill';if(!S.plat.billSlot)S.plat.billSlot=slot();S.billDraft=null;rr()">+ Add a bill</button></div>
   ${filterBar('bill')}
   ${rows.length?`<table><tr><th>Vendor</th><th>Due</th><th style="text-align:right">Amount</th><th>Status</th><th></th></tr>
@@ -1899,7 +2359,7 @@ function approveBill(){
 /* ---- collections (invoices + payment links) ---- */
 function matchPayin(yes){
  const p=S.plat.payin;
- if(yes){const inv=S.plat.inv.find(i=>i.no==='INV-1042');if(inv){inv.st='paid';if(inv.src)writeBack('invoice',inv.no,inv.amt)}p.matched=true;credit(home(),p.amt);
+ if(yes){const inv=S.plat.inv.find(i=>i.no==='INV-1042');if(inv){inv.st='paid';inv.paidOn=new Date().toISOString().slice(0,10);S.plat.dunning=(S.plat.dunning||[]).filter(d=>d.invId!==inv.id);if(inv.src)writeBack('invoice',inv.no,inv.amt)}p.matched=true;credit(home(),p.amt);
   S.plat.txns.unshift({id:uid(),t:Date.now(),who:p.from,dir:'in',amt:p.amt,ccy:home(),note:'Matched to INV-1042 by MO, confirmed by you'});
   toast('Matched. Invoice INV-1042 marked paid.')}
  else{p.dismissed=true;toast('Noted. MO will not suggest this match again.')}
@@ -1907,11 +2367,25 @@ function matchPayin(yes){
 }
 function addInvoice(){
  const cl=$('inv-cl').value.trim(),am=Number($('inv-am').value),du=$('inv-du').value;
+ const send=($('inv-send')||{}).value||'now',rep_=($('inv-rep')||{}).value||'none';
  if(cl.length<2){toast('Enter a client name');return}
  if(!(am>0)){toast('Enter an amount');return}
  if(!du){toast('Pick a due date');return}
+ if(send==='later'){
+  const sd=($('inv-sd')||{}).value;
+  if(!sd){toast('Pick the date to send it');return}
+  if(sd>du){toast('It cannot be sent after it is due');return}
+  const no2='INV-'+(1043+S.plat.inv.length);
+  S.plat.inv.unshift({id:uid(),no:no2,client:cl,amt:am,ccy:home(),due:du,st:'scheduled',sendOn:sd,repeat:rep_});
+  rr();toast(no2+' scheduled to go out on '+sd+(rep_!=='none'?', repeating '+rep_:''));return;
+ }
  const no='INV-'+(1043+S.plat.inv.length);
- S.plat.inv.unshift({id:uid(),no:no,client:cl,amt:am,ccy:home(),due:du,st:'sent'});rr();toast(no+' created');
+ S.plat.inv.unshift({id:uid(),no:no,client:cl,amt:am,ccy:home(),due:du,st:'sent',repeat:rep_});
+ rr();toast(no+' created'+(rep_!=='none'?', repeating '+rep_:''));
+}
+function sendScheduled(id){
+ const i=S.plat.inv.find(x=>x.id===id);if(!i)return;
+ i.st='sent';delete i.sendOn;rr();toast(i.no+' sent to '+i.client);
 }
 function createLink(){
  const de=$('lnk-de').value.trim(),am=Number($('lnk-am').value)||0,cy=$('lnk-cy').value;
@@ -1932,13 +2406,14 @@ function simPay(id){
 function daysLate(due){const n=new Date();n.setHours(0,0,0,0);return Math.round((n-new Date(due))/86400000)}
 function invStatus(i){
  if(i.st==='paid')return 'paid';
+ if(i.st==='scheduled')return 'scheduled';
  const d=daysLate(i.due);
  if(d>30)return 'at_risk';
  if(d>0)return 'overdue';
  return 'awaiting';
 }
-const ST_LABEL={paid:'Paid',at_risk:'At risk',overdue:'Overdue',awaiting:'Awaiting payment'};
-const ST_TAG={paid:'tag-ok',at_risk:'tag-bad',overdue:'tag-warn',awaiting:'tag-mut'};
+const ST_LABEL={paid:'Paid',at_risk:'At risk',overdue:'Overdue',awaiting:'Awaiting payment',scheduled:'Scheduled'};
+const ST_TAG={paid:'tag-ok',at_risk:'tag-bad',overdue:'tag-warn',awaiting:'tag-mut',scheduled:'tag-b'};
 function filterInv(){
  const f=S.invF||{q:'',st:'all',from:'',to:''};
  return (S.plat.inv||[]).filter(i=>{
@@ -1971,7 +2446,7 @@ function filterBar(kind){
  const f=kind==='inv'?(S.invF||{}):(S.billF||{});
  const key=kind==='inv'?'invF':'billF';
  const opts=kind==='inv'
-  ?[['all','All statuses'],['awaiting','Awaiting payment'],['overdue','Overdue'],['at_risk','At risk (30+ days)'],['paid','Paid']]
+  ?[['all','All statuses'],['awaiting','Awaiting payment'],['scheduled','Scheduled'],['overdue','Overdue'],['at_risk','At risk (30+ days)'],['paid','Paid']]
   :[['all','All bills'],['overdue','Overdue'],['week','Due this week'],['later','Due later']];
  return `<div class="filtbar">
   <div class="fi" style="flex:2"><label>Search</label><input value="${esc(f.q||'')}" oninput="S.${key}.q=this.value;save();rr()" placeholder="${kind==='inv'?'Client or invoice number':'Vendor name'}"></div>
@@ -2018,17 +2493,27 @@ function tCollections(){
    ${filterBar('inv')}
    ${rows.length?`<table><tr><th>Invoice</th><th>Client</th><th>Due</th><th style="text-align:right">Amount</th><th>Status</th><th></th></tr>
    ${rows.map(i=>{const st=invStatus(i),d=daysLate(i.due);
-    return `<tr><td class="b">${i.no}${i.src?` <span class="chip" style="background:#E8F7FC;color:#0A7EA4">${ACCT_APPS[i.src].name}</span>`:''}${i.manual?' <span class="chip">uploaded</span>':''}</td>
+    return `<tr><td class="b">${i.no}${i.src?` <span class="chip" style="background:#E8F7FC;color:#0A7EA4">${ACCT_APPS[i.src].name}</span>`:''}${i.manual?' <span class="chip">uploaded</span>':''}${i.repeat&&i.repeat!=='none'?` <span class="chip">↻ ${i.repeat}</span>`:''}</td>
     <td>${esc(i.client)}</td>
-    <td class="muted">${i.due}${st!=='paid'&&d>0?`<div class="eqv" style="color:#B42318">${d} day${d===1?'':'s'} late</div>`:''}</td>
+    <td class="muted">${i.due}${st==='scheduled'?`<div class="eqv">goes out ${i.sendOn}</div>`:st!=='paid'&&d>0?`<div class="eqv" style="color:#B42318">${d} day${d===1?'':'s'} late</div>`:''}</td>
     <td style="text-align:right">${amtCell(i.amt,i.ccy)}</td>
     <td><span class="tag ${ST_TAG[st]}">${ST_LABEL[st]}</span></td>
-    <td style="text-align:right">${st==='overdue'||st==='at_risk'?`<button class="btn btn-g btn-sm" onclick="toast('MO drafted a reminder for ${esc(i.client)}. You approve it and it goes out.')">Nudge</button>`:''}</td></tr>`}).join('')}</table>`
+    <td style="text-align:right">${st==='scheduled'?`<button class="btn btn-g btn-sm" onclick="sendScheduled('${i.id}')">Send now</button>`:(st==='overdue'||st==='at_risk')?`<button class="btn btn-g btn-sm" onclick="S.dunPrev='${i.id}';navGo('chasing')">Chase</button>`:''}</td></tr>`}).join('')}</table>`
    :'<div class="muted small" style="padding:8px 0">No invoices match these filters.</div>'}
-   <div class="row2" style="margin-top:16px;padding-top:14px;border-top:1px solid var(--line)"><div class="field"><label>New invoice · client</label><input id="inv-cl" placeholder="Client name"></div>
+   <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--line)"><h3 style="margin-bottom:10px">New invoice</h3>
+   <div class="row2"><div class="field"><label>Client</label><input id="inv-cl" placeholder="Client name"></div>
    <div class="field"><label>Amount (${home()})</label><input id="inv-am" type="number" min="0"></div></div>
    <div class="row2"><div class="field"><label>Due date</label><input id="inv-du" type="date" min="${new Date().toISOString().slice(0,10)}"></div>
-   <div class="field"><label>&nbsp;</label><button class="btn btn-p" onclick="addInvoice()">Create invoice</button></div></div>
+   <div class="field"><label>Send</label><select id="inv-send" onchange="S.invSend=this.value;rr()">
+    <option value="now" ${(S.invSend||'now')==='now'?'selected':''}>Straight away</option>
+    <option value="later" ${S.invSend==='later'?'selected':''}>Schedule for a date</option></select></div></div>
+   <div class="row2">
+   ${S.invSend==='later'?`<div class="field"><label>Send on</label><input id="inv-sd" type="date" min="${new Date().toISOString().slice(0,10)}"></div>`:'<div></div>'}
+   <div class="field"><label>Repeat</label><select id="inv-rep">
+    <option value="none">Does not repeat</option><option value="weekly">Weekly</option>
+    <option value="monthly">Monthly</option><option value="quarterly">Quarterly</option></select></div></div>
+   <button class="btn btn-p" onclick="addInvoice()">Create invoice</button>
+   <div class="hint" style="margin-top:8px">Scheduled invoices sit here until their send date and are deliberately left out of receivables and the cash forecast until they actually go out.</div></div>
   </div>`})()}`;
 }
 function tLinks(){
@@ -2215,7 +2700,7 @@ function fxRisk(){
  </div>`;
 }
 function tFx(){
- const f=S.fx,held=Object.keys(S.plat.bals).filter(c=>balOf(c)>0);
+ const f=S.fx,held=openCcys();
  if(!held.length)held.push(home());
  if(!held.includes(f.from))f.from=held[0]||home();
  if(f.to===f.from)f.to=[...VA_CCYS,...STABLES].find(c=>c!==f.from);
@@ -2244,11 +2729,9 @@ function tFx(){
    <button class="btn btn-p" onclick="doFx()">Convert instantly</button>
    ${amt>0&&!STABLES.includes(f.from)&&!STABLES.includes(f.to)?`<div class="hint" style="margin-top:10px">A bank would typically charge around ${(BANK_FXM*100).toFixed(1)}% here, roughly ${fmt(amt*mid*(BANK_FXM-FXM),f.to)} more than we do.</div>`:''}
   </div>
-  <div class="card"><h3 style="margin-bottom:10px">Your balances</h3>
-   ${Object.entries(S.plat.bals).filter(([c,n])=>n>0.005).map(([c,n])=>`<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #F2F4F7">
-    <span class="b" style="width:56px">${c}</span>${STABLES.includes(c)?'<span class="tag tag-b" style="font-size:10px">stablecoin</span>':''}
-    <span style="margin-left:auto" class="b">${fmt(n,c)}</span>
-    <span class="small muted" style="width:96px;text-align:right">${fmt(conv(n,c,home()))}</span></div>`).join('')||'<div class="small muted">No balances yet.</div>'}
+  <div class="card"><div style="display:flex;align-items:center;margin-bottom:6px"><h3>Your wallets</h3>
+    <button class="btn btn-g btn-sm" style="margin-left:auto" onclick="S.modal='openccy';rr()">+ Open a currency</button></div>
+   ${walletRows(true)}
    <div class="hint" style="margin-top:10px">Every currency and stablecoin sits in one account. Converting moves between them instantly because it never leaves Finmo.</div>
   </div>
  </div>`;
@@ -2305,6 +2788,13 @@ function tFxRisk(){
  return `<h1 style="margin-bottom:6px">FX risk</h1>
  <p class="muted" style="margin-bottom:16px">What your currency exposure could cost you, computed from your own balances and receivables.</p>
  ${body||'<div class="card"><div class="muted small">Available once your account is live.</div></div>'}`;
+}
+function quickConvert(){
+ const from=S.qcFrom||openCcys()[0],to=S.qcTo||home(),amt=Number(($('qc-amt')||{}).value||0);
+ if(from===to){toast('Pick two different currencies');return}
+ if(!(amt>0)){toast('Enter an amount to convert');return}
+ if(amt>balOf(from)){toast('Not enough '+from+'. You have '+fmt(balOf(from),from)+'.');return}
+ S.fx={from:from,to:to,amt:String(amt)};doFx();
 }
 function doFx(){
  const f=S.fx,amt=Number(f.amt);
