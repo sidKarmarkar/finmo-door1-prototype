@@ -288,7 +288,26 @@ function DEF(){return{
  mo:{open:false,msgs:[]},modal:null,role:'owner',
  demo:{failNext:false,sanctionsHit:false,min:false}
 };}
-function load(){try{const r=localStorage.getItem(LS);if(r){const s=JSON.parse(r);if(s&&s.view&&s.kyc)return s}}catch(e){}return DEF()}
+function migrate(saved,def){
+ // fill in anything a newer version added, without discarding the user's data
+ if(saved===null||saved===undefined)return def;
+ if(Array.isArray(def))return Array.isArray(saved)?saved:def;
+ if(typeof def==='object'&&def!==null){
+  if(typeof saved!=='object'||saved===null||Array.isArray(saved))return def;
+  const out={};
+  Object.keys(def).forEach(k=>{out[k]=migrate(saved[k],def[k])});
+  Object.keys(saved).forEach(k=>{if(!(k in out))out[k]=saved[k]});
+  return out;
+ }
+ return saved===undefined?def:saved;
+}
+function load(){
+ try{const r=localStorage.getItem(LS);
+  if(r){const raw=JSON.parse(r);
+   if(raw&&raw.view){const m=migrate(raw,DEF());if(m&&m.view&&m.kyc&&m.plat)return m}}
+ }catch(e){}
+ return DEF();
+}
 let S=load();
 try{Object.defineProperty(window,'S',{get:()=>S,set:v=>{S=v}})}catch(e){}
 function save(){try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}}
@@ -1132,8 +1151,8 @@ const ROLE_CAN={owner:['create','approve','fund','admin'],admin:['create','appro
 function actingRole(){return S.role||'owner'}
 function can(x){return (ROLE_CAN[actingRole()]||[]).includes(x)}
 function roleName(r){const f=ROLES.find(x=>x[0]===r);return f?f[1]:r}
-function needsApproval(amtHome){return S.plat.policy.dual&&amtHome>=S.plat.policy.thresh}
-function pendingApprovals(){return S.plat.approvals.filter(a=>a.st==='pending')}
+function needsApproval(amtHome){const pol=S.plat.policy||(S.plat.policy={thresh:2000,dual:true});return pol.dual&&amtHome>=pol.thresh}
+function pendingApprovals(){return (S.plat.approvals||[]).filter(a=>a.st==='pending')}
 function submitForApproval(p,rail,amtHome){
  const a={id:uid(),by:S.user.name||'You',byRole:actingRole(),at:Date.now(),
   name:p.name.trim(),country:p.country,acct:p.acct,from:p.from,amt:Number(p.amt),fee:rail.fee,rail:p.rail,
@@ -1960,8 +1979,27 @@ function fbClickCapture(ev){
 /* ============ render ============ */
 function render(){
  const views={signup:vSignup,verify:vVerify,kybintro:vIntro,wizard:vWizard,screening:vScreening,tracker:vTracker,app:vApp};
- $('app').innerHTML=(views[S.view]||vSignup)()+demoBar()+fbButton()+fbPanel();
- fbCloseP();fbPins();
+ try{
+  $('app').innerHTML=(views[S.view]||vSignup)()+demoBar()+fbButton()+fbPanel();
+  fbCloseP();fbPins();
+ }catch(e){
+  // A blank screen is the one failure a prototype must never show.
+  try{console.error('Render failed:',e)}catch(_){}
+  $('app').innerHTML=`<div class="auth-r" style="min-height:100vh"><div class="authbox" style="width:520px">
+   <span class="logo"><span class="lg">f</span>finmo</span>
+   <h1 style="margin:26px 0 8px">Let's start you fresh</h1>
+   <p class="muted" style="margin-bottom:18px">This browser is holding data from an earlier version of the prototype, so this screen could not load. Starting fresh fixes it and takes a few seconds. Any comments you left are kept.</p>
+   <button class="btn btn-p" onclick="softReset()">Start fresh</button>
+   <p class="small muted" style="margin-top:14px">Technical detail, in case it is useful: ${esc(String(e&&e.message||e))}</p>
+  </div></div>`;
+ }
+}
+function softReset(){
+ try{localStorage.removeItem(LS)}catch(e){}
+ clearTimeout(reviewT);clearTimeout(clearT);
+ S=DEF();
+ try{render()}catch(e){location.reload()}
+ toast('Fresh start. Your comments were kept.');
 }
 </script>
 </body>
