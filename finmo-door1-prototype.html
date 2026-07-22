@@ -15,7 +15,7 @@
 body{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.5}
 button{font:inherit;cursor:pointer;border:none;background:none}
 input,select,textarea{font:inherit;color:var(--ink)}
-h1{font-size:26px;letter-spacing:-.02em}h2{font-size:19px;letter-spacing:-.01em}h3{font-size:15px}
+h1{font-size:25px;letter-spacing:-.022em}h2{font-size:19px;letter-spacing:-.01em}h3{font-size:15px}
 .muted{color:var(--ink3)}.small{font-size:12px}.b{font-weight:600}.mono{font-family:ui-monospace,Menlo,monospace;font-size:12.5px}
 .btn{display:inline-flex;align-items:center;gap:7px;border-radius:10px;padding:10px 18px;font-weight:600;transition:.15s}
 .btn-p{background:var(--b600);color:#fff}.btn-p:hover{background:var(--b700)}
@@ -23,7 +23,7 @@ h1{font-size:26px;letter-spacing:-.02em}h2{font-size:19px;letter-spacing:-.01em}
 .btn-g{color:var(--b700);padding:6px 10px}.btn-g:hover{background:var(--b50)}
 .btn-sm{padding:6px 12px;font-size:13px;border-radius:8px}
 .btn:disabled{opacity:.45;cursor:not-allowed}
-.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:24px}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px;box-shadow:0 1px 2px rgba(16,24,40,.04)}
 .field{margin-bottom:14px}
 .field>label{display:block;font-weight:600;font-size:13px;margin-bottom:6px}
 .field input,.field select,.field textarea{width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;background:#fff;outline:none}
@@ -76,11 +76,12 @@ h1{font-size:26px;letter-spacing:-.02em}h2{font-size:19px;letter-spacing:-.01em}
 .tl li.on .dot{border-color:var(--b600);color:var(--b700)}
 .tl li.warn .dot{border-color:#F79009;background:var(--amberbg);color:var(--amber)}
 .shell{display:grid;grid-template-columns:236px 1fr;min-height:100vh}
-.side{background:#fff;border-right:1px solid var(--line);padding:20px 14px;display:flex;flex-direction:column}
+.side{background:#FCFCFD;border-right:1px solid var(--line);padding:20px 14px;display:flex;flex-direction:column;overflow-y:auto}
 .nav{margin-top:22px;flex:1}
-.nav .it{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:10px;font-weight:600;font-size:13.5px;color:var(--ink2);margin-bottom:2px;width:100%;text-align:left}
+.nav .it{display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:9px;font-weight:600;font-size:13.5px;color:var(--ink2);margin-bottom:1px;width:100%;text-align:left;transition:.12s}
+.nav .it .ni{width:17px;text-align:center;font-size:14px;opacity:.85;flex:none}
 .nav .it:hover{background:#F6F5FA}
-.nav .it.on{background:var(--b100);color:var(--b800)}
+.nav .it.on{background:var(--b100);color:var(--b800);box-shadow:inset 3px 0 0 var(--b600)}
 .nav .it.lk{color:#98A2B3}
 .nav .kid{display:flex;align-items:center;gap:9px;padding:7px 12px 7px 36px;border-radius:10px;font-weight:500;font-size:13px;color:var(--ink2);margin-bottom:1px;width:100%;text-align:left}
 .nav .kid:hover{background:#F6F5FA}
@@ -88,8 +89,11 @@ h1{font-size:26px;letter-spacing:-.02em}h2{font-size:19px;letter-spacing:-.01em}
 .nav .kid.lk{color:#98A2B3}
 .nav .chev{margin-left:auto;font-size:10px;color:var(--ink3)}
 .main{display:flex;flex-direction:column;min-width:0}
-.top{height:60px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px;padding:0 26px}
-.content{padding:28px 32px;max-width:1140px;width:100%}
+.top{height:62px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;padding:0 24px;position:sticky;top:0;z-index:20}
+.hbal{display:flex;flex-direction:column;line-height:1.15;padding-right:14px;border-right:1px solid var(--line);margin-right:2px}
+.hbal .l{font-size:10.5px;color:var(--ink3);font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+.hbal .v{font-size:16px;font-weight:700;letter-spacing:-.01em}
+.content{padding:26px 30px;max-width:1160px;width:100%;margin:0 auto}
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .tile{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px}
@@ -320,7 +324,7 @@ function DEF(){return{
  kyc:{step:0,status:'draft',stage:0,pausedOnce:false,
   me:{dob:'',nat:'',occupation:''},addr:{l1:'',l2:'',city:'',postal:''},
   docs:{id:slot(),selfie:slot()},act:{purpose:'',vol:'',dests:[]},requests:[],risk:riskDef(),scr:''},
- plat:{bals:{},asOf:null,txns:[],inv:[],bills:[],links:[],cards:[],cardTx:[],team:[],approvals:[],policy:{thresh:2000,dual:true},saved:{fx:0,fees:0,yield:0},ents:[],entId:null,entData:{},open:[],contacts:[],runs:[],dunning:[],acct:{conn:null,lastSync:null,syncing:false,pulledInv:0,pulledBills:0,writeback:[]},
+ plat:{bals:{},asOf:null,txns:[],inv:[],bills:[],links:[],cards:[],cardTx:[],team:[],approvals:[],policy:{thresh:2000,dual:true},saved:{fx:0,fees:0,yield:0},ents:[],entId:null,entData:{},open:[],contacts:[],runs:[],dunning:[],plan:'essential',acct:{conn:null,lastSync:null,syncing:false,pulledInv:0,pulledBills:0,writeback:[]},
   treas:{holdings:{},acceptedHigh:false},payin:null,seeded:false},
  pay:{step:0,from:'',name:'',country:'SG',acct:'',amt:'',note:'',rail:'',dupAck:false,billId:null},
  fx:{from:'',to:'USD',amt:''},chain:{USDC:'ethereum',USDT:'ethereum'},invF:{q:'',st:'all',from:'',to:''},billF:{q:'',st:'all',from:'',to:''},
@@ -1103,6 +1107,7 @@ function vApp(){
  const biz=S.acct==='biz';
  if(!S.navOpen)S.navOpen={};
  const isLk=id=>(['payouts','approvals','bills','links','collections','fx','fxrisk','stable','treasury','team','entities','integrations','contacts','run','chasing'].includes(id)&&!live())||(['cards','spend'].includes(id)&&!fullOk());
+ const TIC={Home:'\u2302',Accounts:'\u25C9',Payouts:'\u2197',Collections:'\u2199',Cards:'\u25A2',FX:'\u21C4',Treasury:'\u25B2',Team:'\u25CB',Contacts:'\u263A',Accounting:'\u25A4','AskMO':'\u2726'};
  const NAVB=[
   {id:'home',t:'Home'},
   {t:'Accounts',kids:[['accounts','Balances and details'],['topup','Top up']]},
@@ -1117,18 +1122,18 @@ function vApp(){
  const NAVI=[{id:'home',t:'Home'},{id:'payouts',t:'Send money'},{id:'fx',t:'Convert'}];
  const kidGo=id=>id==='topup'?(live()?"S.modal='topup';rr()":"lockToast()"):`navGo('${id}')`;
  const nav=(biz?NAVB:NAVI).map(g=>{
-  if(!g.kids){const lk=isLk(g.id);return `<button class="it ${S.tab===g.id?'on':''} ${lk?'lk':''}" onclick="navGo('${g.id}')">${g.t}${lk?' <span class="lockhint">🔒</span>':''}</button>`}
+  if(!g.kids){const lk=isLk(g.id);return `<button class="it ${S.tab===g.id?'on':''} ${lk?'lk':''}" onclick="navGo('${g.id}')"><span class="ni">${TIC[g.t]||''}</span>${g.t}${lk?' <span class="lockhint">🔒</span>':''}</button>`}
   const activeKid=g.kids.some(k=>S.tab===k[0]);
   const open=S.navOpen[g.t]!==undefined?S.navOpen[g.t]:activeKid;
   const kids=open?g.kids.map(k=>{const lk=k[0]==='topup'?!live():isLk(k[0]);
    return `<button class="kid ${S.tab===k[0]?'on':''} ${lk?'lk':''}" onclick="${kidGo(k[0])}">${k[1]}${lk?' <span class="lockhint">🔒</span>':''}</button>`}).join(''):'';
-  return `<button class="it" onclick="S.navOpen['${g.t}']=${open?'false':'true'};rr()">${g.t}<span class="chev">${open?'▾':'▸'}</span></button>${kids}`;
+  return `<button class="it" onclick="S.navOpen['${g.t}']=${open?'false':'true'};rr()"><span class="ni">${TIC[g.t]||''}</span>${g.t}<span class="chev">${open?'▾':'▸'}</span></button>${kids}`;
  }).join('');
  const body={home:tHome,accounts:tAccounts,payouts:tPayouts,approvals:tApprovals,bills:tBills,links:tLinks,spend:tSpend,collections:tCollections,cards:tCards,treasury:tTreasury,fx:tFx,stable:tStable,fxrisk:tFxRisk,team:tTeam,entities:tEntities,integrations:tIntegrations,contacts:tContacts,run:tRun,chasing:tDunning}[S.tab]();
  return `<div class="shell">
   <div class="side">
    ${biz?LOGO:LOGO_R}
-   <div class="nav">${nav}<button class="it" onclick="S.mo.open=true;rr()">✦ AskMO</button></div>
+   <div class="nav">${nav}<button class="it" style="color:var(--b700)" onclick="S.mo.open=true;rr()"><span class="ni">✦</span>AskMO</button></div>
    <div class="small muted" style="padding:0 12px">${biz?'Door 1 · business account':'Finmo Remit · personal'}<br>Prototype, all data is fake</div>
   </div>
   <div class="main">
@@ -1141,13 +1146,15 @@ function vApp(){
     ${limited()?'<span class="tag tag-warn">Starter limits</span>':''}
     ${biz&&live()&&pendingApprovals().length?`<button class="tag tag-warn" onclick="navGo('approvals')">${pendingApprovals().length} awaiting approval</button>`:''}
     ${biz&&live()?`<span class="tag tag-mut">acting as ${roleName(actingRole())}</span>`:''}
+    ${biz&&live()?`<button class="tag ${S.plat.plan==='essential'?'tag-mut':'tag-b'}" onclick="S.modal='upgrade';rr()">${(PLANS.find(x=>x.id===S.plat.plan)||{name:'Essential'}).name}</button>`:''}
     <span style="margin-left:auto"></span>
+    ${biz&&live()?`<div class="hbal"><span class="l">${S.plat.viewAll&&ents().length>1?'Group balance':'Balance'}</span><span class="v">${fmt(S.plat.viewAll&&ents().length>1?allEntTotal():totalHome())}</span></div>`:''}
     <span class="small muted">${esc(S.user.email)}</span>
     <div style="width:34px;height:34px;border-radius:99px;background:var(--b100);color:var(--b700);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px">${initials(S.user.name)}</div>
    </div>
    <div class="content">${body}</div>
   </div>
- </div>${S.mo.open?vMo():''}${S.modal==='report'?mReport():''}${S.modal==='topup'?mTopup():''}${S.modal==='addbill'?mAddBill():''}${S.modal==='newcard'?mNewCard():''}${S.modal==='addent'?mAddEntity():''}${S.modal==='upinv'?mUploadInv():''}${S.modal==='openccy'?mOpenCcy():''}${(S.modal==='addct'||(S.modal||'').startsWith('ct:'))?mAddContact():''}${S.modal==='ic'?mIcTransfer():''}${S.modal&&S.modal.startsWith&&S.modal.startsWith('fund:')?mFund():''}`;
+ </div>${S.mo.open?vMo():''}${S.modal==='report'?mReport():''}${S.modal==='topup'?mTopup():''}${S.modal==='addbill'?mAddBill():''}${S.modal==='newcard'?mNewCard():''}${S.modal==='addent'?mAddEntity():''}${S.modal==='upinv'?mUploadInv():''}${S.modal==='openccy'?mOpenCcy():''}${S.modal==='upgrade'?mUpgrade():''}${(S.modal==='addct'||(S.modal||'').startsWith('ct:'))?mAddContact():''}${S.modal==='ic'?mIcTransfer():''}${S.modal&&S.modal.startsWith&&S.modal.startsWith('fund:')?mFund():''}`;
 }
 function limitsBanner(){
  if(!limited())return '';
@@ -1523,6 +1530,23 @@ function mOpenCcy(){
   <button class="btn btn-s" style="margin-top:6px" onclick="S.modal=null;rr()">Close</button>
  </div></div>`;
 }
+const PLANS=[
+ {id:'essential',name:'Essential',price:'Free',feat:['Multi-currency account','Local and SWIFT collections','Payments and cards','Treasury and FX']},
+ {id:'plus',name:'Plus',price:'$49 / user / mo',feat:['Everything in Essential','Xero and QuickBooks sync','Payment runs and approvals','Automated chasing']},
+ {id:'enterprise',name:'Enterprise',price:'Custom',feat:['Everything in Plus','Multi-entity groups','Dedicated FX pricing','API and priority support']}];
+function setPlan(id){S.plat.plan=id;S.modal=null;rr();toast('Switched to the '+PLANS.find(p=>p.id===id).name+' plan (simulated)')}
+function mUpgrade(){
+ return `<div class="ov" onclick="if(event.target===this){S.modal=null;rr()}"><div class="modal" style="width:640px">
+  <h2 style="margin-bottom:4px">Plans</h2>
+  <p class="small muted" style="margin-bottom:14px">Accounting sync, payment runs and automated chasing sit on Plus and above. This is a prototype, so switching is instant and free.</p>
+  <div class="grid3">${PLANS.map(pl=>`<div class="card" style="${S.plat.plan===pl.id?'border-color:var(--b500);box-shadow:0 0 0 3px var(--b100)':''}">
+   <div class="b" style="font-size:16px">${pl.name}</div><div class="small muted" style="margin-bottom:8px">${pl.price}</div>
+   ${pl.feat.map(f=>`<div class="small" style="margin:3px 0">\u2713 ${f}</div>`).join('')}
+   <button class="btn ${S.plat.plan===pl.id?'btn-s':'btn-p'} btn-sm" style="margin-top:10px;width:100%;justify-content:center" onclick="setPlan('${pl.id}')">${S.plat.plan===pl.id?'Current plan':'Choose '+pl.name}</button>
+  </div>`).join('')}</div>
+  <button class="btn btn-s" style="margin-top:12px" onclick="S.modal=null;rr()">Close</button>
+ </div></div>`;
+}
 function walletRows(compact){
  const h=home();
  return openCcys().map(c=>{
@@ -1587,7 +1611,7 @@ function tIntegrations(){
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><div style="width:34px;height:34px;border-radius:9px;background:${v.color};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800">${v.name[0]}</div>
      <span class="b" style="font-size:16px">${v.name}</span></div>
     <p class="small muted" style="margin-bottom:12px">Pull unpaid bills and outstanding invoices. Pay bills from Finmo and the payment is written back automatically, so your books stay reconciled without anyone exporting a CSV.</p>
-    <button class="btn btn-p btn-sm" onclick="connectAcct('${k}')">Connect ${v.name}</button></div>`).join('')}
+    ${S.plat.plan==='essential'?`<button class="btn btn-s btn-sm" onclick="S.modal='upgrade';rr()">On Plus and above · Upgrade</button>`:`<button class="btn btn-p btn-sm" onclick="connectAcct('${k}')">Connect ${v.name}</button>`}</div>`).join('')}
   </div>
   <div class="card" style="margin-top:16px"><h3 style="margin-bottom:6px">Why this matters</h3>
    <p class="small muted">Most finance teams live in their accounting system and treat the bank as a place to retype numbers into. Pulling the bills in and writing the payments back removes the retyping, which is where errors and duplicate payments come from. It also gives us the due dates that make the cash forecast real.</p></div>`;

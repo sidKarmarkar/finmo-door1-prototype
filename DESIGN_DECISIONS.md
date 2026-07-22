@@ -126,6 +126,14 @@ The sidebar now names things the way the business thinks about them. **Payouts**
 
 **Stablecoins** treat USDC and USDT as two more currencies in the same account rather than a crypto annex. That single choice is what makes everything else free: they appear in balances, in conversions, in the risk engine, in analytics and under the same approval rules, with no separate plumbing. You get a deposit address per coin per network, and the network is chosen *before* the address is shown, because sending USDT on the wrong chain is the most common way people lose money on chain. The margin is tighter between two stablecoins (0.1 percent) than between a stablecoin and a currency (0.5 percent), because one is a swap and the other is real FX.
 
+## Making it intuitive, and pricing tiers
+
+Two smaller asks that both matter for how the product reads.
+
+**Intuitiveness.** The single loudest note was that you could not tell your balances without leaving the dashboard. Beyond the fix on Home, the header now carries your live balance at all times, so no screen ever hides how much money you have. The sidebar gained a quiet icon per section for scannability, the active item gets a left accent so you always know where you are, and cards got a faint shadow so the page reads as layers rather than a flat wall. None of it is decoration for its own sake: the goal was that a first-time viewer can find anything in one glance, which is exactly what a busy finance person needs.
+
+**Pricing tiers.** The accounting integration is a paid capability, not a free one, so the product now carries three plans: Essential (the account, payments, cards, treasury and FX), Plus (accounting sync, payment runs and automated chasing), and Enterprise (multi-entity groups, dedicated FX pricing, API). On Essential the accounting connect is visibly gated behind an upgrade rather than hidden, because a locked feature you can see is a sales prompt and a feature you cannot see is a missed one. The current plan sits in the header. This keeps the demo honest about where the monetisation is without turning it into a paywall maze.
+
 ## Balances on the dashboard
 
 The first version buried the money: you could see a total, but you had to open Accounts to find out what you actually held in each currency. That is backwards for a business account, where the first question every morning is what have I got and in what.
