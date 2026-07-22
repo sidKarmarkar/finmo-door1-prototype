@@ -2887,7 +2887,7 @@ function mTopup(){
  return `<div class="ov" onclick="if(event.target===this){S.modal=null;rr()}"><div class="modal">
   <h2 style="margin-bottom:14px">Top up</h2>
   <div class="row2">
-   <div class="field"><label>Currency</label><select onchange="S.tuCcy=this.value;rr()">${ALL.map(c=>`<option value="${c}" ${cur===c?'selected':''}>${c} · ${CCY_NAME[c]||''}${!openCcys().includes(c)?' (opens on top up)':''}</option>`).join('')}</select></div>
+   <div class="field"><label>Currency</label><select onchange="S.tuCcy=this.value;rr()">${ALL.map(c=>`<option value="${c}" ${cur===c?'selected':''}>${c} · ${CCY_NAME[c]||''}</option>`).join('')}</select></div>
    <div class="field"><label>Amount (${cur})</label><input id="tu-amt" type="number" min="0" placeholder="0.00"></div>
   </div>
   ${STABLES.includes(cur)
