@@ -2880,22 +2880,32 @@ function inviteMember(){
 }
 /* ---- top up ---- */
 function mTopup(){
+ const cur=S.tuCcy&&openCcys().includes(S.tuCcy)?S.tuCcy:home();
+ const local=VA_CCYS.includes(cur);
  return `<div class="ov" onclick="if(event.target===this){S.modal=null;rr()}"><div class="modal">
-  <h2 style="margin-bottom:14px">Top up your ${home()} balance</h2>
-  <div class="field"><label>Amount (${home()})</label><input id="tu-amt" type="number" min="0" placeholder="0.00"></div>
-  <div class="sel" onclick="topup('bank')"><span style="font-size:17px">🏦</span><span style="flex:1"><span class="b">Bank transfer</span><br><span class="small muted">Free. Use your local account details, funds land in minutes.</span></span><span class="b">Free</span></div>
+  <h2 style="margin-bottom:14px">Top up</h2>
+  <div class="row2">
+   <div class="field"><label>Currency</label><select onchange="S.tuCcy=this.value;rr()">${openCcys().map(c=>`<option value="${c}" ${cur===c?'selected':''}>${c}${STABLES.includes(c)?' · stablecoin':''}</option>`).join('')}</select></div>
+   <div class="field"><label>Amount (${cur})</label><input id="tu-amt" type="number" min="0" placeholder="0.00"></div>
+  </div>
+  ${STABLES.includes(cur)
+   ?`<div class="sel" onclick="topup('chain')"><span style="font-size:17px">◎</span><span style="flex:1"><span class="b">On-chain deposit</span><br><span class="small muted">Send ${cur} to your wallet address. Credits after network confirmation.</span></span><span class="b">Free</span></div>`
+   :`<div class="sel" onclick="topup('bank')"><span style="font-size:17px">🏦</span><span style="flex:1"><span class="b">Bank transfer</span><br><span class="small muted">${local?'Free. Use your local '+cur+' account details, funds land in minutes.':'Free. Convert into '+cur+' from another balance, or receive via SWIFT.'}</span></span><span class="b">Free</span></div>`}
   <div class="sel" onclick="topup('card')"><span style="font-size:17px">💳</span><span style="flex:1"><span class="b">Debit or credit card</span><br><span class="small muted">Instant. The fee is shown before you pay, never after.</span></span><span class="b">2.9%</span></div>
   <button class="btn btn-s" onclick="S.modal=null;rr()">Cancel</button>
  </div></div>`;
 }
 function topup(method){
+ const cur=S.tuCcy&&openCcys().includes(S.tuCcy)?S.tuCcy:home();
+ // address and account-detail views do not need an amount, only a card charge does
+ if(method==='chain'){S.modal=null;S.stCoin=cur;S.tuCcy=null;navGo('stable');toast('Send '+cur+' to your wallet address. Use the demo deposit button to simulate a confirmation.');return}
+ if(method==='bank'){S.modal=null;rr();toast(VA_CCYS.includes(cur)?('Use your '+cur+' account details ('+VAD[cur]+'). In this prototype, bank top ups are instant.'):('Receive '+cur+' via SWIFT, or convert into it on the FX screen.'));return}
  const amt=Number($('tu-amt').value);
  if(!(amt>0)){toast('Enter an amount first');return}
- if(method==='bank'){S.modal=null;rr();toast('Use your '+home()+' account details ('+VAD[home()]+'). In this prototype, bank top ups are instant via a payment link simulation.');return}
  const fee=amt*0.029;
- credit(home(),amt);
- S.plat.txns.unshift({id:uid(),t:Date.now(),who:'Card top up',dir:'in',amt:amt,ccy:home(),note:'Card charged '+fmt(amt+fee)+' including the 2.9% fee ('+fmt(fee)+'), shown before you paid'});
- S.modal=null;rr();toast('Topped up '+fmt(amt)+'. Card was charged '+fmt(amt+fee)+'.');
+ credit(cur,amt);
+ S.plat.txns.unshift({id:uid(),t:Date.now(),who:'Card top up',dir:'in',amt:amt,ccy:cur,note:'Card charged '+fmt(amt+fee,cur)+' including the 2.9% fee ('+fmt(fee,cur)+'), shown before you paid'});
+ S.modal=null;rr();toast('Topped up '+fmt(amt,cur)+'. Card was charged '+fmt(amt+fee,cur)+'.');
 }
 /* ---- AskMO ---- */
 const MO_PROMPTS=['What is my balance?','What are my limits?','What is my FX risk?','What did I earn in treasury?'];
