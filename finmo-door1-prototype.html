@@ -4,6 +4,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%237A47E8'/%3E%3Cpath d='M13 24 V13 a4 4 0 0 1 4-4 h2' fill='none' stroke='white' stroke-width='2.6' stroke-linecap='round'/%3E%3Cpath d='M11 15 h7' stroke='white' stroke-width='2.6' stroke-linecap='round'/%3E%3C/svg%3E">
 <title>Finmo · Business Account</title>
 <style>
 :root{
@@ -79,7 +80,9 @@ h1{font-size:25px;letter-spacing:-.022em}h2{font-size:19px;letter-spacing:-.01em
 .side{background:#FCFCFD;border-right:1px solid var(--line);padding:20px 14px;display:flex;flex-direction:column;overflow-y:auto}
 .nav{margin-top:22px;flex:1}
 .nav .it{display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:9px;font-weight:600;font-size:13.5px;color:var(--ink2);margin-bottom:1px;width:100%;text-align:left;transition:.12s}
-.nav .it .ni{width:17px;text-align:center;font-size:14px;opacity:.85;flex:none}
+.nav .it .ni{width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;flex:none;opacity:.9}
+.nav .it .nis{width:16px;height:16px}
+.nav .it.on .ni{opacity:1}
 .nav .it:hover{background:#F6F5FA}
 .nav .it.on{background:var(--b100);color:var(--b800);box-shadow:inset 3px 0 0 var(--b600)}
 .nav .it.lk{color:#98A2B3}
@@ -1107,7 +1110,20 @@ function vApp(){
  const biz=S.acct==='biz';
  if(!S.navOpen)S.navOpen={};
  const isLk=id=>(['payouts','approvals','bills','links','collections','fx','fxrisk','stable','treasury','team','entities','integrations','contacts','run','chasing'].includes(id)&&!live())||(['cards','spend'].includes(id)&&!fullOk());
- const TIC={Home:'\u2302',Accounts:'\u25C9',Payouts:'\u2197',Collections:'\u2199',Cards:'\u25A2',FX:'\u21C4',Treasury:'\u25B2',Team:'\u25CB',Contacts:'\u263A',Accounting:'\u25A4','AskMO':'\u2726'};
+ const TIC=k=>({
+  Home:'<path d="M2.5 7.5 8 3l5.5 4.5"/><path d="M4 7v6.5h8V7"/>',
+  Accounts:'<rect x="2" y="4" width="12" height="9" rx="2"/><path d="M2 7h12"/>',
+  Payouts:'<path d="M4 12 12 4"/><path d="M6 4h6v6"/>',
+  Collections:'<path d="M12 4 4 12"/><path d="M10 12H4V6"/>',
+  Cards:'<rect x="2" y="4" width="12" height="8" rx="1.6"/><path d="M2 7h12"/>',
+  FX:'<path d="M3 6h8l-2-2"/><path d="M13 10H5l2 2"/>',
+  Treasury:'<path d="M2.5 6 8 3l5.5 3"/><path d="M4 6.5v6M8 6.5v6M12 6.5v6"/><path d="M3 13h10"/>',
+  Team:'<circle cx="6" cy="6" r="2.2"/><path d="M2.5 13c0-2 1.6-3.2 3.5-3.2s3.5 1.2 3.5 3.2"/><path d="M11 5.2a2 2 0 0 1 0 3.6"/><path d="M11.5 9.9c1.4.3 2.5 1.4 2.5 3.1"/>',
+  Contacts:'<circle cx="8" cy="6" r="2.4"/><path d="M3.5 13c0-2.3 2-3.6 4.5-3.6s4.5 1.3 4.5 3.6"/>',
+  Accounting:'<rect x="3" y="2.5" width="10" height="11" rx="1.4"/><path d="M5.5 6h5M5.5 8.5h5M5.5 11h3"/>',
+  AskMO:'<path d="M8 2.5l1.3 3.2L12.5 7 9.3 8.3 8 11.5 6.7 8.3 3.5 7l3.2-1.3z"/>'
+ }[k]||'');
+ const NIC=k=>`<svg class="nis" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${TIC(k)}</svg>`;
  const NAVB=[
   {id:'home',t:'Home'},
   {t:'Accounts',kids:[['accounts','Balances and details'],['topup','Top up']]},
@@ -1122,18 +1138,18 @@ function vApp(){
  const NAVI=[{id:'home',t:'Home'},{id:'payouts',t:'Send money'},{id:'fx',t:'Convert'}];
  const kidGo=id=>id==='topup'?(live()?"S.modal='topup';rr()":"lockToast()"):`navGo('${id}')`;
  const nav=(biz?NAVB:NAVI).map(g=>{
-  if(!g.kids){const lk=isLk(g.id);return `<button class="it ${S.tab===g.id?'on':''} ${lk?'lk':''}" onclick="navGo('${g.id}')"><span class="ni">${TIC[g.t]||''}</span>${g.t}${lk?' <span class="lockhint">🔒</span>':''}</button>`}
+  if(!g.kids){const lk=isLk(g.id);return `<button class="it ${S.tab===g.id?'on':''} ${lk?'lk':''}" onclick="navGo('${g.id}')"><span class="ni">${NIC(g.t)}</span>${g.t}${lk?' <span class="lockhint">🔒</span>':''}</button>`}
   const activeKid=g.kids.some(k=>S.tab===k[0]);
   const open=S.navOpen[g.t]!==undefined?S.navOpen[g.t]:activeKid;
   const kids=open?g.kids.map(k=>{const lk=k[0]==='topup'?!live():isLk(k[0]);
    return `<button class="kid ${S.tab===k[0]?'on':''} ${lk?'lk':''}" onclick="${kidGo(k[0])}">${k[1]}${lk?' <span class="lockhint">🔒</span>':''}</button>`}).join(''):'';
-  return `<button class="it" onclick="S.navOpen['${g.t}']=${open?'false':'true'};rr()"><span class="ni">${TIC[g.t]||''}</span>${g.t}<span class="chev">${open?'▾':'▸'}</span></button>${kids}`;
+  return `<button class="it" onclick="S.navOpen['${g.t}']=${open?'false':'true'};rr()"><span class="ni">${NIC(g.t)}</span>${g.t}<span class="chev">${open?'▾':'▸'}</span></button>${kids}`;
  }).join('');
  const body={home:tHome,accounts:tAccounts,payouts:tPayouts,approvals:tApprovals,bills:tBills,links:tLinks,spend:tSpend,collections:tCollections,cards:tCards,treasury:tTreasury,fx:tFx,stable:tStable,fxrisk:tFxRisk,team:tTeam,entities:tEntities,integrations:tIntegrations,contacts:tContacts,run:tRun,chasing:tDunning}[S.tab]();
  return `<div class="shell">
   <div class="side">
    ${biz?LOGO:LOGO_R}
-   <div class="nav">${nav}<button class="it" style="color:var(--b700)" onclick="S.mo.open=true;rr()"><span class="ni">✦</span>AskMO</button></div>
+   <div class="nav">${nav}<button class="it" style="color:var(--b700)" onclick="S.mo.open=true;rr()"><span class="ni">${NIC('AskMO')}</span>AskMO</button></div>
    <div class="small muted" style="padding:0 12px">${biz?'Door 1 · business account':'Finmo Remit · personal'}<br>Prototype, all data is fake</div>
   </div>
   <div class="main">
@@ -2564,7 +2580,7 @@ function tCards(){
  <p class="muted" style="margin-bottom:20px">Virtual cards in seconds, plastic on request. Spend lands under Cards, Spend, categorised as it happens.</p>
  <div style="display:flex;gap:10px;margin-bottom:16px">
   <button class="btn btn-p" onclick="S.modal='newcard';rr()">+ New virtual card</button>
-  <button class="btn btn-s" onclick="requestPlastic()">Request physical card</button>
+  ${S.plat.cards.some(c=>c.type==='physical'&&c.st==='requested')?`<button class="btn btn-s" disabled>Physical card on its way</button>`:`<button class="btn btn-s" onclick="requestPlastic()">Request physical card</button>`}
  </div>
  ${cards.length?`<div class="grid3" style="margin-bottom:18px">${cards.map(c=>`<div class="tile" style="${c.frozen?'opacity:.55':''}">
   <div style="display:flex;align-items:center;gap:8px"><span class="b">${esc(c.nick)}</span><span class="tag ${c.type==='physical'?(c.st==='requested'?'tag-warn':'tag-ok'):'tag-b'}">${c.type==='physical'?(c.st==='requested'?'On its way':'Physical'):'Virtual'}</span></div>
@@ -2602,6 +2618,7 @@ function issueCard(){
  S.modal=null;rr();toast('Virtual card issued. It works immediately.');
 }
 function requestPlastic(){
+ if(S.plat.cards.some(c=>c.type==='physical'&&c.st==='requested')){toast('A physical card is already on its way. It ships in 5 to 7 business days.');return}
  S.plat.cards.push({id:uid(),nick:S.user.name.split(' ')[0]+"'s plastic",limit:2000,cat:'',last4:String(1000+Math.floor(Math.random()*9000)),frozen:false,type:'physical',st:'requested'});
  rr();toast('Physical card requested. It ships in 5 to 7 business days.');
 }
