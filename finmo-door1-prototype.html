@@ -42,35 +42,65 @@ h1{font-size:25px;letter-spacing:-.022em}h2{font-size:19px;letter-spacing:-.01em
 .banner-e{background:var(--redbg);border:1px solid #FECDCA}
 .banner-g{background:var(--greenbg);border:1px solid #A6F4C5}
 /* marketing welcome */
-.mkt{min-height:100vh;background:var(--bg)}
-.mkt-nav{display:flex;align-items:center;gap:12px;padding:18px 32px;max-width:1080px;margin:0 auto}
-.mkt-wrap{max-width:1080px;margin:0 auto;padding:0 24px}
-.mkt-hero{text-align:center;padding:40px 20px 30px;max-width:760px;margin:0 auto}
-.mkt-hero h1{font-size:42px;line-height:1.1;letter-spacing:-.03em;margin:16px 0 14px}
-.mkt-hero p.lede{font-size:18px;color:var(--ink3);margin-bottom:24px}
-.mkt-cta-btn{font-size:16px;padding:14px 28px;border-radius:12px}
-.mkt-reassure{font-size:13px;color:var(--ink3);margin-top:12px}
-.mkt-stats{display:flex;gap:0;justify-content:center;flex-wrap:wrap;margin:34px auto 0;max-width:820px;border:1px solid var(--line);border-radius:14px;background:#fff;overflow:hidden}
-.mkt-stats .st{flex:1;min-width:150px;padding:16px 18px;border-right:1px solid var(--line)}
+.mkt{min-height:100vh;background:#fff}
+.mkt-nav{display:flex;align-items:center;gap:12px;padding:22px 32px;max-width:1120px;margin:0 auto}
+.mkt-wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+.mkt-hero{position:relative;text-align:center;padding:72px 20px 56px;max-width:800px;margin:0 auto}
+.mkt-hero:before{content:"";position:absolute;top:-40px;left:50%;transform:translateX(-50%);width:680px;height:420px;max-width:100vw;background:radial-gradient(ellipse at center,rgba(122,71,232,.14),rgba(122,71,232,0) 68%);z-index:0;pointer-events:none}
+.mkt-hero>*{position:relative;z-index:1}
+.mkt-hero h1{font-size:52px;line-height:1.05;letter-spacing:-.035em;margin:20px 0 18px;font-weight:800}
+.mkt-hero p.lede{font-size:19px;line-height:1.5;color:var(--ink2);max-width:620px;margin:0 auto 30px}
+.mkt-cta-btn{font-size:16px;padding:15px 32px;border-radius:12px;box-shadow:0 8px 24px rgba(101,56,206,.24)}
+.mkt-reassure{font-size:13px;color:var(--ink3);margin-top:14px}
+.mkt-stats{display:flex;gap:0;justify-content:center;flex-wrap:wrap;margin:52px auto 0;max-width:860px}
+.mkt-stats .st{flex:1;min-width:150px;padding:6px 22px;border-right:1px solid var(--line)}
 .mkt-stats .st:last-child{border-right:none}
-.mkt-stats .st .n{font-size:20px;font-weight:800;letter-spacing:-.02em}
-.mkt-stats .st .l{font-size:12px;color:var(--ink3);margin-top:2px}
-.mkt-band{background:linear-gradient(100deg,var(--b700),var(--b500));color:#fff;text-align:center;padding:16px 20px;border-radius:14px;margin:28px 0;font-weight:600;font-size:15px}
-.mkt-band .sm{font-weight:400;opacity:.85;font-size:13px}
-.mkt-benefits{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin:8px 0}
-.mkt-ben{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px}
-.mkt-ben .ic{width:42px;height:42px;border-radius:11px;background:var(--b50);color:var(--b700);display:flex;align-items:center;justify-content:center;margin-bottom:12px}
-.mkt-ben h3{font-size:17px;margin-bottom:6px}
-.mkt-ben p{color:var(--ink3);font-size:14px}
-.mkt-trust{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;color:var(--ink3);font-size:13px;margin:30px 0;padding:16px;border:1px dashed var(--line);border-radius:12px}
+.mkt-stats .st .n{font-size:26px;font-weight:800;letter-spacing:-.03em}
+.mkt-stats .st .l{font-size:12.5px;color:var(--ink3);margin-top:4px;line-height:1.35}
+.mkt-sec{padding:8px 0}
+.mkt-eyebrow{text-align:center;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--b600);margin-bottom:10px}
+.mkt-h2{text-align:center;font-size:32px;letter-spacing:-.03em;font-weight:800;margin-bottom:34px}
+.mkt-band{background:linear-gradient(100deg,#170E30,#4C2A9E 60%,#7A47E8);color:#fff;text-align:center;padding:22px 20px;border-radius:18px;margin:44px 0;font-weight:700;font-size:17px;letter-spacing:-.01em}
+.mkt-band .sm{font-weight:400;opacity:.8;font-size:13px;margin-top:4px}
+.mkt-benefits{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin:8px 0}
+.mkt-ben{background:#fff;border:1px solid var(--line);border-radius:18px;padding:26px;transition:.15s}
+.mkt-ben:hover{border-color:var(--b200);box-shadow:0 12px 32px rgba(16,24,40,.06);transform:translateY(-2px)}
+.mkt-ben .ic{width:46px;height:46px;border-radius:12px;background:var(--b50);color:var(--b700);display:flex;align-items:center;justify-content:center;margin-bottom:14px}
+.mkt-ben h3{font-size:18px;margin-bottom:7px;letter-spacing:-.01em}
+.mkt-ben p{color:var(--ink3);font-size:14.5px;line-height:1.55}
+.mkt-trust{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;color:var(--ink3);font-size:13.5px;margin:44px auto;max-width:720px;text-align:center;padding:18px 22px;background:var(--bg);border-radius:14px}
 .mkt-trust .b{color:var(--ink)}
-.mkt-final{text-align:center;padding:44px 20px 20px}
-.mkt-final h2{font-size:28px;letter-spacing:-.02em;margin-bottom:14px}
-.mkt-foot{text-align:center;color:#98A2B3;font-size:12px;padding:30px 20px 40px}
+.mkt-final{text-align:center;padding:64px 20px 24px}
+.mkt-final h2{font-size:34px;letter-spacing:-.03em;font-weight:800;margin-bottom:8px}
+.mkt-final p{color:var(--ink3);margin-bottom:22px}
+.mkt-foot{text-align:center;color:#98A2B3;font-size:12px;padding:36px 20px 48px}
 .wprog{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin-bottom:20px;display:flex;align-items:center;gap:14px}
 .wprog .bar{flex:1;height:7px;background:var(--b100);border-radius:99px;overflow:hidden}
 .wprog .bar>div{height:100%;background:var(--b600);border-radius:99px;transition:width .3s}
 @media(max-width:760px){.mkt-hero h1{font-size:32px}.mkt-benefits{grid-template-columns:1fr}}
+.conv{min-height:100vh;display:flex;flex-direction:column;background:var(--bg)}
+.conv-top{display:flex;align-items:center;gap:12px;padding:20px 28px;max-width:620px;margin:0 auto;width:100%}
+.conv-back{width:36px;height:36px;border-radius:99px;border:1px solid var(--line);background:#fff;display:flex;align-items:center;justify-content:center;color:var(--ink2);font-size:16px}
+.conv-back:hover{border-color:var(--b500);color:var(--b700)}
+.conv-dots{display:flex;gap:6px;margin-left:auto}
+.conv-dots i{width:22px;height:5px;border-radius:99px;background:var(--line)}
+.conv-dots i.on{background:var(--b600)}
+.conv-dots i.done{background:var(--b300,#B9A6EF)}
+.conv-body{flex:1;display:flex;align-items:flex-start;justify-content:center;padding:6vh 24px 24px}
+.conv-card{width:100%;max-width:520px}
+.conv-q{font-size:30px;line-height:1.15;letter-spacing:-.03em;margin-bottom:8px}
+.conv-sub{color:var(--ink3);font-size:15px;margin-bottom:26px}
+.conv-input{width:100%;font-size:22px;padding:14px 4px;border:none;border-bottom:2px solid var(--line);outline:none;background:transparent;letter-spacing:-.01em}
+.conv-input:focus{border-color:var(--b600)}
+.conv-pick{display:flex;flex-direction:column;gap:12px;margin-bottom:8px}
+.conv-opt{display:flex;align-items:center;gap:14px;border:1.5px solid var(--line);border-radius:14px;padding:18px 20px;background:#fff;cursor:pointer;text-align:left;transition:.12s}
+.conv-opt:hover{border-color:var(--b500);box-shadow:0 4px 16px rgba(101,56,206,.08)}
+.conv-opt.on{border-color:var(--b600);background:var(--b50)}
+.conv-opt .em{width:46px;height:46px;border-radius:12px;background:var(--b50);color:var(--b700);display:flex;align-items:center;justify-content:center;flex:none}
+.conv-actions{margin-top:30px;display:flex;align-items:center;gap:14px}
+.conv-hint{color:var(--ink3);font-size:13px}
+.conv-err{color:var(--red);font-size:13px;margin-top:10px}
+.conv-chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--b700);background:var(--b50);border:1px solid var(--b200);padding:4px 10px;border-radius:999px}
 .auth{display:grid;grid-template-columns:44% 56%;min-height:100vh}
 .auth-l{background:linear-gradient(160deg,#170E30 0%,#3B1E7E 70%,#5B2ECC 120%);color:#fff;padding:56px;display:flex;flex-direction:column;justify-content:space-between}
 .auth-l h1{font-size:32px;line-height:1.25;margin-top:48px}
@@ -524,7 +554,7 @@ function NIC(k){const T={
  }[k]||'';
  return `<svg viewBox="0 0 16 16" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${T}</svg>`;
 }
-function startSignup(acct){if(acct)S.acct=acct;go('signup')}
+function startSignup(acct){if(acct)S.acct=acct;S.suStep=0;S.suErr='';go('signup');suFocus()}
 function vWelcome(){
  const yr=new Date().getFullYear();
  return `<div class="mkt">
@@ -546,6 +576,7 @@ function vWelcome(){
     </div>
    </div>
    <div class="mkt-band">Open this month and your first US$555 in transaction fees are on us<div class="sm">Complete your first transaction within four weeks to qualify</div></div>
+   <div class="mkt-sec"><div class="mkt-eyebrow">Why Finmo</div><h2 class="mkt-h2">One account that does the work</h2></div>
    <div class="mkt-benefits">
     <div class="mkt-ben"><div class="ic">${NIC('Home')}</div><h3>Live in minutes</h3><p>Sign up and see your real balance before any paperwork clears. Low-risk businesses start transacting the same day with starter limits while we finish the checks in the background.</p></div>
     <div class="mkt-ben"><div class="ic">${NIC('Collections')}</div><h3>Get paid like a local</h3><p>Local account details in nine currencies, plus SWIFT in 35 more. Your customers pay you as if you were a business down the road from them, no international fees on their side.</p></div>
@@ -555,6 +586,7 @@ function vWelcome(){
    <div class="mkt-trust"><span class="b">Your money is safe.</span> Regulated by MAS in Singapore, with AFSL, FCA, DFSA and HK MSO licences. Customer funds are safeguarded, never lent out.</div>
    <div class="mkt-final">
     <h2>Ready when you are</h2>
+    <p>Signup takes about ten minutes, and low-risk businesses are live the same day.</p>
     <button class="btn btn-p mkt-cta-btn" onclick="startSignup('biz')">Open your account</button>
     <div class="mkt-reassure">Just sending money as an individual? <a href="#" onclick="startSignup('ind');return false" style="color:var(--b700);font-weight:600">Finmo Remit is for you →</a></div>
    </div>
@@ -562,61 +594,71 @@ function vWelcome(){
   </div>
  </div>`;
 }
+function suFocus(){setTimeout(()=>{const el=document.getElementById('su-input');if(el){el.focus();if(el.value)el.setSelectionRange(el.value.length,el.value.length)}},40)}
+const SU_STEPS=['name','email','password','country'];
+function suNext(){
+ const st=S.suStep||0,u=S.user;
+ if(st===0&&u.name.trim().length<2)return suErr('Enter your name so we know what to call you');
+ if(st===1&&!emailOk(u.email))return suErr('That email does not look right');
+ if(st===2&&u.pw.length<8)return suErr('Use at least 8 characters');
+ S.suErr='';
+ if(st>=SU_STEPS.length-1){go('verify');return}
+ S.suStep=st+1;rr();suFocus();
+}
+function suBack(){const st=S.suStep||0;S.suErr='';if(st===0){go('welcome');return}S.suStep=st-1;rr();suFocus()}
+function suErr(m){S.suErr=m;rr();suFocus();return false}
 function vSignup(){
- const u=S.user,biz=S.acct==='biz';
- return `<div class="auth">
-  <div class="auth-l">
-   <div><span class="logo" style="color:#fff"><span class="lg" style="background:#fff;color:var(--b700)">f</span>finmo</span></div>
-   <div>
-    <h1>${biz?'Your business account,<br>open in minutes.':'Send money abroad<br>at honest rates.'}</h1>
-    <div class="pt">✓&nbsp; ${biz?'Local collection accounts in 8 currencies, SWIFT in 35':'Transparent mid market rate plus a small itemised fee'}</div>
-    <div class="pt">✓&nbsp; Verification that approves you on the spot when risk is low</div>
-    <div class="pt">✓&nbsp; MO checks your details live, before you ever submit</div>
-   </div>
-   <div class="small" style="color:#B9A6EF">Prototype · no real data leaves this page</div>
-  </div>
-  <div class="auth-r"><div class="authbox">
-   <h2>Create your account</h2>
-   <p class="muted" style="margin:6px 0 16px">Pick what you need. You can add the other later.</p>
-   <div class="sel ${biz?'on':''}" onclick="S.acct='biz';rr()"><input type="radio" ${biz?'checked':''} style="width:auto;margin-top:3px"><span><span class="b">Business account</span><br><span class="small muted">Collections, payouts, cards, treasury. KYB on the business and its owners.</span></span></div>
-   <div class="sel ${!biz?'on':''}" onclick="S.acct='ind';rr()"><input type="radio" ${!biz?'checked':''} style="width:auto;margin-top:3px"><span><span class="b">Personal · Finmo Remit</span> <span class="small muted">remit.finmo.net</span><br><span class="small muted">Send money abroad as an individual. Lighter KYC, just you.</span></span></div>
-   <div class="field" id="f-name" style="margin-top:16px"><label>Your full name</label><input value="${esc(u.name)}" oninput="set('user.name',this.value)" placeholder="Maya Chen"></div>
-   <div class="field" id="f-email"><label>${biz?'Work email':'Email'}</label><input value="${esc(u.email)}" oninput="set('user.email',this.value)" placeholder="maya@company.com"></div>
-   <div class="field" id="f-pw"><label>Password</label><input type="password" value="${esc(u.pw)}" oninput="set('user.pw',this.value)" placeholder="8 characters minimum"></div>
-   <div class="field"><label>${biz?'Country of incorporation':'Where do you live?'}</label>
-    <select onchange="set('user.country',this.value);rr()">${Object.keys(CC).map(k=>`<option value="${k}" ${u.country===k?'selected':''}>${CC[k].name}</option>`).join('')}</select>
-    <div class="hint">Available in the US, Canada, UK, Europe, Hong Kong, Singapore, Australia and New Zealand, with more markets under Other. This sets your home currency (${cc().ccy}) and what we ask for.</div>
-   </div>
-   <button class="btn btn-p" style="width:100%;justify-content:center;margin-top:8px" onclick="doSignup()">Continue</button>
-   <p class="small muted" style="margin-top:14px">Already have an account? <a href="#" onclick="toast('Sign in is out of scope for this prototype');return false">Sign in</a></p>
-   <p class="small muted" style="margin-top:4px"><a href="#" onclick="go('welcome');return false">← Back to overview</a></p>
+ if(S.suStep===undefined)S.suStep=0;
+ const st=S.suStep,u=S.user,biz=S.acct==='biz',first=u.name.trim().split(' ')[0];
+ const dots=SU_STEPS.map((_,i)=>`<i class="${i<st?'done':i===st?'on':''}"></i>`).join('');
+ let q='',sub='',field='';
+ if(st===0){q='First, what should we call you?';sub=biz?'The name of the person opening this account.':'Your name, as on your ID.';
+  field=`<input id="su-input" class="conv-input" value="${esc(u.name)}" oninput="set('user.name',this.value)" onkeydown="if(event.key==='Enter')suNext()" placeholder="Your full name" autocomplete="name">`;}
+ if(st===1){q=(first?'Nice to meet you, '+esc(first)+'.':'')+' What email should we use?';sub=biz?'We send account updates and your login here.':'We send your updates here.';
+  field=`<input id="su-input" class="conv-input" type="email" value="${esc(u.email)}" oninput="set('user.email',this.value)" onkeydown="if(event.key==='Enter')suNext()" placeholder="you@company.com" autocomplete="email">`;}
+ if(st===2){q='Set a password';sub='Keep it to yourself. Eight characters or more.';
+  field=`<input id="su-input" class="conv-input" type="password" value="${esc(u.pw)}" oninput="set('user.pw',this.value)" onkeydown="if(event.key==='Enter')suNext()" placeholder="••••••••" autocomplete="new-password">`;}
+ if(st===3){q=biz?'Where is your business registered?':'Where do you live?';sub='This sets your home currency and what we ask for. You can add other markets later.';
+  field=`<select id="su-input" class="conv-input" onchange="set('user.country',this.value)">${Object.keys(CC).map(k=>`<option value="${k}" ${u.country===k?'selected':''}>${CC[k].name}</option>`).join('')}</select>`;}
+ return `<div class="conv">
+  <div class="conv-top"><button class="conv-back" onclick="suBack()">←</button>
+   <span class="conv-chip" onclick="go('welcome')" style="cursor:pointer">${biz?'Business account':'Finmo Remit'} · change</span>
+   <div class="conv-dots">${dots}</div></div>
+  <div class="conv-body"><div class="conv-card">
+   <h1 class="conv-q">${q}</h1><div class="conv-sub">${sub}</div>
+   ${field}
+   ${S.suErr?`<div class="conv-err">${esc(S.suErr)}</div>`:''}
+   <div class="conv-actions"><button class="btn btn-p" style="padding:12px 26px;font-size:15px" onclick="suNext()">${st>=SU_STEPS.length-1?'Create account':'Continue'}</button>
+    <span class="conv-hint">${st>=SU_STEPS.length-1?'Then a quick 6 digit code':'Press Enter'}</span></div>
+   ${st===0?`<div style="margin-top:34px" class="small muted">Already with Finmo? <a href="#" onclick="toast('Sign in is out of scope for this prototype');return false">Sign in</a></div>`:''}
   </div></div>
  </div>`;
 }
+// kept for programmatic use and tests: validate all and go to verify
 function doSignup(){
- let ok=true;
- const mark=(id,bad,msg)=>{const el=$(id);if(!el)return;el.classList.toggle('bad',bad);let e=el.querySelector('.err');if(e)e.remove();if(bad){el.insertAdjacentHTML('beforeend',`<div class="err">${msg}</div>`);ok=false}};
- mark('f-name',S.user.name.trim().length<2,'Enter your name');
- mark('f-email',!emailOk(S.user.email),'Enter a valid email');
- mark('f-pw',S.user.pw.length<8,'Use at least 8 characters');
- if(ok)go('verify');
+ const u=S.user;
+ if(u.name.trim().length<2||!emailOk(u.email)||u.pw.length<8){S.suErr='Complete your details';rr();return}
+ go('verify');
 }
 function vVerify(){
- return `<div class="auth-r" style="min-height:100vh"><div class="authbox">
-  ${S.acct==='biz'?LOGO:LOGO_R}
-  <h2 style="margin-top:26px">Check your email</h2>
-  <p class="muted" style="margin:6px 0 18px">We sent a 6 digit code to <span class="b">${esc(S.user.email)}</span>.</p>
-  <div class="banner banner-i"><div>ⓘ</div><div class="small">Demo shortcut: your code is <span class="b">${S.verify.code}</span>. In production this arrives by email with a 10 minute expiry and rate limited resends.</div></div>
-  <div class="field" id="f-code"><label>Verification code</label><input inputmode="numeric" maxlength="6" id="codein" placeholder="••••••" style="letter-spacing:8px;font-size:18px"></div>
-  <button class="btn btn-p" style="width:100%;justify-content:center" onclick="doVerify()">Verify</button>
-  <p class="small muted" style="margin-top:14px"><a href="#" onclick="S.verify.code=String(Math.floor(100000+Math.random()*900000));rr();toast('New code generated');return false">Resend code</a> · <a href="#" onclick="go('signup');return false">Wrong email?</a></p>
- </div></div>`;
+ return `<div class="conv">
+  <div class="conv-top"><button class="conv-back" onclick="go('signup')">←</button>
+   <span class="conv-chip">Verify your email</span></div>
+  <div class="conv-body"><div class="conv-card">
+   <h1 class="conv-q">Check your email</h1>
+   <div class="conv-sub">We sent a 6 digit code to <span class="b">${esc(S.user.email)}</span>.</div>
+   <input id="codein" class="conv-input" inputmode="numeric" maxlength="6" placeholder="- - - - - -" style="letter-spacing:12px;font-size:26px" onkeydown="if(event.key==='Enter')doVerify()">
+   ${S.verErr?`<div class="conv-err">${esc(S.verErr)}</div>`:''}
+   <div class="banner banner-i" style="margin-top:18px"><div>&#8505;</div><div class="small">Demo shortcut: your code is <span class="b">${S.verify.code}</span>. In production this arrives by email with a 10 minute expiry and rate limited resends.</div></div>
+   <div class="conv-actions"><button class="btn btn-p" style="padding:12px 26px;font-size:15px" onclick="doVerify()">Verify</button>
+    <span class="conv-hint"><a href="#" onclick="S.verify.code=String(Math.floor(100000+Math.random()*900000));rr();toast('New code generated');return false">Resend code</a></span></div>
+  </div></div>
+ </div>`;
 }
 function doVerify(){
- const v=$('codein').value.trim();
- const el=$('f-code');el.classList.remove('bad');const old=el.querySelector('.err');if(old)old.remove();
- if(v!==S.verify.code){el.classList.add('bad');el.insertAdjacentHTML('beforeend','<div class="err">That code does not match. Check the email or resend.</div>');return}
- S.verify.ok=true;go('kybintro');
+ const v=($('codein')||{value:''}).value.trim();
+ if(v!==S.verify.code){S.verErr='That code does not match. Check the email or resend.';rr();return}
+ S.verErr='';S.verify.ok=true;go('kybintro');
 }
 function vIntro(){
  const c=cc(),biz=S.acct==='biz';
@@ -3312,6 +3354,8 @@ function render(){
  try{
   $('app').innerHTML=(views[S.view]||vSignup)()+demoBar()+fbButton()+fbPanel();
   fbCloseP();fbPins();
+  if(S.view==='signup')suFocus();
+  if(S.view==='verify')setTimeout(()=>{const c=document.getElementById('codein');if(c)c.focus()},40);
  }catch(e){
   // A blank screen is the one failure a prototype must never show.
   try{console.error('Render failed:',e)}catch(_){}
