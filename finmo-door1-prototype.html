@@ -41,6 +41,36 @@ h1{font-size:25px;letter-spacing:-.022em}h2{font-size:19px;letter-spacing:-.01em
 .banner-w{background:var(--amberbg);border:1px solid var(--amberline)}
 .banner-e{background:var(--redbg);border:1px solid #FECDCA}
 .banner-g{background:var(--greenbg);border:1px solid #A6F4C5}
+/* marketing welcome */
+.mkt{min-height:100vh;background:var(--bg)}
+.mkt-nav{display:flex;align-items:center;gap:12px;padding:18px 32px;max-width:1080px;margin:0 auto}
+.mkt-wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+.mkt-hero{text-align:center;padding:40px 20px 30px;max-width:760px;margin:0 auto}
+.mkt-hero h1{font-size:42px;line-height:1.1;letter-spacing:-.03em;margin:16px 0 14px}
+.mkt-hero p.lede{font-size:18px;color:var(--ink3);margin-bottom:24px}
+.mkt-cta-btn{font-size:16px;padding:14px 28px;border-radius:12px}
+.mkt-reassure{font-size:13px;color:var(--ink3);margin-top:12px}
+.mkt-stats{display:flex;gap:0;justify-content:center;flex-wrap:wrap;margin:34px auto 0;max-width:820px;border:1px solid var(--line);border-radius:14px;background:#fff;overflow:hidden}
+.mkt-stats .st{flex:1;min-width:150px;padding:16px 18px;border-right:1px solid var(--line)}
+.mkt-stats .st:last-child{border-right:none}
+.mkt-stats .st .n{font-size:20px;font-weight:800;letter-spacing:-.02em}
+.mkt-stats .st .l{font-size:12px;color:var(--ink3);margin-top:2px}
+.mkt-band{background:linear-gradient(100deg,var(--b700),var(--b500));color:#fff;text-align:center;padding:16px 20px;border-radius:14px;margin:28px 0;font-weight:600;font-size:15px}
+.mkt-band .sm{font-weight:400;opacity:.85;font-size:13px}
+.mkt-benefits{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin:8px 0}
+.mkt-ben{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px}
+.mkt-ben .ic{width:42px;height:42px;border-radius:11px;background:var(--b50);color:var(--b700);display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+.mkt-ben h3{font-size:17px;margin-bottom:6px}
+.mkt-ben p{color:var(--ink3);font-size:14px}
+.mkt-trust{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;color:var(--ink3);font-size:13px;margin:30px 0;padding:16px;border:1px dashed var(--line);border-radius:12px}
+.mkt-trust .b{color:var(--ink)}
+.mkt-final{text-align:center;padding:44px 20px 20px}
+.mkt-final h2{font-size:28px;letter-spacing:-.02em;margin-bottom:14px}
+.mkt-foot{text-align:center;color:#98A2B3;font-size:12px;padding:30px 20px 40px}
+.wprog{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin-bottom:20px;display:flex;align-items:center;gap:14px}
+.wprog .bar{flex:1;height:7px;background:var(--b100);border-radius:99px;overflow:hidden}
+.wprog .bar>div{height:100%;background:var(--b600);border-radius:99px;transition:width .3s}
+@media(max-width:760px){.mkt-hero h1{font-size:32px}.mkt-benefits{grid-template-columns:1fr}}
 .auth{display:grid;grid-template-columns:44% 56%;min-height:100vh}
 .auth-l{background:linear-gradient(160deg,#170E30 0%,#3B1E7E 70%,#5B2ECC 120%);color:#fff;padding:56px;display:flex;flex-direction:column;justify-content:space-between}
 .auth-l h1{font-size:32px;line-height:1.25;margin-top:48px}
@@ -316,7 +346,7 @@ const LS='finmo_door1_v2';
 const slot=()=>({st:'empty',name:'',pct:0,why:''});
 const riskDef=()=>({score:0,signals:[],pobox:0,sanctionsHit:false});
 function DEF(){return{
- view:'signup',tab:'home',acct:'biz',
+ view:'welcome',tab:'home',acct:'biz',
  user:{name:'',email:'',country:'SG',pw:''},
  verify:{code:String(Math.floor(100000+Math.random()*900000)),ok:false},
  kyb:{step:0,status:'draft',stage:0,pausedOnce:false,pre:{},prefilled:false,certSlot:slot(),
@@ -327,7 +357,7 @@ function DEF(){return{
  kyc:{step:0,status:'draft',stage:0,pausedOnce:false,
   me:{dob:'',nat:'',occupation:''},addr:{l1:'',l2:'',city:'',postal:''},
   docs:{id:slot(),selfie:slot()},act:{purpose:'',vol:'',dests:[]},requests:[],risk:riskDef(),scr:''},
- plat:{bals:{},asOf:null,txns:[],inv:[],bills:[],links:[],cards:[],cardTx:[],team:[],approvals:[],policy:{thresh:2000,dual:true},saved:{fx:0,fees:0,yield:0},ents:[],entId:null,entData:{},open:[],contacts:[],runs:[],dunning:[],plan:'essential',acct:{conn:null,lastSync:null,syncing:false,pulledInv:0,pulledBills:0,writeback:[]},
+ plat:{bals:{},asOf:null,txns:[],inv:[],bills:[],links:[],cards:[],cardTx:[],team:[],approvals:[],policy:{thresh:2000,dual:true},saved:{fx:0,fees:0,yield:0},ents:[],entId:null,entData:{},open:[],contacts:[],runs:[],dunning:[],plan:'essential',drivers:[],dataMonths:2,ext:{connected:false},acct:{conn:null,lastSync:null,syncing:false,pulledInv:0,pulledBills:0,writeback:[]},
   treas:{holdings:{},acceptedHigh:false},payin:null,seeded:false},
  pay:{step:0,from:'',name:'',country:'SG',acct:'',amt:'',note:'',rail:'',dupAck:false,billId:null},
  fx:{from:'',to:'USD',amt:''},chain:{USDC:'ethereum',USDT:'ethereum'},invF:{q:'',st:'all',from:'',to:''},billF:{q:'',st:'all',from:'',to:''},
@@ -486,6 +516,52 @@ document.addEventListener('DOMContentLoaded',()=>{
 /* ============ auth ============ */
 const LOGO=`<span class="logo"><span class="lg">f</span>finmo</span>`;
 const LOGO_R=`<span class="logo"><span class="lg">f</span>finmo <span class="tag tag-b" style="font-size:10px">remit</span></span>`;
+function NIC(k){const T={
+  Home:'<path d="M2.5 7.5 8 3l5.5 4.5"/><path d="M4 7v6.5h8V7"/>',
+  Collections:'<path d="M12 4 4 12"/><path d="M10 12H4V6"/>',
+  FX:'<path d="M3 6h8l-2-2"/><path d="M13 10H5l2 2"/>',
+  Insights:'<path d="M8 2.5l1.3 3.2L12.5 7 9.3 8.3 8 11.5 6.7 8.3 3.5 7l3.2-1.3z"/>'
+ }[k]||'';
+ return `<svg viewBox="0 0 16 16" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${T}</svg>`;
+}
+function startSignup(acct){if(acct)S.acct=acct;go('signup')}
+function vWelcome(){
+ const yr=new Date().getFullYear();
+ return `<div class="mkt">
+  <div class="mkt-nav">${LOGO}<span style="margin-left:auto"></span>
+   <a href="#" onclick="toast('Sign in is out of scope for this prototype');return false" class="small b" style="color:var(--ink2);text-decoration:none;margin-right:8px">Sign in</a>
+   <button class="btn btn-p btn-sm" onclick="startSignup('biz')">Get started</button></div>
+  <div class="mkt-wrap">
+   <div class="mkt-hero">
+    <span class="chip">Licensed in Singapore, Australia, the UK, Dubai and Hong Kong</span>
+    <h1>Your money, seen, moved, and grown, from one account</h1>
+    <p class="lede">Collect and pay in 30+ currencies, hold what you like, and let Finmo's AI categorise your spend, forecast your cash and save you money on every conversion. See your balance in minutes, not weeks.</p>
+    <button class="btn btn-p mkt-cta-btn" onclick="startSignup('biz')">Open your account</button>
+    <div class="mkt-reassure">Free to open · about 10 minutes · no sales call · low-risk businesses are approved on the spot</div>
+    <div class="mkt-stats">
+     <div class="st"><div class="n">Minutes</div><div class="l">from signup to a live balance</div></div>
+     <div class="st"><div class="n">9 + 35</div><div class="l">local currencies, plus SWIFT</div></div>
+     <div class="st"><div class="n">0.5%</div><div class="l">FX margin, banks charge ~2.5%</div></div>
+     <div class="st"><div class="n">Same day</div><div class="l">first payment for most businesses</div></div>
+    </div>
+   </div>
+   <div class="mkt-band">Open this month and your first US$555 in transaction fees are on us<div class="sm">Complete your first transaction within four weeks to qualify</div></div>
+   <div class="mkt-benefits">
+    <div class="mkt-ben"><div class="ic">${NIC('Home')}</div><h3>Live in minutes</h3><p>Sign up and see your real balance before any paperwork clears. Low-risk businesses start transacting the same day with starter limits while we finish the checks in the background.</p></div>
+    <div class="mkt-ben"><div class="ic">${NIC('Collections')}</div><h3>Get paid like a local</h3><p>Local account details in nine currencies, plus SWIFT in 35 more. Your customers pay you as if you were a business down the road from them, no international fees on their side.</p></div>
+    <div class="mkt-ben"><div class="ic">${NIC('FX')}</div><h3>Keep more on every conversion</h3><p>Convert at the mid-market rate plus a flat 0.5%, shown as a line item. A typical business bank charges around 2.5% and hides it in the rate. On real volume that is thousands a year.</p></div>
+    <div class="mkt-ben"><div class="ic">${NIC('Insights')}</div><h3>An AI that does the busywork</h3><p>MO categorises spend, forecasts your cash, chases overdue invoices and flags FX risk, and always asks before it moves a cent. The account you never have to babysit.</p></div>
+   </div>
+   <div class="mkt-trust"><span class="b">Your money is safe.</span> Regulated by MAS in Singapore, with AFSL, FCA, DFSA and HK MSO licences. Customer funds are safeguarded, never lent out.</div>
+   <div class="mkt-final">
+    <h2>Ready when you are</h2>
+    <button class="btn btn-p mkt-cta-btn" onclick="startSignup('biz')">Open your account</button>
+    <div class="mkt-reassure">Just sending money as an individual? <a href="#" onclick="startSignup('ind');return false" style="color:var(--b700);font-weight:600">Finmo Remit is for you →</a></div>
+   </div>
+   <div class="mkt-foot">© ${yr} Finmo · Prototype, all data is illustrative and no money moves</div>
+  </div>
+ </div>`;
+}
 function vSignup(){
  const u=S.user,biz=S.acct==='biz';
  return `<div class="auth">
@@ -513,6 +589,7 @@ function vSignup(){
    </div>
    <button class="btn btn-p" style="width:100%;justify-content:center;margin-top:8px" onclick="doSignup()">Continue</button>
    <p class="small muted" style="margin-top:14px">Already have an account? <a href="#" onclick="toast('Sign in is out of scope for this prototype');return false">Sign in</a></p>
+   <p class="small muted" style="margin-top:4px"><a href="#" onclick="go('welcome');return false">← Back to overview</a></p>
   </div></div>
  </div>`;
 }
@@ -573,7 +650,12 @@ function vWizard(){
   <div class="rail">${S.acct==='biz'?LOGO:LOGO_R}<div style="margin-top:26px">${rail}</div>
    <div style="margin-top:26px" class="savenote">✓ Progress saved automatically</div>
    <div style="margin-top:10px" class="small muted">✦ MO screens in the background while you type. Nothing waits for a human unless it has to.</div></div>
-  <div class="wizmain">${body}</div>
+  <div class="wizmain">${(()=>{const total=names.length,done=st,pct=Math.round((st/total)*100);
+   const enc=st===0?"Most people finish in about 10 minutes.":st>=total-1?"Last step, you're almost there.":pct>=50?"Over halfway. Keep going.":"Nice, that's the hard part started.";
+   return `<div class="wprog"><div><div class="b small">Step ${st+1} of ${total}</div><div class="small muted">${enc}</div></div><div class="bar"><div style="width:${Math.max(6,pct)}%"></div></div><div class="small b" style="color:var(--b700)">${pct}%</div></div>`})()}
+   ${body}
+   <div class="small muted" style="margin-top:22px;text-align:center">✦ Finish this and your first US$555 in fees are on us · progress saves automatically</div>
+  </div>
  </div>`;
 }
 function wizNav(){
@@ -1009,6 +1091,12 @@ function seedPlatform(){
  const h=home(),now=Date.now(),day=86400000;
  S.plat.seeded=true;S.plat.bals={};S.plat.bals[h]=25000;S.plat.asOf=now;
  S.plat.open=[h].concat(h==='USD'?[]:['USD']);
+ const dISO=n=>new Date(now+n*day).toISOString().slice(0,10);
+ S.plat.drivers=[
+  {id:uid(),name:'Payroll',amt:-8400,ccy:h,cadence:'monthly',nextOn:dISO(12),until:null,on:true,kind:'pattern',note:'Detected from 6 recurring payments'},
+  {id:uid(),name:'Office rent · CapitaLand',amt:-3200,ccy:h,cadence:'monthly',nextOn:dISO(4),until:null,on:true,kind:'pattern',note:'Detected from recurring payments'},
+  {id:uid(),name:'Compliance vendor',amt:-3000,ccy:'USD',cadence:'monthly',nextOn:dISO(6),until:new Date(now+50*day).toISOString().slice(0,10),on:true,kind:'contract',note:'Contract ends in ~7 weeks, so the engine stops counting it then'},
+  {id:uid(),name:'Retainer · Acme Trading',amt:5000,ccy:h,cadence:'monthly',nextOn:dISO(8),until:null,on:true,kind:'pattern',note:'Detected recurring inflow'}];
  S.plat.txns=[{id:uid(),t:now-2*3600000,who:'Demo seed payin',dir:'in',amt:25000,ccy:h,note:'Sample funds so you can explore. Marked as demo data.'}];
  S.plat.team=[{id:uid(),name:S.user.name,email:S.user.email,role:'owner',st:'active',ents:'all'}];
  seedEntities();
@@ -1099,7 +1187,7 @@ function railsFor(ccy){
 }
 function lockToast(){toast(live()?'Cards unlock at full approval, usually 1 to 2 days after the starter approval.':'Moving money unlocks once you are verified. The review is on your home page.')}
 function navGo(t){
- const needFull=['cards','spend'],needLive=['payouts','approvals','bills','links','collections','fx','fxrisk','stable','treasury','team','entities','integrations','contacts','run','chasing'];
+ const needFull=['cards','spend'],needLive=['payouts','approvals','bills','links','collections','fx','fxrisk','stable','treasury','team','entities','integrations','contacts','run','chasing','insights'];
  if(needLive.includes(t)&&!live()){lockToast();return}
  if(needFull.includes(t)&&!fullOk()){lockToast();return}
  S.tab=t;S.trackId=null;S.pay={step:0,from:home(),name:'',country:S.user.country,acct:'',amt:'',note:'',rail:'',dupAck:false,billId:null};
@@ -1109,9 +1197,10 @@ function navGo(t){
 function vApp(){
  const biz=S.acct==='biz';
  if(!S.navOpen)S.navOpen={};
- const isLk=id=>(['payouts','approvals','bills','links','collections','fx','fxrisk','stable','treasury','team','entities','integrations','contacts','run','chasing'].includes(id)&&!live())||(['cards','spend'].includes(id)&&!fullOk());
+ const isLk=id=>(['payouts','approvals','bills','links','collections','fx','fxrisk','stable','treasury','team','entities','integrations','contacts','run','chasing','insights'].includes(id)&&!live())||(['cards','spend'].includes(id)&&!fullOk());
  const TIC=k=>({
   Home:'<path d="M2.5 7.5 8 3l5.5 4.5"/><path d="M4 7v6.5h8V7"/>',
+  Insights:'<path d="M8 2.5l1.3 3.2L12.5 7 9.3 8.3 8 11.5 6.7 8.3 3.5 7l3.2-1.3z"/>',
   Accounts:'<rect x="2" y="4" width="12" height="9" rx="2"/><path d="M2 7h12"/>',
   Payouts:'<path d="M4 12 12 4"/><path d="M6 4h6v6"/>',
   Collections:'<path d="M12 4 4 12"/><path d="M10 12H4V6"/>',
@@ -1126,6 +1215,7 @@ function vApp(){
  const NIC=k=>`<svg class="nis" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${TIC(k)}</svg>`;
  const NAVB=[
   {id:'home',t:'Home'},
+  {id:'insights',t:'Insights'},
   {t:'Accounts',kids:[['accounts','Balances and details'],['topup','Top up']]},
   {t:'Payouts',kids:[['payouts','Send a payout'],['run','Payment run'],['approvals','Approvals'],['bills','Bills']]},
   {t:'Collections',kids:[['collections','Invoices'],['chasing','Chasing'],['links','Payment links']]},
@@ -1145,7 +1235,7 @@ function vApp(){
    return `<button class="kid ${S.tab===k[0]?'on':''} ${lk?'lk':''}" onclick="${kidGo(k[0])}">${k[1]}${lk?' <span class="lockhint">🔒</span>':''}</button>`}).join(''):'';
   return `<button class="it" onclick="S.navOpen['${g.t}']=${open?'false':'true'};rr()"><span class="ni">${NIC(g.t)}</span>${g.t}<span class="chev">${open?'▾':'▸'}</span></button>${kids}`;
  }).join('');
- const body={home:tHome,accounts:tAccounts,payouts:tPayouts,approvals:tApprovals,bills:tBills,links:tLinks,spend:tSpend,collections:tCollections,cards:tCards,treasury:tTreasury,fx:tFx,stable:tStable,fxrisk:tFxRisk,team:tTeam,entities:tEntities,integrations:tIntegrations,contacts:tContacts,run:tRun,chasing:tDunning}[S.tab]();
+ const body={home:tHome,accounts:tAccounts,payouts:tPayouts,approvals:tApprovals,bills:tBills,links:tLinks,spend:tSpend,collections:tCollections,cards:tCards,treasury:tTreasury,fx:tFx,stable:tStable,fxrisk:tFxRisk,team:tTeam,entities:tEntities,integrations:tIntegrations,contacts:tContacts,run:tRun,chasing:tDunning,insights:tInsights}[S.tab]();
  return `<div class="shell">
   <div class="side">
    ${biz?LOGO:LOGO_R}
@@ -1170,7 +1260,7 @@ function vApp(){
    </div>
    <div class="content">${body}</div>
   </div>
- </div>${S.mo.open?vMo():''}${S.modal==='report'?mReport():''}${S.modal==='topup'?mTopup():''}${S.modal==='addbill'?mAddBill():''}${S.modal==='newcard'?mNewCard():''}${S.modal==='addent'?mAddEntity():''}${S.modal==='upinv'?mUploadInv():''}${S.modal==='openccy'?mOpenCcy():''}${S.modal==='upgrade'?mUpgrade():''}${(S.modal==='addct'||(S.modal||'').startsWith('ct:'))?mAddContact():''}${S.modal==='ic'?mIcTransfer():''}${S.modal&&S.modal.startsWith&&S.modal.startsWith('fund:')?mFund():''}`;
+ </div>${S.mo.open?vMo():''}${S.modal==='report'?mReport():''}${S.modal==='topup'?mTopup():''}${S.modal==='addbill'?mAddBill():''}${S.modal==='newcard'?mNewCard():''}${S.modal==='addent'?mAddEntity():''}${S.modal==='upinv'?mUploadInv():''}${S.modal==='openccy'?mOpenCcy():''}${S.modal==='upgrade'?mUpgrade():''}${S.modal==='adddriver'?mAddDriver():''}${(S.modal==='addct'||(S.modal||'').startsWith('ct:'))?mAddContact():''}${S.modal==='ic'?mIcTransfer():''}${S.modal&&S.modal.startsWith&&S.modal.startsWith('fund:')?mFund():''}`;
 }
 function limitsBanner(){
  if(!limited())return '';
@@ -1407,7 +1497,66 @@ function tRun(){
   ${last.items.map(i=>`<tr><td>${esc(i.who.split(' ·')[0])}</td><td style="text-align:right">${fmt(i.amt,i.ccy)}</td>
    <td>${i.st==='paid'?'<span class="tag tag-ok">sent</span>':'<span class="tag tag-bad">failed</span>'+(i.why?`<div class="eqv">${esc(i.why)}</div>`:'')}</td></tr>`).join('')}</table></div>`:''}`;
 }
-/* ============ contacts: the counterparty master ============ */
+/* ============ insights: the data layer that drives the business account ============ */
+function extConnected(){return (S.plat.ext||{}).connected}
+function connectExternal(){
+ S.plat.ext.connected=true;rr();
+ toast('Connected. We read the last 90 days from your external accounts, nothing moves, this is read-only.');
+}
+function disconnectExternal(){S.plat.ext={connected:false};rr();toast('External accounts disconnected. Insights removed, your Finmo data is untouched.')}
+// derived from simulated external transaction history (the cash-tools data layer)
+function extInsights(){
+ const h=home();
+ return [
+  {id:'wire',icon:'⇄',tone:'save',
+   head:'You sent 5 international wires last quarter',
+   body:'42,000 USD across corridors where Finmo has local rails. Local would have cost about '+fmt(conv(95,'USD',h))+' instead of '+fmt(conv(230,'USD',h))+' in wire fees, and landed a day sooner.',
+   save:conv(135,'USD',h),cta:['navGo(\'payouts\')','Pay on local rails']},
+  {id:'fx',icon:'%',tone:'save',
+   head:'You paid an estimated 1.9% FX spread externally',
+   body:'On about 68,000 USD of conversions last quarter, measured against the mid-market rate. At Finmo\'s 0.5% you would have kept roughly '+fmt(conv(960,'USD',h))+'.',
+   save:conv(960,'USD',h),cta:['navGo(\'fx\')','Convert on Finmo']},
+  {id:'hedge',icon:'▲',tone:'act',
+   head:'A third of your inflows are USD, your bills are in '+h,
+   body:'That currency mismatch is unhedged today. The FX risk screen quantifies it and can arm a hedge at your target rate.',
+   save:0,cta:['navGo(\'fxrisk\')','Review FX risk']},
+  {id:'liq',icon:'◔',tone:'act',
+   head:'A short liquidity gap is coming',
+   body:'Payroll of '+fmt(8400)+' lands before a large receivable clears, so '+h+' dips for about a week. You could bridge it by converting idle USD, or with invoice financing against your receivables.',
+   save:0,cta:['navGo(\'fxrisk\')','See options']}
+ ];
+}
+function tInsights(){
+ const h=home();
+ if(!extConnected())return `<h1 style="margin-bottom:6px">Insights</h1>
+  <p class="muted" style="margin-bottom:18px">Connect the accounts you use outside Finmo and we read the transaction history to show you exactly where the Finmo business account would save you money or reduce risk. Read-only, nothing moves.</p>
+  ${limitsBanner()}
+  <div class="card" style="max-width:620px">
+   <h3 style="margin-bottom:6px">Connect your external accounts</h3>
+   <p class="small muted" style="margin-bottom:12px">Your other business banks, plus the accounting data you already synced. We aggregate it into one cash-flow view and find the opportunities. This is the cash-tools data layer, and it is what makes the account smart rather than just an account.</p>
+   <button class="btn btn-p" onclick="connectExternal()">Connect external accounts</button>
+   <div class="hint" style="margin-top:12px">In production this is read-only bank feeds and ERP data. It is not a regulated money-movement service, it is the intelligence layer that points you at the regulated one.</div>
+  </div>`;
+ const ins=extInsights();
+ const totalSave=ins.reduce((t,i)=>t+i.save,0);
+ return `<h1 style="margin-bottom:6px">Insights</h1>
+ <p class="muted" style="margin-bottom:16px">What your own transaction data says you should do next. Every insight ends in a Finmo action.</p>
+ ${limitsBanner()}
+ <div class="grid3" style="margin-bottom:16px">
+  <div class="mtile"><div class="lbl">Opportunity found</div><div class="v" style="color:#027A48">${fmt(totalSave)}</div><div class="sub">savings if you moved this activity to Finmo</div></div>
+  <div class="mtile"><div class="lbl">Insights</div><div class="v">${ins.length}</div><div class="sub">from 90 days of external data</div></div>
+  <div class="mtile"><div class="lbl">Source</div><div class="v" style="font-size:15px">External banks + ERP</div><button class="btn btn-g btn-sm" style="padding-left:0" onclick="disconnectExternal()">Disconnect</button></div>
+ </div>
+ ${ins.map(i=>`<div class="card" style="margin-bottom:12px">
+  <div style="display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap">
+   <div style="width:38px;height:38px;border-radius:10px;background:var(--b50);color:var(--b700);display:flex;align-items:center;justify-content:center;font-size:17px;flex:none">${i.icon}</div>
+   <div style="flex:1;min-width:220px"><div class="b">${esc(i.head)}</div><div class="small muted" style="margin-top:2px">${esc(i.body)}</div></div>
+   ${i.save>0?`<div style="text-align:right"><div class="small muted">you would save</div><div class="b" style="color:#027A48">${fmt(i.save)}</div></div>`:''}
+   <button class="btn btn-p btn-sm" onclick="${i.cta[0]}">${i.cta[1]}</button>
+  </div></div>`).join('')}
+ <div class="card" style="background:var(--b50);border-color:var(--b200)"><div class="small"><span class="b">Why this matters.</span> Airwallex and Revolut sell you the account and stop. The data layer reads everything you do, inside Finmo and out, and turns it into specific reasons to run more of your money through the account. The account is the business; the data is what grows it.</div></div>`;
+}
+/* ============ contacts: the counterparty master ============ *//* ============ contacts: the counterparty master ============ */
 function contacts(){return S.plat.contacts||(S.plat.contacts=[])}
 function findContact(name){
  const n=(name||'').trim().toLowerCase();
@@ -1934,6 +2083,21 @@ function tApprovals(){
 function _sameMonth(t){const n=new Date(),d=new Date(t);return d.getMonth()===n.getMonth()&&d.getFullYear()===n.getFullYear()}
 function _sameDay(t){const n=new Date(),d=new Date(t);return d.toDateString()===n.toDateString()}
 function runwayDays(){return S.rwDays||14}
+function driverHits(dr,d){
+ // does this recurring driver fall on date d, within [nextOn, until]?
+ const start=new Date(dr.nextOn);start.setHours(0,0,0,0);
+ if(d<start)return false;
+ if(dr.until&&d>new Date(dr.until))return false;
+ if(dr.cadence==='weekly')return Math.round((d-start)/86400000)%7===0;
+ // monthly: same day-of-month as the anchor (clamped)
+ return d.getDate()===Math.min(start.getDate(),new Date(d.getFullYear(),d.getMonth()+1,0).getDate());
+}
+function forecastConfidence(){
+ const m=S.plat.dataMonths||0;
+ if(m>=6)return {level:'good',pct:'high',msg:'6+ months of history, so seasonal patterns are picked up. Beyond 60 days is still an estimate.'};
+ if(m>=3)return {level:'mid',pct:'building',msg:'About '+m+' of 6 months of history. Trends are reliable, seasonality is not yet. Treat beyond 30 days as indicative.'};
+ return {level:'low',pct:'early',msg:'Only about '+m+' of 6 months of history. We show the shape from known invoices, bills and detected patterns, but we will not put a false accuracy number on it until there is enough data.'};
+}
 function runwayData(days){
  const h=home();
  const today=new Date();today.setHours(0,0,0,0);
@@ -1942,8 +2106,9 @@ function runwayData(days){
  const rows=[{d:new Date(today),ds:iso(today),ar:0,ap:0,bal:bal}];
  for(let i=1;i<=days;i++){
   const d=new Date(today);d.setDate(d.getDate()+i);const ds=iso(d);
-  const ar=(S.plat.inv||[]).filter(x=>x.st!=='paid'&&x.st!=='scheduled'&&x.due===ds).reduce((t,x)=>t+conv(x.amt,x.ccy||h,h),0);
-  const ap=(S.plat.bills||[]).filter(b=>b.due===ds).reduce((t,b)=>t+conv(b.amt,b.ccy||h,h),0);
+  let ar=(S.plat.inv||[]).filter(x=>x.st!=='paid'&&x.st!=='scheduled'&&x.due===ds).reduce((t,x)=>t+conv(x.amt,x.ccy||h,h),0);
+  let ap=(S.plat.bills||[]).filter(b=>b.due===ds).reduce((t,b)=>t+conv(b.amt,b.ccy||h,h),0);
+  (S.plat.drivers||[]).forEach(dr=>{if(!dr.on)return;if(!driverHits(dr,d))return;const v=conv(dr.amt,dr.ccy||h,h);if(v>=0)ar+=v;else ap+=-v});
   bal=bal+ar-ap;
   rows.push({d:d,ds:ds,ar:ar,ap:ap,bal:bal});
  }
@@ -1999,6 +2164,75 @@ function ageChart(buckets,colors){
   <div class="bwrap"><div class="bar" style="height:${b.v>0?Math.max(4,Math.round(b.v/mx*100)):0}%;background:${colors[i]}"><title>${b.n} item${b.n===1?'':'s'} · ${fmt(b.v)}</title></div></div>
   <div class="lbl">${b.k}<br><span style="color:#98A2B3">${b.n}</span></div></div>`).join('')}</div>`;
 }
+const FC_BANDS=[[0,5,99,1],[6,14,95,2],[15,30,85,4],[31,90,70,6]];
+function forecastAccuracy(){
+ const m=S.plat.dataMonths||0;
+ return FC_BANDS.map(([lo,hi,target,need],i)=>{
+  const measurable=m>=need;
+  const measured=measurable?Math.max(55,Math.round(target-1-i*1.5)):null;
+  return {lo:lo,hi:hi,target:target,measured:measured,measurable:measurable,need:need};
+ });
+}
+function accuracyCard(){
+ const b=forecastAccuracy();
+ return `<div class="card" style="margin-bottom:14px">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;flex-wrap:wrap"><h3 style="margin:0">Forecast accuracy</h3>
+   <span class="small muted">measured against target, by how far out</span></div>
+  <table style="margin-top:8px"><tr><th>Horizon</th><th>Target</th><th>Measured</th><th></th></tr>
+  ${b.map(x=>`<tr><td class="b">${x.lo} to ${x.hi} days</td>
+   <td>${x.target}%</td>
+   <td>${x.measurable?`<span class="b" style="color:${x.measured>=x.target-3?'#027A48':'#B54708'}">${x.measured}%</span>`:'<span class="muted">\u2014</span>'}</td>
+   <td>${x.measurable?(x.measured>=x.target-3?'<span class="tag tag-ok">on target</span>':'<span class="tag tag-warn">below target</span>'):`<span class="tag tag-mut">building \u00b7 needs ~${x.need} months of data</span>`}</td></tr>`).join('')}</table>
+  <div class="ins info" style="margin-top:12px"><span class="ic">\u2726</span><span>A forecast is not one accuracy number, it is a curve. The near term is driven by committed flows so it should hit 99%; the further out you go the more it leans on patterns and the more honest the number has to be. Bands without enough history say so rather than posting a figure we cannot stand behind.</span></div>
+ </div>`;
+}
+function driversCard(){
+ const h=home(),drv=S.plat.drivers||[];
+ const row=dr=>`<tr style="${dr.on?'':'opacity:.5'}">
+  <td><label style="display:flex;align-items:center;gap:8px"><input type="checkbox" ${dr.on?'checked':''} onchange="S.plat.drivers.find(x=>x.id==='${dr.id}').on=this.checked;rr()">
+   <span class="b">${esc(dr.name)}</span></label>
+   <div class="eqv" style="margin-left:24px">${dr.kind==='contract'?'contract':'detected pattern'} · ${dr.cadence}${dr.note?' · '+esc(dr.note):''}</div></td>
+  <td style="text-align:right" class="${dr.amt>=0?'amt-in':'amt-out'}">${dr.amt>=0?'+':'−'}${fmt(Math.abs(dr.amt),dr.ccy||h)}</td>
+  <td><input type="date" value="${dr.until||''}" min="${new Date().toISOString().slice(0,10)}" onchange="S.plat.drivers.find(x=>x.id==='${dr.id}').until=this.value||null;rr()" style="padding:5px 8px;border:1.5px solid var(--line);border-radius:8px;font-size:12.5px"><div class="eqv">${dr.until?'stops after this date':'runs indefinitely'}</div></td>
+  <td style="text-align:right"><button class="btn btn-g btn-sm" style="color:#B42318" onclick="S.plat.drivers=S.plat.drivers.filter(x=>x.id!=='${dr.id}');rr()">Remove</button></td></tr>`;
+ return `<div class="card" style="margin-bottom:14px">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;flex-wrap:wrap"><h3 style="margin:0">Forecast drivers</h3>
+   <span class="small muted">recurring flows the forecast assumes, editable so it stays honest</span>
+   <span style="margin-left:auto"></span><button class="btn btn-s btn-sm" onclick="S.modal='adddriver';rr()">+ Add a flow</button></div>
+  ${drv.length?`<table><tr><th>Flow</th><th style="text-align:right">Amount</th><th>Recurs until</th><th></th></tr>${drv.map(row).join('')}</table>`
+   :'<div class="muted small">No recurring flows detected yet.</div>'}
+  <div class="ins info" style="margin-top:12px"><span class="ic">✦</span><span>This is the scenario a treasury team actually needs. A detected payroll would otherwise be assumed to run forever. Giving the compliance contract an end date stops the engine counting it past then, which is exactly where a forecast goes wrong without the contract in hand. Toggle any flow off to model a what-if instantly.</span></div>
+ </div>`;
+}
+function mAddDriver(){
+ const d=S.driverDraft||(S.driverDraft={name:'',amt:'',ccy:home(),cadence:'monthly',dir:'out',until:'',nextOn:new Date(Date.now()+7*86400000).toISOString().slice(0,10)});
+ return `<div class="ov" onclick="if(event.target===this){S.modal=null;rr()}"><div class="modal">
+  <h2 style="margin-bottom:4px">Add a recurring flow</h2>
+  <p class="small muted" style="margin-bottom:14px">A known future payment or receipt the forecast should include, like a contract, payroll, or a retainer.</p>
+  <div class="field"><label>What is it</label><input value="${esc(d.name)}" oninput="S.driverDraft.name=this.value" placeholder="e.g. SaaS vendor"></div>
+  <div class="row2">
+   <div class="field"><label>Direction</label><select onchange="S.driverDraft.dir=this.value"><option value="out" ${d.dir==='out'?'selected':''}>Money out</option><option value="in" ${d.dir==='in'?'selected':''}>Money in</option></select></div>
+   <div class="field"><label>Amount</label><input type="number" min="0" value="${esc(d.amt)}" oninput="S.driverDraft.amt=this.value"></div>
+  </div>
+  <div class="row2">
+   <div class="field"><label>Currency</label><select onchange="S.driverDraft.ccy=this.value">${[...VA_CCYS].map(c=>`<option ${d.ccy===c?'selected':''}>${c}</option>`).join('')}</select></div>
+   <div class="field"><label>How often</label><select onchange="S.driverDraft.cadence=this.value"><option value="monthly" ${d.cadence==='monthly'?'selected':''}>Monthly</option><option value="weekly" ${d.cadence==='weekly'?'selected':''}>Weekly</option></select></div>
+  </div>
+  <div class="row2">
+   <div class="field"><label>First occurrence</label><input type="date" value="${esc(d.nextOn)}" min="${new Date().toISOString().slice(0,10)}" onchange="S.driverDraft.nextOn=this.value"></div>
+   <div class="field"><label>Ends after <span class="muted small">(optional)</span></label><input type="date" value="${esc(d.until)}" onchange="S.driverDraft.until=this.value"></div>
+  </div>
+  <button class="btn btn-p" onclick="saveDriver()">Add to forecast</button>
+  <button class="btn btn-s" style="margin-left:8px" onclick="S.modal=null;S.driverDraft=null;rr()">Cancel</button>
+ </div></div>`;
+}
+function saveDriver(){
+ const d=S.driverDraft;
+ if(!d||d.name.trim().length<2){toast('Name the flow');return}
+ if(!(Number(d.amt)>0)){toast('Enter an amount');return}
+ S.plat.drivers.push({id:uid(),name:d.name.trim(),amt:(d.dir==='in'?1:-1)*Number(d.amt),ccy:d.ccy,cadence:d.cadence,nextOn:d.nextOn,until:d.until||null,on:true,kind:'manual',note:'Added by you'});
+ S.driverDraft=null;S.modal=null;rr();toast('Added to the forecast');
+}
 function cashRunway(){
  if(S.acct!=='biz'||!live())return '';
  const h=home(),days=runwayDays(),rows=runwayData(days);
@@ -2022,8 +2256,9 @@ function cashRunway(){
  return `<div style="display:flex;align-items:center;gap:10px;margin:26px 0 10px;flex-wrap:wrap">
    <h3 style="margin:0">Cash runway</h3>
    <span class="small muted">what your money does next, from your own invoices and bills</span>
-   <span style="margin-left:auto"></span>${pill(7,'7 days')}${pill(14,'14 days')}${pill(30,'30 days')}</div>
+   <span style="margin-left:auto"></span>${pill(7,'7 days')}${pill(14,'14 days')}${pill(30,'30 days')}${pill(90,'90 days')}</div>
  <div class="card" style="margin-bottom:14px">
+  ${(()=>{const c=forecastConfidence();return `<div class="ins ${c.level==='good'?'good':c.level==='mid'?'info':'warn'}" style="margin-bottom:10px"><span class="ic">${c.level==='good'?'✓':'◷'}</span><span><span class="b">Forecast confidence: ${c.pct}.</span> ${c.msg}</span></div>`})()}
   ${ins.map(i=>`<div class="ins ${i[0]}"><span class="ic">${i[1]}</span><span style="flex:1">${i[2]}</span>${i[3]?`<button class="btn btn-g btn-sm" style="padding:2px 8px" onclick="${i[3]}">${i[4]}</button>`:''}</div>`).join('')}
   <div class="grid3" style="margin:14px 0 10px">
    <div class="mtile"><div class="lbl">Cash today</div><div class="v">${fmt(start)}</div><div class="sub">across every currency</div></div>
@@ -2031,8 +2266,10 @@ function cashRunway(){
    <div class="mtile"><div class="lbl">Runway at this pace</div><div class="v">${runway===null?'No outflows':(runway>365?'Over a year':runway+' days')}</div><div class="sub">${runway===null?'nothing scheduled out':'if nothing new comes in'}</div></div>
   </div>
   ${runwayChart(rows)}
-  <div class="hint" style="margin-top:6px">Projected from the due dates on your unpaid invoices and upcoming bills. Overdue invoices are deliberately left out of the line, because money you were already promised is not money you can count on.</div>
+  <div class="hint" style="margin-top:6px">Projected from your invoices, bills and the recurring patterns below. Overdue invoices are left out, because money you were promised but did not receive is not money you can plan around.</div>
  </div>
+ ${driversCard()}
+ ${accuracyCard()}
  <div class="grid2" style="margin-bottom:14px">
   <div class="card"><h3 style="margin-bottom:2px">Receivables aging</h3><div class="small muted">Money owed to you, by how late it is</div>
    ${ageChart(ag.ar,['#12B76A','#F79009','#F04438','#B42318'])}
@@ -3071,7 +3308,7 @@ function fbClickCapture(ev){
 }
 /* ============ render ============ */
 function render(){
- const views={signup:vSignup,verify:vVerify,kybintro:vIntro,wizard:vWizard,screening:vScreening,tracker:vTracker,app:vApp};
+ const views={welcome:vWelcome,signup:vSignup,verify:vVerify,kybintro:vIntro,wizard:vWizard,screening:vScreening,tracker:vTracker,app:vApp};
  try{
   $('app').innerHTML=(views[S.view]||vSignup)()+demoBar()+fbButton()+fbPanel();
   fbCloseP();fbPins();

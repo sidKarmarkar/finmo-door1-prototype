@@ -126,6 +126,28 @@ The sidebar now names things the way the business thinks about them. **Payouts**
 
 **Stablecoins** treat USDC and USDT as two more currencies in the same account rather than a crypto annex. That single choice is what makes everything else free: they appear in balances, in conversions, in the risk engine, in analytics and under the same approval rules, with no separate plumbing. You get a deposit address per coin per network, and the network is chosen *before* the address is shown, because sending USDT on the wrong chain is the most common way people lose money on chain. The margin is tighter between two stablecoins (0.1 percent) than between a stablecoin and a currency (0.5 percent), because one is a swap and the other is real FX.
 
+## Insights: the data layer that drives the account
+
+Finmo has two products. The business account, which this prototype is, is regulated and moves money. Cash tools is an unregulated data layer that reads external banks and accounting systems. The strategy is that the data layer drives usage of the account, and the Insights surface is where that meets the account the prototype already has.
+
+Connect external accounts (read-only, simulated here) and the product surfaces specific, quantified nudges: international wires that could have gone on local rails and what that would have saved, FX paid at a wide external spread versus Finmo's 0.5% and the delta in money, an unhedged currency mismatch pointing at the FX risk screen, and a coming liquidity gap with a way to bridge it. Every insight ends in a business-account action. This is the difference between selling an account, which Airwallex and Revolut do, and wrapping the account in intelligence that grows it. It is also, deliberately, the clearest expression of the AI Payments role: turning transaction data into reasons to move money through Finmo.
+
+## Forecast drivers, scenarios, and honest confidence
+
+The cash forecast now models the recurring flows a real business runs on, payroll, rent, a vendor contract, a customer retainer, shown as editable drivers rather than inferred silently. Each carries an end-date, which fixes the specific failure a naive forecast makes: a detected payroll gets assumed to run forever, and a vendor contract that ends in two months keeps being counted. Giving the contract an end-date stops it, and toggling any driver off models a what-if instantly. This is the honest, low-friction alternative to a treasury system demanding uploaded contracts.
+
+Confidence is stated, not faked. With thin data the forecast says so plainly, "about two of six months of history, we will not put a false accuracy number on it," and only claims seasonal confidence once there is enough history. This matters as a distinction: statistical confidence, as used in the VaR screen, is legitimate because FX exposure is a known distribution, whereas a cash-flow forecast cannot honestly carry a confidence percentage without data. Conflating the two is how forecasting products lose trust, so the prototype keeps them separate.
+
+Accuracy is then shown the way a treasury practitioner actually reads a forecast: not one number, but a curve by horizon. The prototype sets a target per band, 99% at 0 to 5 days, 95% at 6 to 14, 85% at 15 to 30, 70% beyond, and shows measured against target where there is enough history to measure, and an honest "building" state where there is not. The near term hits its high target because it is driven by committed flows; the far term degrades and is allowed to say so. This tiered framing came from a treasury practitioner's feedback, and it is a better answer than a single accuracy figure precisely because it matches how the people who live with forecasts judge them.
+
+## The welcome screen: value before the form
+
+Marketing feedback, relayed through the team: onboarding should be more conversational, and the benefits should be explained before signup begins, the way Airwallex does it. Right, and the fix is a value-first welcome screen that now sits before the form.
+
+It follows the pattern that converts: a benefit headline, one clear line of what the product does, and an immediate call to action, then hard proof points (a live balance in minutes, nine local currencies plus SWIFT, 0.5% FX against a bank's 2.5%, same-day first payment), four benefit cards, a trust row naming the licences and that funds are safeguarded, and a repeated call to action at the end. Two consumer-psychology levers do the real work. Reciprocity: the fee-waiver offer is stated up front and repeated inside the wizard, so the user is completing signup to claim something rather than just to comply. Reduced friction and reassurance: "free to open, about ten minutes, no sales call, approved on the spot," which pre-empts the three anxieties that cause abandonment, cost, effort, and delay.
+
+Inside the wizard, completion psychology is made explicit: a progress bar with the step count and an encouraging line that changes as you advance ("over halfway, keep going"), the incentive reminded at the foot of every step, and the note that progress saves automatically. The goal throughout is that the person always knows how far they are, what they get, and that stopping loses nothing. That is what turns a compliance form into something people finish.
+
 ## Making it intuitive, and pricing tiers
 
 Two smaller asks that both matter for how the product reads.
